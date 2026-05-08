@@ -1,7 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
-import ClassifyUI from "@/components/ClassifyUI";
-import Timeline from "@/components/Timeline";
+import Features from "@/components/Features";
 import Collaboration from "@/components/Collaboration";
 
 export default function Home() {
@@ -10,10 +9,10 @@ export default function Home() {
       <Navbar />
       <Hero />
       <Collaboration />
-      <ClassifyUI />
-      <Timeline />
+      <Features />
     </main>
   );
 }
+
 
 

@@ -11,13 +11,20 @@ export default function Navbar() {
 
         {/* Center: Links */}
         <div className="hidden md:flex items-center gap-8">
-          {["Live", "Analytics", "Insights", "Team"].map((link) => (
+          {[
+            { name: "Home", path: "/" },
+            { name: "Live Tracking", path: "/live" },
+            { name: "Analytics", path: "/analytics" },
+            { name: "AI Insights", path: "/insights" },
+            { name: "Replay Center", path: "/replay" },
+            { name: "Technology", path: "/technology" }
+          ].map((link) => (
             <Link
-              key={link}
-              href={`/${link.toLowerCase()}`}
-              className="text-sm transition-colors hover:text-gray-300"
+              key={link.name}
+              href={link.path}
+              className="text-sm transition-colors hover:text-[#c8e86e] font-medium"
             >
-              {link}
+              {link.name}
             </Link>
           ))}
         </div>
