@@ -1,0 +1,66 @@
+# VisionPlay Tactical Intelligence: Implementation Roadmap
+
+This document outlines the strategic transformation of the VisionPlay platform from a detection demo into a professional-grade sports-tech tactical intelligence system for the **Goa Code Premier League**.
+
+---
+
+## 🎯 Phase 1: Spatial Intelligence (The "God's Eye" View)
+Currently, detections are in 2D pixel space. To provide professional metrics, we must map them to a physical football pitch.
+
+### 1.1 Homography Transformation
+- **Task**: Define a 4-point homography matrix mapping video coordinates to a standard 105x68m pitch model.
+- **Metric**: Convert pixel velocity into **real-world Speed (km/h)** and **Distance Covered (m)**.
+- **UI**: Build a **Tactical Minimap** component on the `live` page showing player positions as dynamic dots.
+
+---
+
+## 📊 Phase 2: Analytics Overhaul (Match Performance)
+Transform the generic charts in `app/analytics/page.tsx` into specialized football metrics.
+
+### 2.1 Tactical Metric Mapping
+- **Desktop/Mobile** → **Green Team vs. White Team Intensity**.
+- **Visitors** → **Metabolic Load** (Cumulative energy expenditure).
+- **Pie Chart** → **Possession Zones** (Defensive, Midfield, Attacking Thirds).
+
+### 2.2 Data Integration
+- Store the results of the `main.py` pipeline (counts, ball status, velocities) into a local `match_telemetry.json`.
+- Fetch this data in the Analytics page to replace hardcoded placeholders.
+
+---
+
+## 🧠 Phase 3: AI Insights (Decision Support)
+Move beyond "Locked/Searching" into **Actionable Intelligence** in `app/insights/page.tsx`.
+
+### 3.1 Smart Substitution Engine
+- **Logic**: Monitor individual player "sprint frequency." If it drops below a 5-minute rolling average, trigger a "Fatigue Warning."
+- **Dashboard Alert**: Display: *"Warning: Player P7 (Striker) fatigue reached 82%. Recommended substitution window: 60-65'."*
+
+### 3.2 Tactical Formation Analysis
+- **Defensive Integrity**: Measure the average distance between the 4 most-rear players. If the gap exceeds 15m, flag a "Defensive Vulnerability."
+
+---
+
+## 🎥 Phase 4: Replay Center (Post-Match Intelligence)
+Make the `app/replay/page.tsx` a functional scouting tool.
+
+### 4.1 Synchronized Tactical Seek
+- **Task**: Connect the video player to `detected_test.mp4`.
+- **Event Timeline**: Make the "Explosive Sprint" or "Intensity Peak" events clickable to jump the video to specific timestamps.
+- **Overlay Toggle**: Add a HUD control to show/hide the AI bounding boxes during replay.
+
+---
+
+## 🛠 Phase 5: Technical Infrastructure & Performance
+Maintain the "Serious Project" standard.
+
+### 5.1 Edge-AI Optimization
+- **Highlight**: Document the use of **YOLOv8n (Nano)** for real-time 30FPS inference on consumer hardware.
+- **Latency Monitoring**: Display real-time inference latency (ms) and GPU/CPU utilization in the "Technology" dashboard.
+
+---
+
+## 🚀 Immediate Next Steps (Priority Order)
+1. **[FRONTEND]** Fix Analytics Page terminology (Intensity/Possession).
+2. **[BACKEND]** Implement Homography logic in `detect_objects.py`.
+3. **[FRONTEND]** Build the Pitch Minimap component.
+4. **[BACKEND]** Export telemetry JSON after pipeline completion.

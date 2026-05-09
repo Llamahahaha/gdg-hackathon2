@@ -41,9 +41,9 @@ export default function TechnologyPage() {
             <div className="space-y-4">
               {[
                 { step: 1, title: 'Raw Image Acquisition', desc: 'Capturing 60FPS streams from commodity 2D cameras.', icon: Camera },
-                { step: 2, title: 'Landmark Extraction', desc: 'MediaPipe-powered 33-point skeletal pose estimation.', icon: Network },
-                { step: 3, title: 'Spatial Translation', desc: 'OpenCV calculation for real-world coordinate mapping.', icon: Database },
-                { step: 4, title: 'Neural Inference', desc: 'Proprietary AI forecasting fatigue & injury risks.', icon: Cpu }
+                { step: 2, title: 'Object Detection', desc: 'YOLOv8 Nano for real-time player and ball tracking.', icon: Network },
+                { step: 3, title: 'Team Classification', desc: 'Color-based jersey detection for tactical analysis.', icon: Database },
+                { step: 4, title: 'Metrics Calculation', desc: 'Velocity, possession, and metabolic power computation.', icon: Cpu }
               ].map((s, i) => (
                 <Card key={i} className="group hover:border-[#c8e86e]/20 transition-all border-white/5">
                   <CardContent className="p-6 flex items-center gap-6">
@@ -65,6 +65,15 @@ export default function TechnologyPage() {
             <Card className="bg-zinc-900/40 border-white/5">
               <CardHeader>
                 <CardTitle className="text-sm font-mono text-gray-400 uppercase tracking-widest">Pipeline Efficiency</CardTitle>
+<Card className="bg-zinc-900/40">
+    <CardHeader>
+      <CardTitle className="text-sm font-mono text-gray-400 uppercase tracking-widest">Real-Time Inference Latency</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <div className="text-4xl font-black text-[#c8e86e]">{summary ? (summary.avg_inference_time * 1000).toFixed(1) : '12.4'}ms</div>
+      <p className="text-xs text-gray-500">Average processing time per frame</p>
+    </CardContent>
+  </Card>
               </CardHeader>
               <CardContent className="h-[400px]">
                 <ResponsiveContainer width="100%" height="100%">

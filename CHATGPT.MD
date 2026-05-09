@@ -1,4 +1,3 @@
-<!--  
 Hello,
 
 Congratulations! We’re excited to inform you that you have been selected to advance to Round 2 of the Goa Code Premier League.
@@ -2733,421 +2732,377 @@ This is:
     hackathon-ready.
 
 
--->
-<!--
+Shaping the future
+of athletic performance.
+
+Real-time AI vision and performance intelligence for the next generation of champions.
+Vision. Performance. Growth.
+Scroll
+Join the PulsePlay Revolution!
+Join the PulsePlay Revolution!
+Vision-based tracking
+Optical Motion Capture
+
+Real-time 3D skeletal tracking using standard 2D camera feeds. Our vision engine extracts biomechanical data points without wearable sensors.
+STATUS_160 FPS
+STATUS_2LATENCY < 15MS
+STATUS_398.4% ACCURACY
+
+
+I have built this now currently in the above web design, now what else can I improve further ? in the ui design 
+
 Your current direction is VERY strong already.
 
 The wording:
 
-* feels premium,
-* startup-like,
-* sports-tech focused,
-* futuristic.
+    feels premium,
+
+    startup-like,
+
+    sports-tech focused,
+
+    futuristic.
 
 You are already entering:
 
-> “real sports AI product” territory
+    “real sports AI product” territory
 
 instead of:
 
-> “student hackathon project.”
+    “student hackathon project.”
 
 That is GOOD.
 
 Now the next step is:
-
-# Make the UI feel ALIVE.
+Make the UI feel ALIVE.
 
 Right now your content sounds strong, but the real jump in quality comes from:
 
-* motion,
-* immersion,
-* tactical visuals,
-* dynamic telemetry,
-* cinematic interactions.
+    motion,
 
----
+    immersion,
 
-# Biggest UI Upgrades You Should Add
+    tactical visuals,
 
-# 1. Add a Real-Time Tactical Background ⚽
+    dynamic telemetry,
+
+    cinematic interactions.
+
+Biggest UI Upgrades You Should Add
+1. Add a Real-Time Tactical Background ⚽
 
 Right now you probably have:
 
-* gradients,
-* particles,
-* abstract visuals.
+    gradients,
+
+    particles,
+
+    abstract visuals.
 
 Instead/additionally:
+Add:
 
-## Add:
+    moving player dots,
 
-* moving player dots,
-* field grid overlays,
-* live tracking lines,
-* tactical map animation.
+    field grid overlays,
+
+    live tracking lines,
+
+    tactical map animation.
 
 This instantly screams:
 
-> “sports intelligence platform.”
+    “sports intelligence platform.”
 
----
-
-# Example
+Example
 
 Behind hero section:
 
-* dark football field grid,
-* AI tracking points,
-* moving trajectories,
-* glowing nodes.
+    dark football field grid,
+
+    AI tracking points,
+
+    moving trajectories,
+
+    glowing nodes.
 
 VERY impactful.
-
----
-
-# 2. Add “LIVE DATA” Animations
+2. Add “LIVE DATA” Animations
 
 Right now your numbers may feel static.
 
 Make them:
 
-* constantly updating,
-* flickering slightly,
-* streaming.
+    constantly updating,
 
----
+    flickering slightly,
 
-# Example
+    streaming.
+
+Example
 
 Instead of:
 
-```text id="q05f8s"
 160 FPS
-```
 
 Animate:
 
-```text id="k7jqhv"
 157 → 160 → 159 → 161
-```
 
 This creates:
 
-> “system is running live”
+    “system is running live”
 
 feeling.
-
----
-
-# 3. Add AI Scanning Effects 🤖
+3. Add AI Scanning Effects 🤖
 
 VERY important for futuristic feel.
-
----
-
-# Ideas
-
-## Scanning line
+Ideas
+Scanning line
 
 Like:
 
-* Jarvis UI
-* HUD systems
+    Jarvis UI
+
+    HUD systems
 
 moving slowly across sections.
-
----
-
-## Radar pulse effect
+Radar pulse effect
 
 On player tracking cards.
-
----
-
-## Target-lock animation
+Target-lock animation
 
 When player detected.
-
----
-
-# 4. Add a Live Camera Feed Mockup
+4. Add a Live Camera Feed Mockup
 
 This is MASSIVE.
 
 Even if simulated.
+Include:
 
----
+    OpenCV boxes,
 
-# Include:
+    MediaPipe skeleton overlay,
 
-* OpenCV boxes,
-* MediaPipe skeleton overlay,
-* player IDs,
-* velocity indicators.
+    player IDs,
 
----
+    velocity indicators.
 
-# Why This Matters
+Why This Matters
 
 People visually understand:
 
-> “AI vision system”
+    “AI vision system”
 
 immediately.
 
 Without this, many users only see:
 
-> “fancy dashboard.”
+    “fancy dashboard.”
 
----
-
-# 5. Add a Tactical Heatmap Section 🔥
+5. Add a Tactical Heatmap Section 🔥
 
 This will massively improve the sports feel.
+Show:
 
----
+    player movement density,
 
-# Show:
+    pressure zones,
 
-* player movement density,
-* pressure zones,
-* sprint zones.
+    sprint zones.
 
 Use:
 
-* glowing gradients,
-* animated heat shifts.
+    glowing gradients,
 
----
+    animated heat shifts.
 
-# 6. Add “AI Insight Cards”
+6. Add “AI Insight Cards”
 
 THIS is critical.
 
 Because otherwise:
 
-* it looks like data visualization only.
+    it looks like data visualization only.
 
 You need:
 
-> intelligence.
+    intelligence.
 
----
+Example Cards
 
-# Example Cards
-
-```text id="t4k3cg"
 DEFENSIVE INSTABILITY DETECTED
 LEFT FLANK OVEREXPOSED
-```
 
-```text id="lh5q7m"
 PLAYER FATIGUE RISK: HIGH
 RECOMMENDED SUBSTITUTION WINDOW: 4 MIN
-```
 
 These make your project feel:
 
-* advanced,
-* tactical,
-* intelligent.
+    advanced,
 
----
+    tactical,
 
-# 7. Add Sports Broadcast Typography
+    intelligent.
+
+7. Add Sports Broadcast Typography
 
 Very underrated.
+Use:
 
----
+    condensed bold fonts,
 
-# Use:
+    telemetry-like numbers,
 
-* condensed bold fonts,
-* telemetry-like numbers,
-* spacing-heavy labels.
+    spacing-heavy labels.
 
 Fonts similar to:
 
-* Formula 1,
-* Nike,
-* sports broadcasts.
+    Formula 1,
 
----
+    Nike,
 
-# Great Font Pairing
+    sports broadcasts.
 
-## Heading
+Great Font Pairing
+Heading
 
-* Orbitron
-  or
-* Bebas Neue
+    Orbitron
+    or
 
-## Body
+    Bebas Neue
 
-* Inter
+Body
+
+    Inter
 
 This combo looks AMAZING for sports AI systems.
-
----
-
-# 8. Add Glassmorphism Panels
+8. Add Glassmorphism Panels
 
 Your UI should feel:
 
-* layered,
-* holographic,
-* tactical.
+    layered,
 
----
+    holographic,
 
-# Use:
+    tactical.
 
-* backdrop blur,
-* transparent panels,
-* glowing borders,
-* subtle reflections.
+Use:
 
----
+    backdrop blur,
 
-# 9. Add “System Status” Components
+    transparent panels,
+
+    glowing borders,
+
+    subtle reflections.
+
+9. Add “System Status” Components
 
 This makes everything feel enterprise-grade.
+Example
 
----
-
-# Example
-
-```text id="v6lnxj"
 TRACKING ENGINE: ACTIVE
 VISION PIPELINE: ONLINE
 LATENCY: 12MS
-```
 
----
-
-# 10. Add Motion Trails
+10. Add Motion Trails
 
 VERY powerful visually.
+Show:
 
----
+    player movement paths,
 
-# Show:
+    curved trajectory lines,
 
-* player movement paths,
-* curved trajectory lines,
-* directional arrows.
+    directional arrows.
 
 This dramatically upgrades realism.
-
----
-
-# 11. Add AI Timeline Replay
+11. Add AI Timeline Replay
 
 Looks VERY advanced.
+Example
 
----
-
-# Example
-
-```text id="85slg9"
 00:32 — Sprint detected
 01:05 — Formation collapse
 02:12 — Fatigue threshold exceeded
-```
 
 Makes system feel intelligent.
-
----
-
-# 12. Add Scroll-Based Cinematic Transitions
+12. Add Scroll-Based Cinematic Transitions
 
 Instead of:
 
-* plain scrolling,
+    plain scrolling,
 
 do:
 
-* section reveals,
-* parallax motion,
-* fade-ins,
-* dynamic zooms.
+    section reveals,
 
----
+    parallax motion,
 
-# Use:
+    fade-ins,
 
-* Framer Motion
-* GSAP
+    dynamic zooms.
 
----
+Use:
 
-# 13. Add “Command Center” Layouts
+    Framer Motion
+
+    GSAP
+
+13. Add “Command Center” Layouts
 
 Your dashboards should feel like:
 
-* mission control,
-* Formula 1 pitwall,
-* tactical command systems.
+    mission control,
+
+    Formula 1 pitwall,
+
+    tactical command systems.
 
 NOT:
 
-* admin panel templates.
+    admin panel templates.
 
----
-
-# 14. Add Mini Field Visualizations
+14. Add Mini Field Visualizations
 
 VERY important.
-
----
-
-# Example
+Example
 
 Tiny football field:
 
-* glowing dots,
-* moving players,
-* attack directions.
+    glowing dots,
+
+    moving players,
+
+    attack directions.
 
 These tiny visuals add HUGE realism.
-
----
-
-# 15. Add AI Confidence Scores
+15. Add AI Confidence Scores
 
 Looks extremely advanced.
+Example
 
----
-
-# Example
-
-```text id="48e3vt"
 POSE CONFIDENCE: 96.4%
 TRACKING ACCURACY: 98.1%
-```
 
----
-
-# 16. Add Real-Time Audio Effects (Optional)
+16. Add Real-Time Audio Effects (Optional)
 
 Subtle:
 
-* notification blips,
-* radar pings,
-* AI alert sounds.
+    notification blips,
+
+    radar pings,
+
+    AI alert sounds.
 
 VERY immersive if done carefully.
-
----
-
-# 17. Add a “Vision Engine” Section
+17. Add a “Vision Engine” Section
 
 This is BIG.
 
 Explain visually:
 
-```text id="j0gl9w"
 CAMERA INPUT
 ↓
 POSE DETECTION
@@ -3157,88 +3112,72 @@ MOTION ANALYSIS
 AI PREDICTION
 ↓
 TACTICAL INSIGHTS
-```
 
 Use animated pipeline graphics.
 
 This helps judges understand architecture instantly.
-
----
-
-# 18. Add Dark Tactical Grid Backgrounds
+18. Add Dark Tactical Grid Backgrounds
 
 Huge upgrade.
 
 Instead of flat dark backgrounds:
 
-* use subtle grids,
-* hex patterns,
-* blueprint-style overlays.
+    use subtle grids,
 
----
+    hex patterns,
 
-# 19. Add Interactive Hover States
+    blueprint-style overlays.
+
+19. Add Interactive Hover States
 
 VERY important.
 
 Cards should:
 
-* glow,
-* elevate,
-* pulse,
-* animate metrics.
+    glow,
+
+    elevate,
+
+    pulse,
+
+    animate metrics.
 
 Static UI feels dead.
-
----
-
-# 20. Add “Future of Sports Intelligence” Section
+20. Add “Future of Sports Intelligence” Section
 
 This improves storytelling.
+Example
 
----
-
-# Example
-
-```text id="2c4hj6"
 Grassroots AI analytics for schools, academies, and emerging athletes.
-```
 
 This gives:
 
-* mission,
-* scalability,
-* startup feel.
+    mission,
 
----
+    scalability,
 
-# MOST IMPORTANT UI SECTION
+    startup feel.
+
+MOST IMPORTANT UI SECTION
 
 If you improve ONLY ONE THING:
-
-# Improve the Live Match Dashboard.
+Improve the Live Match Dashboard.
 
 Because that’s where judges decide:
 
-> “this is insane.”
+    “this is insane.”
 
----
-
-# GOLDEN RULE
+GOLDEN RULE
 
 Your UI should feel like:
-
-# “AI is actively watching the match.”
+“AI is actively watching the match.”
 
 NOT:
 
-> “website showing charts.”
+    “website showing charts.”
 
 That distinction changes everything.
-
----
-
-# The BEST Visual Combo
+The BEST Visual Combo
 
 You currently have:
 ✅ strong branding
@@ -3254,27 +3193,1398 @@ Now add:
 
 and your project will feel VERY high-level.
 
+what are the pages required in the navbar of the website?\
+
+For your specific project, the navbar should be:
+
+    clean,
+
+    futuristic,
+
+    tactical,
+
+    minimal,
+
+    focused on the live AI experience.
+
+You do NOT want:
+
+    12 random pages,
+
+    blog-style navigation,
+
+    corporate SaaS clutter.
+
+Your website should feel like:
+“Sports Intelligence Operating System”
+BEST NAVBAR STRUCTURE (Hackathon Version)
+
+Home
+Live Tracking
+Analytics
+AI Insights
+Replay Center
+Team Hub
+Technology
+
+This is the ideal balance between:
+
+    realism,
+
+    simplicity,
+
+    innovation,
+
+    demo flow.
+
+Detailed Breakdown of Each Page
+1. Home 🏠
+
+This is your:
+
+    cinematic landing page,
+
+    branding page,
+
+    storytelling page.
+
+Purpose
+
+Explain:
+
+    the problem,
+
+    your AI vision platform,
+
+    why it matters,
+
+    how it works.
+
+Sections You Should Have
+Hero Section
+
+Example:
+
+Shaping the Future of Athletic Performance
+
+Live Metrics Preview
+
+Animated telemetry.
+Vision AI Section
+
+Show:
+
+    camera tracking,
+
+    skeletal overlays.
+
+Feature Cards
+
+    Real-Time Tracking
+
+    Tactical Intelligence
+
+    Injury Prevention
+
+    Heatmap Analytics
+
+Demo Preview
+
+Short looping dashboard preview.
+2. Live Tracking ⚽ (MOST IMPORTANT PAGE)
+
+This is your CORE page.
+
+This is where judges get impressed.
+Purpose
+
+Show:
+
+    live player tracking,
+
+    OpenCV feed,
+
+    AI analytics,
+
+    tactical intelligence.
+
+Layout Recommendation
+LEFT
+Camera Feed
+
+    MediaPipe skeletons
+
+    OpenCV tracking
+
+    bounding boxes
+
+CENTER
+Tactical Field
+
+    player positions
+
+    movement trails
+
+    formation map
+
+RIGHT
+Live Metrics
+
+    speed
+
+    stamina
+
+    fatigue
+
+    acceleration
+
+    sprint count
+
+Add AI Alerts
+
+Example:
+
+FORMATION INSTABILITY DETECTED
+
+PLAYER 07 FATIGUE RISK HIGH
+
+These alerts are HUGE for presentation quality.
+3. Analytics 📊
+
+This page is for:
+
+    historical performance,
+
+    deep analysis,
+
+    comparisons.
+
+Include
+Performance Graphs
+
+    speed over time
+
+    fatigue trend
+
+    stamina curve
+
+Heatmaps
+
+VERY important visually.
+Radar Charts
+
+Compare players.
+Match Summary
+
+    possession
+
+    pressure zones
+
+    movement intensity
+
+4. AI Insights 🤖
+
+This page makes your project feel intelligent instead of:
+
+    “data dashboard.”
+
+Include
+Tactical Recommendations
+
+Example:
+
+LEFT DEFENSIVE PRESSURE WEAKENING
+
+Injury Risk Predictions
+
+Example:
+
+KNEE STRAIN PROBABILITY: 74%
+
+AI Match Summary
+
+Example:
+
+Sprint intensity dropped 18% after 60th minute.
+
+5. Replay Center 🎥
+
+This page makes your project feel PREMIUM.
+Include
+Match Timeline
+
+Events:
+
+    sprint
+
+    goal
+
+    tackle
+
+    acceleration spike
+
+Replay Visualization
+
+Movement overlays.
+Auto Highlights
+
+AI-generated clips.
+
+Even simulated clips are fine.
+6. Team Hub 👥
+
+Makes your platform feel realistic and scalable.
+Include
+Player Cards
+
+Each player:
+
+    speed
+
+    fatigue
+
+    stamina
+
+    injury risk
+
+Team Overview
+
+    formation integrity
+
+    average stamina
+
+    sprint intensity
+
+Role Assignment
+
+    striker
+
+    defender
+
+    midfielder
+
+7. Technology 🧠
+
+VERY important for hackathon judging.
+
+This page proves:
+
+    technical depth,
+
+    architecture,
+
+    innovation.
+
+Include
+Vision Pipeline
+
+CAMERA INPUT
+↓
+POSE DETECTION
+↓
+MOTION ANALYSIS
+↓
+AI ENGINE
+↓
+TACTICAL INSIGHTS
+
+Tech Stack
+
+    OpenCV
+
+    MediaPipe
+
+    FastAPI
+
+    React
+
+    WebSockets
+
+Scalability Vision
+
+Explain:
+
+    low-cost sports intelligence,
+
+    grassroots accessibility,
+
+    AI democratization.
+
+This creates startup potential.
+OPTIONAL PAGES (Only If Time Exists)
+8. Player Profile
+
+Detailed athlete analysis.
+9. Injury Lab
+
+Dedicated biomechanics page.
+
+VERY advanced-looking.
+10. Settings
+
+Theme switching:
+
+    neon blue,
+
+    tactical red,
+
+    cyber green.
+
+BEST NAVBAR STYLE
+Recommended
+Floating Glass Navbar
+
+Use:
+
+    transparent background,
+
+    blur effect,
+
+    glowing borders,
+
+    subtle animations.
+
+This looks MUCH more premium.
+Navbar Should NOT Feel Like:
+
+❌ admin dashboard
+❌ college project
+❌ bootstrap template
+It SHOULD Feel Like:
+
+✅ Formula 1 telemetry
+✅ tactical command center
+✅ AI sports operating system
+BEST DEMO FLOW
+
+This is VERY important.
+
+When presenting:
+1. Home
+
+Explain platform.
+
+↓
+2. Live Tracking
+
+Show AI tracking.
+
+↓
+3. Analytics
+
+Show charts + heatmaps.
+
+↓
+4. AI Insights
+
+Show tactical intelligence.
+
+↓
+5. Replay Center
+
+Show intelligent replay system.
+
+This flow feels like:
+
+    complete product ecosystem.
+
+FINAL RECOMMENDED NAVBAR
+
+Home
+Live Tracking
+Analytics
+AI Insights
+Replay Center
+Team Hub
+Technology
+
+This is:
+
+    clean,
+
+    scalable,
+
+    futuristic,
+
+    hackathon-perfect.
 
 
--->
+so I want you to vibe code an opencv project, giving an input video it does object detection , activate a venv environement, it uses yolo any smallest model with no load and less gb
+
+and when I provide an input video in a folder, it should break down the video to 30fps frames and do this will the entire video get's complete, it should do object detection in each frame and when I see the output, the video should be playing normally with the objects detected 
 
 
- AI-Driven Football Analysis with YOLO and Python
-1 source·May 9, 2026
 
-This YouTube tutorial provides a comprehensive guide on building an AI-driven football analysis system using Python, YOLO, and OpenCV. The instructor demonstrates how to utilize the YOLO object detection model to track players, referees, and the ball, while refining accuracy through fine-tuning on a specialized dataset. Key technical milestones include implementing K-means clustering for team color assignment and using optical flow to account for camera movement. The project further enhances data precision through perspective transformation, converting pixel coordinates into meters to accurately measure player speed and distance covered. Ultimately, the source serves as a practical masterclass in solving real-world computer vision problems to create professional-grade sports analytics.
-How does YOLO achieve state-of-the-art object detection?
-Explain how K-means clustering is used to assign player teams.
-How does perspective transformation calculate movement in meters?
-Today • 12:41 AM
+improve the details 
 
-summarize the entire video for me
-This video provides a comprehensive, step-by-step tutorial on building an AI/ML football (soccer) analysis system from scratch using Python, YOLO, and OpenCV. The project tackles several real-world computer vision problems, ultimately creating a system that tracks player movement, assigns teams, and calculates real-world speed and distance.
-Here is a summary of the core components and steps covered in the video:
-1. Object Detection and Fine-Tuning The project begins by using YOLO (You Only Look Once), a state-of-the-art object detection model, via the Ultralytics library to draw bounding boxes around entities in the video. Because the out-of-the-box model struggles to consistently track the ball and mistakenly detects people outside the court lines, the creator fine-tunes a YOLOv5 model using a specialized football dataset from Roboflow. This fine-tuned model successfully differentiates between regular players, goalkeepers, referees, and the ball.
-2. Object Tracking and Ball Interpolation To understand that a player in one frame is the same player in the next, the system implements tracking using ByteTrack (from the Supervision library). This assigns a unique "track ID" to each person. Because the fast-moving football occasionally drops out of the model's detections, the system uses Pandas dataframes to interpolate the missing ball positions, automatically filling in the gaps based on the ball's straight-line trajectory.
-3. Team Assignment via Color Clustering To assign players to their respective teams, the system analyzes the colors of their t-shirts. It crops the top half of each player's bounding box and uses K-means clustering (via scikit-learn) to separate the t-shirt pixels from the green grass background. A second K-means clustering step groups all the isolated t-shirt colors into two distinct teams (e.g., green and white).
-4. Ball Possession and Team Stats The system determines who has possession of the ball by mathematically measuring the distance between the ball's coordinates and the coordinates of each player's feet. If the ball is within a specific minimum pixel distance of a player, possession is assigned to them. The system tallies these frames to display a live "team ball control" percentage graphic on the video.
-5. Camera Movement Estimation Because the broadcast camera pans and moves to follow the action, a player's pixel coordinates will change even if they are standing entirely still. To counteract this, the system uses OpenCV's optical flow to track static corner features at the top and bottom of the court. By measuring how much these background features move between frames, the system calculates the camera's exact movement and subtracts it from the players' bounding box positions.
-6. Perspective Transformation To measure actual speed and distance, pixels must be converted into meters. However, the camera's angled view means a pixel in the background covers more physical distance than a pixel in the foreground. The creator solves this by applying a perspective transformation, taking a trapezoidal section of the angled court and mathematically warping it into a flat, top-down rectangular view. Using actual football court dimensions (like a 68-meter width), the system translates pixel movements into real-world meters.
-7. Speed, Distance, and Visual Annotations Using the adjusted real-world coordinates, the system calculates the total distance each player has covered and their speed in kilometers per hour over a rolling 5-frame window. Finally, the system draws clean visual annotations onto the video: ellipses and Track IDs under the players, specific team colors, a triangle pointing to the ball, and live text detailing each player's speed and distance covered.
+Build a complete lightweight real-time object detection pipeline using Python, OpenCV, and a small YOLO model.
+
+GOAL:
+The system should take an input video from a folder, process it frame-by-frame at 30 FPS, perform object detection on every frame using a lightweight YOLO model, and reconstruct/output a final annotated video where the detections appear smoothly in real time while preserving the original playback feel.
+
+The system should be optimized for:
+- low RAM usage
+- low VRAM usage
+- CPU compatibility
+- lightweight inference
+- fast processing
+- simple setup
+- minimal dependencies
+
+====================================================
+PROJECT REQUIREMENTS
+====================================================
+
+Create a professional project structure.
+
+Project name:
+visionplay_detection_pipeline
+
+Folder structure:
+
+visionplay_detection_pipeline/
+│
+├── input_videos/
+│   └── sample.mp4
+│
+├── output_videos/
+│
+├── extracted_frames/
+│
+├── models/
+│
+├── src/
+│   ├── extract_frames.py
+│   ├── detect_objects.py
+│   ├── rebuild_video.py
+│   ├── utils.py
+│   └── main.py
+│
+├── requirements.txt
+├── README.md
+└── .venv/
+
+====================================================
+VENV SETUP
+====================================================
+
+Automatically create and activate a Python virtual environment.
+
+Use:
+python -m venv .venv
+
+Include commands for:
+
+Windows:
+.venv\Scripts\activate
+
+Linux/macOS:
+source .venv/bin/activate
+
+====================================================
+DEPENDENCIES
+====================================================
+
+Use lightweight dependencies only.
+
+Required:
+- ultralytics
+- opencv-python
+- numpy
+- tqdm
+
+Generate a requirements.txt file.
+
+====================================================
+YOLO MODEL REQUIREMENTS
+====================================================
+
+Use the SMALLEST possible YOLO model.
+
+Preferred:
+YOLOv8n
+
+Requirements:
+- low memory usage
+- small download size
+- CPU friendly
+- fast inference
+
+Automatically download the model if missing.
+
+Store inside:
+models/
+
+====================================================
+VIDEO PROCESSING PIPELINE
+====================================================
+
+STEP 1 — LOAD INPUT VIDEO
+
+Read the video from:
+input_videos/
+
+The user should only need to place a video inside the folder.
+
+====================================================
+STEP 2 — EXTRACT VIDEO FRAMES
+====================================================
+
+Extract frames from the video at EXACTLY 30 FPS.
+
+Requirements:
+- preserve frame order
+- sequential naming
+- optimized extraction speed
+
+Example frame naming:
+frame_000001.jpg
+frame_000002.jpg
+
+Store all extracted frames inside:
+extracted_frames/
+
+Display progress bar while extracting.
+
+====================================================
+STEP 3 — OBJECT DETECTION
+====================================================
+
+Run YOLO object detection on EVERY frame.
+
+Requirements:
+- detect common objects
+- draw bounding boxes
+- display class names
+- display confidence scores
+- smooth rendering
+- optimized CPU inference
+
+Use:
+cv2.rectangle()
+cv2.putText()
+
+Bounding box style:
+- modern
+- visible
+- clean
+- non-intrusive
+
+====================================================
+STEP 4 — SAVE PROCESSED FRAMES
+====================================================
+
+Save processed frames into:
+processed_frames/
+
+Preserve original frame ordering.
+
+====================================================
+STEP 5 — REBUILD OUTPUT VIDEO
+====================================================
+
+Reconstruct the processed frames into a final video.
+
+Requirements:
+- exact 30 FPS playback
+- smooth output
+- preserve original resolution
+- MP4 output
+
+Save final result inside:
+output_videos/
+
+Example:
+output_detected.mp4
+
+====================================================
+LIVE VISUALIZATION
+====================================================
+
+While processing:
+- display the current frame live
+- show detections in real time
+- allow quitting using keyboard key 'q'
+
+Use:
+cv2.imshow()
+
+====================================================
+PERFORMANCE REQUIREMENTS
+====================================================
+
+The project must:
+- work on CPU only
+- avoid GPU dependency
+- use low RAM
+- avoid loading all frames into memory
+- process frame-by-frame
+- handle long videos efficiently
+
+====================================================
+CODE QUALITY REQUIREMENTS
+====================================================
+
+Requirements:
+- modular architecture
+- reusable functions
+- proper comments
+- clean variable names
+- logging/progress indicators
+- exception handling
+
+====================================================
+BONUS FEATURES
+====================================================
+
+Add optional support for:
+- object tracking IDs
+- FPS counter overlay
+- frame processing statistics
+- inference timing
+- total objects detected counter
+
+====================================================
+OUTPUT REQUIREMENTS
+====================================================
+
+The final result should:
+- look smooth
+- preserve normal video playback
+- display detections clearly
+- feel like a real-time AI vision system
+
+====================================================
+README REQUIREMENTS
+====================================================
+
+Generate a detailed README.md including:
+- setup instructions
+- venv activation
+- dependency installation
+- how to run
+- project architecture
+- troubleshooting
+- example commands
+
+====================================================
+EXECUTION
+====================================================
+
+Running this command should execute the entire pipeline automatically:
+
+python src/main.py
+
+The pipeline should:
+1. load the video
+2. extract frames
+3. run YOLO detection
+4. display live detection
+5. save processed frames
+6. rebuild final annotated video
+
+without requiring manual intervention.
+
+
+import os
+import json
+
+def generate_dashboard(data, output_path, video_filename):
+    """
+    Generates a premium HTML dashboard with support for real-time live processing updates.
+    """
+    summary = data.get("summary", {})
+    best_frame = data.get("best_frame", {})
+    timeline = data.get("timeline", [])
+    timeline_json = json.dumps(timeline)
+
+    html_content = f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VisionPlay Real-Time Analytics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {{
+            --bg: #0b0f1a;
+            --card-bg: #161e31;
+            --text: #f1f5f9;
+            --text-muted: #64748b;
+            --primary: #10b981;
+            --secondary: #3b82f6;
+            --danger: #ef4444;
+            --accent: #8b5cf6;
+        }}
+
+        body {{
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }}
+
+        .top-nav {{
+            background: var(--card-bg);
+            border-bottom: 1px solid #1e293b;
+            padding: 0.75rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }}
+
+        .dashboard-layout {{
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            flex-grow: 1;
+            overflow: hidden;
+        }}
+
+        .main-content {{
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }}
+
+        .sidebar {{
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-left: 1px solid #1e293b;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            overflow-y: auto;
+        }}
+
+        .video-box {{
+            width: 100%;
+            background: #000;
+            border-radius: 1rem;
+            overflow: hidden;
+            aspect-ratio: 16/9;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }}
+
+        #liveViewImg, #visionVideo {{
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }}
+
+        .hidden {{ display: none !important; }}
+
+        .stats-grid {{
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }}
+
+        .stat-card {{
+            background: rgba(255,255,255,0.03);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255,255,255,0.05);
+            text-align: center;
+        }}
+
+        .stat-val {{ font-size: 1.5rem; font-weight: 700; display: block; }}
+        .stat-lbl {{ font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-top: 0.2rem; display: block; }}
+
+        .progress-bar-container {{
+            width: 100%;
+            height: 4px;
+            background: #1e293b;
+            border-radius: 2px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }}
+        #progressBar {{ width: 0%; height: 100%; background: var(--secondary); transition: width 0.3s; }}
+
+        .chart-container {{
+            background: rgba(255,255,255,0.02);
+            padding: 1.25rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(255,255,255,0.05);
+        }}
+
+        .btn {{
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: 0.2s;
+            font-size: 0.875rem;
+        }}
+        .btn-primary {{ background: var(--primary); color: white; }}
+        .btn-secondary {{ background: #1e293b; color: var(--text); }}
+
+        .live-pulse {{
+            width: 10px; height: 10px; background: var(--danger); border-radius: 50%; display: inline-block;
+            margin-right: 0.5rem; animation: pulse 1s infinite;
+        }}
+        @keyframes pulse {{ 0% {{ opacity: 1; }} 50% {{ opacity: 0.3; }} 100% {{ opacity: 1; }} }}
+    </style>
+</head>
+<body>
+    <nav class="top-nav">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <h1 style="font-size: 1.25rem; margin: 0;">VisionPlay <span style="color: var(--secondary)">PRO</span></h1>
+            <div id="statusBadge" class="status-badge" style="font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 1rem; background: rgba(59, 130, 246, 0.1); color: var(--secondary); border: 1px solid rgba(59,130,246,0.2);">
+                INITIALIZING
+            </div>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-secondary" onclick="switchTab('live')">Live Stream</button>
+            <button class="btn btn-primary" onclick="switchTab('playback')">Playback</button>
+        </div>
+    </nav>
+
+    <div class="dashboard-layout">
+        <main class="main-content">
+            <!-- View Container -->
+            <div class="video-box">
+                <img id="liveViewImg" src="live_view.jpg" alt="Live Processing Feed" class="">
+                <video id="visionVideo" src="{video_filename}" playsinline class="hidden"></video>
+                
+                <!-- Processing Overlay -->
+                <div id="processingOverlay" style="position: absolute; bottom: 1rem; left: 1rem; right: 1rem; background: rgba(0,0,0,0.7); padding: 0.75rem; border-radius: 0.5rem; backdrop-filter: blur(4px);">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 0.25rem;">
+                        <span>Processing Neural Pipeline...</span>
+                        <span id="progressText">0%</span>
+                    </div>
+                    <div class="progress-bar-container"><div id="progressBar"></div></div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3 style="margin-top:0; font-size: 0.875rem; color: var(--text-muted);">TEAM PERFORMANCE TRENDS</h3>
+                <canvas id="liveChart" height="80"></canvas>
+            </div>
+        </main>
+
+        <aside class="sidebar">
+            <div>
+                <div id="liveIndicator" class=""><span class="live-pulse"></span> <span style="font-size: 0.75rem; font-weight: 700;">LIVE TELEMETRY</span></div>
+                <div id="playbackIndicator" class="hidden"><span style="font-size: 0.75rem; font-weight: 700; color: var(--secondary)">SESSION HISTORY</span></div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-val" id="statT1" style="color: var(--primary)">0</span>
+                    <span class="stat-lbl">Team 1</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-val" id="statT2" style="color: #fff">0</span>
+                    <span class="stat-lbl">Team 2</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-val" id="statNP" style="color: var(--text-muted)">0</span>
+                    <span class="stat-lbl">Not Play</span>
+                </div>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 0.75rem;">
+                <span class="stat-lbl" style="margin:0">Peak Combined Force</span>
+                <span id="peakVal" style="font-size: 1.25rem; font-weight: 700;">0</span>
+            </div>
+
+            <div id="logSection" style="flex-grow: 1;">
+                <h3 style="font-size: 0.75rem; color: var(--text-muted);">EVENT LOG</h3>
+                <div id="eventLog" style="font-size: 0.75rem; color: #94a3b8; display: flex; flex-direction: column; gap: 0.5rem;">
+                    <div>Dashboard connected.</div>
+                </div>
+            </div>
+
+            <button id="playbackBtn" class="btn btn-primary hidden" onclick="startPlayback()">PLAY RESULTING VIDEO</button>
+        </aside>
+    </div>
+
+    <script>
+        let mode = 'live'; // 'live' or 'playback'
+        const timeline = [];
+        const maxDataPoints = 100;
+        
+        // Chart Setup
+        const ctx = document.getElementById('liveChart').getContext('2d');
+        const chart = new Chart(ctx, {{
+            type: 'line',
+            data: {{
+                labels: [],
+                datasets: [
+                    {{ label: 'Team 1', data: [], borderColor: '#10b981', tension: 0.4, pointRadius: 0, borderWidth: 2 }},
+                    {{ label: 'Team 2', data: [], borderColor: '#fff', tension: 0.4, pointRadius: 0, borderWidth: 2 }}
+                ]
+            }},
+            options: {{
+                responsive: true,
+                plugins: {{ legend: {{ display: false }} }},
+                scales: {{ 
+                    x: {{ display: false }},
+                    y: {{ grid: {{ color: '#1e293b' }}, ticks: {{ color: '#64748b' }} }}
+                }}
+            }}
+        }});
+
+        function addLog(msg) {{
+            const log = document.getElementById('eventLog');
+            const div = document.createElement('div');
+            div.innerText = [${{new Date().toLocaleTimeString()}}] ${{msg}};
+            log.prepend(div);
+            if (log.children.length > 8) log.lastChild.remove();
+        }}
+
+        async function pollLiveStats() {{
+            if (mode !== 'live') return;
+
+            try {{
+                const res = await fetch('live_stats.json?t=' + Date.now());
+                if (!res.ok) throw new Error('File not ready');
+                const data = await res.json();
+
+                // Update Progress
+                const pct = Math.round((data.current_frame / data.total_frames) * 100);
+                document.getElementById('progressBar').style.width = pct + '%';
+                document.getElementById('progressText').innerText = pct + '%';
+                document.getElementById('statusBadge').innerText = data.status.toUpperCase();
+
+                // Update Stats
+                const lastIdx = data.timeline.length - 1;
+                if (lastIdx >= 0) {{
+                    const current = data.timeline[lastIdx];
+                    document.getElementById('statT1').innerText = current.t1;
+                    document.getElementById('statT2').innerText = current.t2;
+                    document.getElementById('statNP').innerText = current.np;
+                    document.getElementById('peakVal').innerText = data.best_frame.team1_count + data.best_frame.team2_count;
+
+                    // Update Chart
+                    if (chart.data.labels.length < data.timeline.length) {{
+                        chart.data.labels = data.timeline.map((_, i) => i);
+                        chart.data.datasets[0].data = data.timeline.map(d => d.t1);
+                        chart.data.datasets[1].data = data.timeline.map(d => d.t2);
+                        chart.update('none');
+                    }}
+                }}
+
+                // Update Live Image
+                document.getElementById('liveViewImg').src = 'live_view.jpg?t=' + Date.now();
+
+                if (data.status === 'complete') {{
+                    addLog("Processing complete! Switching to Playback Mode.");
+                    document.getElementById('statusBadge').innerText = 'COMPLETE';
+                    document.getElementById('statusBadge').style.color = '#10b981';
+                    document.getElementById('statusBadge').style.background = 'rgba(16,185,129,0.1)';
+                    document.getElementById('playbackBtn').classList.remove('hidden');
+                    document.getElementById('processingOverlay').classList.add('hidden');
+                }}
+
+            }} catch (e) {{
+                console.log("Polling...", e.message);
+            }}
+
+            if (mode === 'live') setTimeout(pollLiveStats, 1000);
+        }}
+
+        function switchTab(newMode) {{
+            mode = newMode;
+            if (mode === 'playback') {{
+                document.getElementById('liveViewImg').classList.add('hidden');
+                document.getElementById('visionVideo').classList.remove('hidden');
+                document.getElementById('liveIndicator').classList.add('hidden');
+                document.getElementById('playbackIndicator').classList.remove('hidden');
+                document.getElementById('playbackBtn').classList.remove('hidden');
+            }} else {{
+                document.getElementById('liveViewImg').classList.remove('hidden');
+                document.getElementById('visionVideo').classList.add('hidden');
+                document.getElementById('liveIndicator').classList.remove('hidden');
+                document.getElementById('playbackIndicator').classList.add('hidden');
+                pollLiveStats();
+            }}
+        }}
+
+        function startPlayback() {{
+            switchTab('playback');
+            const video = document.getElementById('visionVideo');
+            video.play();
+        }}
+
+        // Start polling immediately
+        pollLiveStats();
+    </script>
+</body>
+</html>
+"""
+    with open(output_path, "w") as f:
+        f.write(html_content)
+    
+    return output_path
+
+
+
+update the code I want to ee the video getting played in the html page
+
+Your current implementation is already VERY strong.
+
+The main issue is:
+You are currently showing:
+
+<img id="liveViewImg" src="live_view.jpg">
+
+That only refreshes snapshots.
+
+You actually want:
+
+    real video playback,
+
+    seamless frame updates,
+
+    live AI visualization,
+
+    smoother cinematic feel.
+
+BEST APPROACH
+
+Instead of:
+
+<img>
+
+use:
+OPTION 1 (BEST FOR YOU)
+MJPEG-style live stream using Flask/OpenCV
+
+OR
+OPTION 2 (Simpler)
+
+Update the <video> source dynamically while processing.
+But for YOUR architecture:
+
+Since:
+
+    OpenCV is processing frames,
+
+    frames are already generated,
+
+    video is rebuilt later,
+
+the BEST hackathon solution is:
+Simultaneously:
+
+    save processed frames,
+
+    stream frames live to HTML,
+
+    rebuild final MP4 in background.
+
+WHAT YOU SHOULD CHANGE
+
+Replace this:
+
+<img id="liveViewImg" src="live_view.jpg">
+
+with:
+
+<video
+    id="liveVideo"
+    autoplay
+    muted
+    playsinline
+    controls
+    style="
+        width:100%;
+        height:100%;
+        object-fit:contain;
+        border-radius:1rem;
+        background:black;
+    ">
+    <source src="{video_filename}" type="video/mp4">
+</video>
+
+BUT THIS ONLY PLAYS FINAL VIDEO
+
+You ALSO want:
+
+    live processing updates while detection is happening.
+
+So you need TWO MODES:
+Mode	Purpose
+LIVE PROCESSING	Real-time frame updates
+PLAYBACK	Final rendered video
+BEST UPGRADE
+Replace your .video-box section with THIS:
+
+<div class="video-box">
+
+    <!-- LIVE CANVAS -->
+    <canvas id="liveCanvas"></canvas>
+
+    <!-- FINAL VIDEO -->
+    <video
+        id="visionVideo"
+        class="hidden"
+        controls
+        playsinline>
+        <source src="{video_filename}" type="video/mp4">
+    </video>
+
+    <!-- HUD OVERLAY -->
+    <div id="hudOverlay">
+        <div class="hud-top">
+            <span class="live-pulse"></span>
+            LIVE AI TRACKING
+        </div>
+
+        <div class="hud-stats">
+            <div>FPS: <span id="fpsCounter">30</span></div>
+            <div>Latency: <span id="latencyCounter">12ms</span></div>
+            <div>Objects: <span id="objectCounter">0</span></div>
+        </div>
+    </div>
+
+</div>
+
+WHY CANVAS IS BETTER
+
+Using:
+
+<canvas>
+
+lets you:
+
+    stream frames smoothly,
+
+    overlay telemetry,
+
+    draw boxes dynamically,
+
+    animate effects,
+
+    create tactical overlays.
+
+This feels MUCH more premium.
+JAVASCRIPT FOR LIVE FRAME STREAMING
+
+Replace your image refresh logic with:
+
+const canvas = document.getElementById("liveCanvas");
+const ctx = canvas.getContext("2d");
+
+const liveImage = new Image();
+
+function updateLiveFrame() {
+    liveImage.src = "live_view.jpg?t=" + Date.now();
+
+    liveImage.onload = () => {
+        canvas.width = liveImage.width;
+        canvas.height = liveImage.height;
+
+        ctx.drawImage(liveImage, 0, 0);
+
+        // Example AI HUD overlays
+        ctx.strokeStyle = "#00ff88";
+        ctx.lineWidth = 2;
+
+        // Fake scanning line
+        const y = (Date.now() / 10) % canvas.height;
+
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+    };
+}
+
+setInterval(updateLiveFrame, 33);
+
+THIS GIVES YOU:
+
+✅ smooth live playback
+✅ AI HUD overlays
+✅ futuristic feel
+✅ live updates
+✅ tactical visuals
+✅ real-time appearance
+NOW YOUR SYSTEM FLOW BECOMES:
+Python/OpenCV
+
+Processes frame
+↓
+Saves:
+
+live_view.jpg
+
+continuously
+
+↓
+JavaScript Canvas
+
+Refreshes at ~30 FPS
+
+↓
+Dashboard feels LIVE
+MASSIVE UI IMPROVEMENT
+
+Add THIS CSS:
+
+#liveCanvas,
+#visionVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: black;
+}
+
+#hudOverlay {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    right: 1rem;
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+}
+
+.hud-top {
+    background: rgba(0,0,0,0.6);
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.hud-stats {
+    display: flex;
+    gap: 1rem;
+    background: rgba(0,0,0,0.6);
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    backdrop-filter: blur(10px);
+}
+
+THIS WILL LOOK LIKE:
+
+    sports broadcast system,
+
+    AI command center,
+
+    tactical HUD,
+
+    premium analytics software.
+
+EVEN BETTER UPGRADE (HIGHLY RECOMMENDED)
+Add Frame Interpolation Animation
+
+Currently:
+
+    image swaps may feel jumpy.
+
+Instead:
+
+    fade between frames.
+
+Add This:
+
+#liveCanvas {
+    transition: opacity 0.1s linear;
+}
+
+MASSIVE HACKATHON WOW FACTOR
+
+Add:
+
+    AI scanlines,
+
+    telemetry flickers,
+
+    target lock animation,
+
+    player IDs,
+
+    tracking trails.
+
+This dramatically upgrades:
+
+    perceived sophistication.
+
+OPTIONAL EXTREME UPGRADE
+
+If you want TRUE live streaming:
+
+Use:
+Flask MJPEG Streaming
+
+Example route:
+
+@app.route('/video_feed')
+def video_feed():
+    return Response(generate_frames(),
+        mimetype='multipart/x-mixed-replace; boundary=frame')
+
+Then in HTML:
+
+<img src="/video_feed">
+
+This creates:
+
+    REAL live stream,
+
+    no refresh hacks,
+
+    smoother updates.
+
+BUT:
+
+    more backend complexity.
+
+BEST HACKATHON DECISION
+
+For YOU:
+Use:
+
+✅ canvas rendering
+✅ continuously updated processed frames
+✅ final MP4 playback mode
+
+This is:
+
+    simpler,
+
+    stable,
+
+    visually premium,
+
+    easy to demo.
+
+FINAL UX FLOW
+During Processing
+
+Canvas shows:
+
+    live AI tracking
+
+    OpenCV boxes
+
+    MediaPipe skeletons
+
+    telemetry HUD
+
+↓
+After Completion
+
+Switch automatically to:
+
+    cinematic MP4 playback.
+
+That flow feels EXTREMELY professional.
+
+

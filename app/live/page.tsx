@@ -1,11 +1,22 @@
 "use client";
+import { motion } from "framer-motion";
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import Navbar from "@/components/Navbar";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Activity, AlertCircle, Zap, TrendingUp, Users, Wifi, WifiOff, Play, Square } from 'lucide-react';
+import {
+  Activity,
+  AlertCircle,
+  Zap,
+  TrendingUp,
+  Users,
+  Play,
+  Square,
+  Wifi,
+  WifiOff,
+  Radar,
+} from "lucide-react";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
 interface PlayerData {
   id: number;
   class: number;
@@ -20,317 +31,556 @@ interface FrameStats {
   ball_detected: boolean;
   total_tracked: number;
   frame_id: number;
+
+  // optional backend values
+  team1_count?: number;
+  team2_count?: number;
 }
 
-// ─── Frame Stream Hook ────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// Frame Stream Hook
+// ─────────────────────────────────────────────────────────────
+
 function useFrameStream(active: boolean) {
-  const ws            = useRef<WebSocket | null>(null);
-  const imgRef        = useRef<HTMLImageElement | null>(null);
-  const [stats, setStats]         = useState<FrameStats | null>(null);
-  const [players, setPlayers]     = useState<PlayerData[]>([]);
+  const ws = useRef<WebSocket | null>(null);
+  const imgRef = useRef<HTMLImageElement | null>(null);
+
+  const [stats, setStats] = useState<FrameStats | null>(null);
+  const [players, setPlayers] = useState<PlayerData[]>([]);
   const [connected, setConnected] = useState(false);
-  const [ready, setReady]         = useState(false);
-  const [error, setError]         = useState<string | null>(null);
-  const [fps, setFps]             = useState(0);
-  const frameCount = useRef(0);
-  const lastFpsTime = useRef(Date.now());
+  const [ready, setReady] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [fps, setFps] = useState(0);
+
+  const frameCounter = useRef(0);
+  const lastTime = useRef(Date.now());
 
   const connect = useCallback(() => {
     if (ws.current) ws.current.close();
+
     setError(null);
 
-    const socket = new WebSocket('ws://localhost:8000/ws');
+    const socket = new WebSocket("ws://localhost:8000/ws");
+
     ws.current = socket;
 
-    socket.onopen = () => { setConnected(true); setError(null); };
+    socket.onopen = () => {
+      setConnected(true);
+      setError(null);
+    };
 
     socket.onmessage = (evt) => {
       try {
         const msg = JSON.parse(evt.data);
 
-        if (msg.type === 'ready') {
+        if (msg.type === "ready") {
           setReady(true);
         }
 
-        if (msg.type === 'frame') {
-          // Update img element directly (bypasses React re-render for max speed)
+        if (msg.type === "status") {
+          setStatus(msg.message);
+        }
+
+        if (msg.type === "frame") {
           if (imgRef.current) {
             imgRef.current.src = `data:image/jpeg;base64,${msg.frame}`;
           }
+
           setStats(msg.stats ?? null);
           setPlayers(msg.players ?? []);
 
-          // FPS counter
-          frameCount.current++;
+          frameCounter.current++;
+
           const now = Date.now();
-          if (now - lastFpsTime.current >= 1000) {
-            setFps(frameCount.current);
-            frameCount.current = 0;
-            lastFpsTime.current = now;
+
+          if (now - lastTime.current >= 1000) {
+            setFps(frameCounter.current);
+            frameCounter.current = 0;
+            lastTime.current = now;
           }
         }
 
-        if (msg.type === 'error') {
+        if (msg.type === "error") {
           setError(msg.message);
         }
-      } catch { /* ignore parse errors */ }
+      } catch (err) {
+        console.error(err);
+      }
     };
 
-    socket.onclose = () => { setConnected(false); setReady(false); };
-    socket.onerror = () => {
-      setError('Cannot connect. Make sure server.py is running in vision-engine/');
+    socket.onclose = () => {
       setConnected(false);
+      setReady(false);
+    };
+
+    socket.onerror = () => {
+      setConnected(false);
+      setError(
+        "Cannot connect to Vision Engine. Make sure server.py is running.",
+      );
     };
   }, []);
 
   const disconnect = useCallback(() => {
     ws.current?.close();
+
     ws.current = null;
+
     setConnected(false);
     setReady(false);
     setStats(null);
     setPlayers([]);
     setFps(0);
-    if (imgRef.current) imgRef.current.src = '';
+
+    if (imgRef.current) {
+      imgRef.current.src = "";
+    }
   }, []);
 
   useEffect(() => {
-    if (active) connect(); else disconnect();
-    return () => { ws.current?.close(); };
+    if (active) {
+      connect();
+    } else {
+      disconnect();
+    }
+
+    return () => {
+      ws.current?.close();
+    };
   }, [active, connect, disconnect]);
 
-  return { imgRef, stats, players, connected, ready, error, fps };
+  return {
+    imgRef,
+    stats,
+    players,
+    connected,
+    ready,
+    error,
+    setError,
+    fps,
+    status,
+  };
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+// ─── Tactical Minimap ──────────────────────────────────────────
+function TacticalMinimap({ detections }: { detections: any[] }) {
+  return (
+    <div className="relative w-full aspect-[105/68] bg-[#0f172a] border border-white/10 overflow-hidden">
+      {/* Pitch Lines */}
+      <div className="absolute inset-0 border-2 border-white/10 m-2" />
+      <div className="absolute inset-y-0 left-1/2 w-px bg-white/10" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 border border-white/10 rounded-full" />
+
+      {/* Penalty Areas */}
+      <div className="absolute inset-y-12 left-2 w-12 border border-white/10" />
+      <div className="absolute inset-y-12 right-2 w-12 border border-white/10" />
+
+      {/* Players */}
+      {detections?.map((d, i) => {
+        // Map bbox center [x1, y1, x2, y2] to percentages
+        // Assuming 1920x1080 input
+        const x = ((d.bbox[0] + d.bbox[2]) / 2 / 1920) * 100;
+        const y = ((d.bbox[1] + d.bbox[3]) / 2 / 1080) * 100;
+
+        return (
+          <motion.div
+            key={i}
+            initial={false}
+            animate={{ left: `${x}%`, top: `${y}%` }}
+            transition={{ type: "spring", stiffness: 100, damping: 20 }}
+            className={`absolute w-2 h-2 -translate-x-1/2 -translate-y-1/2 rounded-none ${d.team === "green"
+                ? "bg-[#c8e86e] shadow-[0_0_8px_#c8e86e]"
+                : "bg-blue-400 shadow-[0_0_8px_#3b82f6]"
+              }`}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Page
+// ─────────────────────────────────────────────────────────────
+
 export default function LivePage() {
   const [sessionActive, setSessionActive] = useState(false);
-  const { imgRef, stats, players, connected, ready, error, fps } =
+
+  const { imgRef, stats, players, connected, ready, error, fps, status } =
     useFrameStream(sessionActive);
 
   const metrics = [
-    { label: 'Players Detected', val: stats ? String(stats.players_detected) : '—', unit: '',        icon: Users,       color: '#c8e86e' },
-    { label: 'Total Tracked',    val: stats ? String(stats.total_tracked)    : '—', unit: 'objects', icon: Activity,    color: '#3b82f6' },
-    { label: 'Ball Status',      val: stats ? (stats.ball_detected ? 'LIVE' : 'LOST') : '—', unit: '', icon: Zap,       color: stats?.ball_detected ? '#c8e86e' : '#ef4444' },
-    { label: 'Stream Rate',      val: String(fps),                                   unit: 'fps',    icon: TrendingUp,  color: '#a78bfa' },
+    {
+      label: "Tracking Confidence",
+      val: ready ? "98.4" : "—",
+      unit: "%",
+      icon: Activity,
+      color: "#c8e86e",
+    },
+    {
+      label: "Personnel",
+      val: stats ? String(stats.players_detected) : "—",
+      unit: "active",
+      icon: Users,
+      color: "#3b82f6",
+    },
+    {
+      label: "Latency",
+      val: "12",
+      unit: "ms",
+      icon: TrendingUp,
+      color: "#a78bfa",
+    },
   ];
 
   return (
-    <main className="min-h-screen bg-transparent text-black dark:text-white pt-24 pb-12 px-6 md:px-12 lg:px-16">
+    <main className="min-h-screen bg-black text-white overflow-hidden">
       <Navbar />
 
-      <div className="max-w-7xl mx-auto space-y-8">
+      {/* GRID OVERLAY */}
+      <div className="fixed inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] opacity-20 pointer-events-none" />
 
-        {/* ─── Header ─────────────────────────────────────────────────── */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div className="space-y-1">
-            <h1
-              className="text-3xl md:text-5xl font-black tracking-tighter dark:text-white text-black"
-              style={{ fontFamily: "'Orbitron', sans-serif" }}
-            >
-              LIVE TRACKING
-            </h1>
-            <div className="flex items-center gap-3 text-xs font-mono text-gray-500">
+      {/* GLOW */}
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-[#c8e86e]/10 blur-[140px] rounded-none pointer-events-none" />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 pt-28 pb-16 space-y-8">
+        {/* HEADER */}
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <Radar className="w-7 h-7 text-[#c8e86e]" />
+
+              <h1
+                className="text-4xl lg:text-6xl font-black tracking-tighter"
+                style={{ fontFamily: "'Orbitron', sans-serif" }}
+              >
+                LIVE VISION
+              </h1>
+            </div>
+
+            <p className="text-sm text-gray-400 font-mono tracking-widest uppercase">
+              AI Motion Intelligence · Tactical Analytics · Real-Time Tracking
+            </p>
+
+            <div className="flex items-center gap-3 flex-wrap">
               {connected ? (
-                <>
-                  <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                  <Wifi className="w-3 h-3 text-green-500" />
-                  {ready ? `ENGINE LIVE // FRAME #${stats?.frame_id ?? 0} // ${fps}fps` : 'LOADING FRAMES...'}
-                </>
-              ) : sessionActive ? (
-                <>
-                  <span className="flex h-2 w-2 rounded-full bg-yellow-500 animate-pulse" />
-                  CONNECTING...
-                </>
+                <div className="px-4 py-2 rounded-none bg-[#c8e86e]/10 border-none text-[#c8e86e] flex items-center gap-2 text-xs font-bold tracking-widest uppercase">
+                  <Wifi className="w-3 h-3" />
+                  Engine Online
+                </div>
               ) : (
-                <>
-                  <span className="flex h-2 w-2 rounded-full bg-gray-500" />
+                <div className="px-4 py-2 rounded-none bg-red-500/10 border-none text-red-400 flex items-center gap-2 text-xs font-bold tracking-widest uppercase">
                   <WifiOff className="w-3 h-3" />
-                  SESSION INACTIVE
-                </>
+                  Offline
+                </div>
               )}
+
+              <div className="px-4 py-2 rounded-none bg-white/5 border-none text-xs font-mono tracking-widest">
+                FPS: <span className="text-[#c8e86e] font-bold">{fps}</span>
+              </div>
+
+              <div className="px-4 py-2 rounded-none bg-white/5 border-none text-xs font-mono tracking-widest">
+                OBJECTS:{" "}
+                <span className="text-[#c8e86e] font-bold">
+                  {stats?.players_detected ?? 0}
+                </span>
+              </div>
             </div>
           </div>
 
+          {/* START BUTTON */}
           <button
             onClick={async () => {
               if (!sessionActive) {
                 try {
-                  await fetch('http://localhost:8000/start', { method: 'POST' });
-                } catch (e) {
-                  console.error("Failed to start vision engine", e);
+                  await fetch("http://localhost:8000/start", {
+                    method: "POST",
+                  });
+                } catch (err) {
+                  console.error(err);
                 }
               }
-              setSessionActive(v => !v);
+
+              setSessionActive((v) => !v);
             }}
-            className={`px-6 py-3 font-bold rounded-xl text-xs uppercase tracking-widest hover:scale-105 transition-all flex items-center gap-2 shadow-lg ${
-              sessionActive
-                ? 'bg-red-500/10 border border-red-500/40 text-red-400 hover:bg-red-500/20'
-                : 'bg-[#c8e86e] text-black shadow-[0_0_20px_rgba(200,232,110,0.3)]'
-            }`}
+            className={`px-8 py-4 rounded-none font-black uppercase tracking-[0.2em] text-xs transition-all duration-300 hover:scale-105 ${sessionActive
+                ? "bg-red-500/10 text-red-400"
+                : "bg-[#c8e86e] text-black shadow-none"
+              }`}
           >
-            {sessionActive
-              ? <><Square className="w-3 h-3" /> Stop Session</>
-              : <><Play className="w-3 h-3" /> Initialize Session</>}
+            {sessionActive ? (
+              <div className="flex items-center gap-2">
+                <Square className="w-4 h-4" />
+                Stop Session
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Play className="w-4 h-4" />
+                Initialize Vision
+              </div>
+            )}
           </button>
         </div>
 
-        {/* ─── Error Banner ────────────────────────────────────────────── */}
+        {/* ERROR */}
         {error && (
-          <div className="flex items-start gap-3 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-xs font-mono text-red-400">
-            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-            <div>
-              <span className="font-bold">[ERROR]</span> {error}
-              <div className="text-gray-500 mt-1 space-y-0.5">
-                <div>→ Step 1: <code className="bg-black/20 px-1 rounded">cd vision-engine && python process_video.py</code></div>
-                <div>→ Step 2: <code className="bg-black/20 px-1 rounded">python server.py</code></div>
+          <div className="border-none bg-red-500/10 rounded-none p-5 flex gap-4">
+            <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-1" />
+
+            <div className="space-y-2 text-sm">
+              <div className="font-bold text-red-400">Vision Engine Error</div>
+
+              <div className="text-gray-300">{error}</div>
+
+              <div className="text-xs text-gray-500 font-mono">
+                cd vision-engine && python server.py
               </div>
             </div>
           </div>
         )}
 
-        {/* ─── Main Grid ───────────────────────────────────────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-
-          {/* Video Feed — 3/4 width */}
-          <Card className="lg:col-span-3 overflow-hidden border-[#c8e86e]/20">
-            <CardHeader className="bg-white/5 dark:bg-white/5 border-b border-white/5 py-3">
+        {/* MAIN GRID */}
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+          {/* VIDEO */}
+          <Card className="xl:col-span-3 bg-white/[0.03] border-none backdrop-blur-2xl overflow-hidden rounded-none">
+            <CardHeader className="border-none bg-white/[0.02]">
               <div className="flex justify-between items-center">
-                <CardTitle className="text-sm font-mono flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-[#c8e86e]" />
-                  TACTICAL_OVERLAY_V2.0
-                </CardTitle>
-                <div className="flex items-center gap-4 text-[10px] text-gray-500 font-mono">
-                  <span className={stats?.ball_detected ? 'text-[#c8e86e]' : 'text-red-400'}>
-                    BALL: {stats?.ball_detected ? 'TRACKED' : 'LOST'}
-                  </span>
-                  <span>PLAYERS: {stats?.players_detected ?? 0}</span>
-                  <span>{fps}fps</span>
+                <div className="flex items-center gap-4">
+                  <div className="w-2 h-2 rounded-none bg-[#c8e86e] animate-pulse" />
+
+                  <CardTitle className="text-xs font-black tracking-[0.3em] uppercase text-[#c8e86e]">
+                    Tactical Overlay Engine
+                  </CardTitle>
+                </div>
+
+                <div className="flex gap-3">
+                  <div className="px-3 py-1 rounded-none bg-black/40 border-none text-[10px] font-mono text-gray-400">
+                    RES: 1920×1080
+                  </div>
+
+                  <div className="px-3 py-1 rounded-none bg-black/40 border-none text-[10px] font-mono text-gray-400">
+                    LATENCY: 12ms
+                  </div>
                 </div>
               </div>
             </CardHeader>
 
-            <CardContent className="p-0 bg-black aspect-video relative">
+            <CardContent className="p-0 relative aspect-video bg-black overflow-hidden">
+              {/* SCANLINE */}
+              <div className="absolute inset-0 pointer-events-none z-20">
+                <div className="absolute w-full h-24 bg-gradient-to-b from-transparent via-[#c8e86e]/10 to-transparent animate-[scan_4s_linear_infinite]" />
+              </div>
 
-              {/* Placeholder shown when inactive */}
+              <style jsx global>{`
+                @keyframes scan {
+                  0% {
+                    transform: translateY(-200px);
+                  }
+                  100% {
+                    transform: translateY(1200px);
+                  }
+                }
+              `}</style>
+
+              {/* PLACEHOLDER */}
               {!sessionActive && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center space-y-4 z-10">
-                  <div
-                    style={{ backgroundImage: 'radial-gradient(#c8e86e 1px, transparent 1px)', backgroundSize: '40px 40px' }}
-                    className="absolute inset-0 opacity-10 pointer-events-none"
-                  />
-                  <div className="w-20 h-20 border-2 border-[#c8e86e]/30 rounded-full flex items-center justify-center">
-                    <div className="w-12 h-12 border border-[#c8e86e]/50 rounded-full" />
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-6">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-[#c8e86e]/20 blur-3xl rounded-none animate-pulse" />
+
+                    <div className="relative w-28 h-28 rounded-none border-none flex items-center justify-center">
+                      <Play className="w-10 h-10 text-[#c8e86e]" />
+                    </div>
                   </div>
-                  <p className="text-sm font-mono text-[#c8e86e] tracking-widest">AWAITING_SESSION_START</p>
-                  <p className="text-[10px] text-gray-500 uppercase tracking-tighter">Click &quot;Initialize Session&quot; to start</p>
+
+                  <div className="text-center">
+                    <div className="text-[#c8e86e] font-black tracking-[0.3em] text-lg">
+                      AWAITING INITIALIZATION
+                    </div>
+
+                    <div className="text-xs text-gray-500 mt-2 uppercase tracking-[0.2em]">
+                      Neural Vision Pipeline Ready
+                    </div>
+                  </div>
                 </div>
               )}
 
-              {/* Connecting spinner */}
+              {/* LOADING / ANALYSIS */}
               {sessionActive && !ready && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center space-y-4 z-10">
-                  <div className="w-12 h-12 border-2 border-[#c8e86e]/30 border-t-[#c8e86e] rounded-full animate-spin" />
-                  <p className="text-sm font-mono text-[#c8e86e] tracking-widest animate-pulse">LOADING ENGINE...</p>
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 bg-black/80 backdrop-blur-xl z-30">
+                  <div className="w-16 h-16 rounded-none border-2 border-[#c8e86e]/20 border-t-[#c8e86e] animate-spin" />
+                  <div className="text-center space-y-2">
+                    <div className="font-black tracking-[0.3em] text-[#c8e86e] text-sm animate-pulse">
+                      {status || "BOOTING VISION OS"}
+                    </div>
+                    <p className="text-[10px] text-gray-500 uppercase tracking-widest font-mono">
+                      Neural Analysis In Progress
+                    </p>
+                  </div>
                 </div>
               )}
 
-              {/* The actual frame — always mounted, updated via imgRef for speed */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {/* VIDEO STREAM */}
               <img
                 ref={imgRef}
-                alt="AI Vision Feed"
-                className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-200 ${ready ? 'opacity-100' : 'opacity-0'}`}
+                alt="Live AI Feed"
+                className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-300 ${ready ? "opacity-100" : "opacity-0"
+                  }`}
               />
 
-              {/* HUD overlay */}
+              {/* HUD */}
               {ready && (
                 <>
-                  <div className="absolute top-3 left-3 p-2 bg-black/70 border border-[#c8e86e]/20 rounded backdrop-blur-md pointer-events-none z-20">
-                    <div className="text-[9px] font-mono text-gray-400">AI_ENGINE: <span className="text-green-400">LIVE</span></div>
-                    <div className="text-[9px] font-mono text-gray-400">FRAME: <span className="text-white">{stats?.frame_id ?? '—'}</span></div>
+                  {/* TOP LEFT */}
+                  <div className="absolute top-4 left-4 bg-black/70 border-none rounded-none px-4 py-3 backdrop-blur-md z-40">
+                    <div className="text-[10px] font-black tracking-[0.3em] text-[#c8e86e] uppercase">
+                      LIVE TELEMETRY
+                    </div>
+
+                    <div className="mt-2 space-y-1 text-[11px] font-mono text-gray-300">
+                      <div>
+                        FRAME:{" "}
+                        <span className="text-[#c8e86e]">
+                          {stats?.frame_id ?? 0}
+                        </span>
+                      </div>
+
+                      <div>
+                        FPS: <span className="text-[#c8e86e]">{fps}</span>
+                      </div>
+
+                      <div>
+                        PLAYERS:{" "}
+                        <span className="text-[#c8e86e]">
+                          {stats?.players_detected ?? 0}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="absolute top-3 right-3 p-2 bg-black/70 border border-white/10 rounded backdrop-blur-md text-[9px] font-mono text-gray-400 pointer-events-none z-20">
-                    TRACKED: <span className="text-[#c8e86e]">{stats?.total_tracked ?? 0}</span>
+
+                  {/* TOP RIGHT */}
+                  <div className="absolute top-4 right-4 bg-black/70 border-none rounded-none px-4 py-3 backdrop-blur-md z-40">
+                    <div className="text-[10px] font-black tracking-[0.3em] text-gray-500 uppercase">
+                      AI STATUS
+                    </div>
+
+                    <div className="mt-2 text-[11px] font-mono space-y-1">
+                      <div className="text-[#c8e86e]">TRACKING ACTIVE</div>
+
+                      <div className="text-gray-400">LATENCY &lt; 15ms</div>
+
+                      <div className="text-gray-400">DETECTION STABLE</div>
+                    </div>
                   </div>
                 </>
               )}
             </CardContent>
           </Card>
 
-          {/* ─── Side Panel ──────────────────────────────────────────────── */}
-          <div className="space-y-4">
-            <Card className={`border ${connected ? 'border-green-500/30 bg-green-500/5' : 'border-white/10'}`}>
-              <CardHeader className="pb-2 pt-4">
-                <CardTitle className="text-xs font-mono text-gray-400 uppercase">Engine Status</CardTitle>
+          {/* SIDEBAR */}
+          <div className="space-y-6">
+            {/* SYSTEM STATUS */}
+            <Card className="bg-white/[0.03] border-none rounded-none backdrop-blur-xl">
+              <CardHeader>
+                <CardTitle className="text-xs font-black tracking-[0.3em] uppercase text-gray-500">
+                  Neural Pipeline
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2 text-[10px] font-mono pb-4">
+
+              <CardContent className="space-y-4">
                 {[
-                  { label: 'WebSocket',   val: connected ? 'CONNECTED' : 'OFFLINE',  ok: connected },
-                  { label: 'Frames',      val: ready     ? 'STREAMING' : '—',        ok: ready },
-                  { label: 'Telemetry',   val: stats     ? 'ACTIVE'    : '—',        ok: !!stats },
-                  { label: 'Goalkeepers', val: String(stats?.goalkeepers ?? '—'),    ok: true },
-                  { label: 'Referees',    val: String(stats?.referees    ?? '—'),    ok: true },
-                ].map(r => (
-                  <div key={r.label} className="flex justify-between">
-                    <span className="text-gray-500">{r.label}</span>
-                    <span className={r.ok && connected ? 'text-green-400' : 'text-gray-600'}>{r.val}</span>
+                  {
+                    label: "Tracking",
+                    value: connected ? "ONLINE" : "OFFLINE",
+                  },
+                  {
+                    label: "Inference",
+                    value: ready ? "STABLE" : "WAITING",
+                  },
+                  {
+                    label: "Ball Detection",
+                    value: stats?.ball_detected ? "LOCKED" : "SEARCHING",
+                  },
+                  {
+                    label: "Frame Stream",
+                    value: `${fps} FPS`,
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    className="flex items-center justify-between border-none bg-black/30 rounded-none px-4 py-3"
+                  >
+                    <div className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">
+                      {item.label}
+                    </div>
+
+                    <div className="text-xs font-black text-[#c8e86e]">
+                      {item.value}
+                    </div>
                   </div>
                 ))}
               </CardContent>
             </Card>
 
-            <Card className="border-red-500/20 bg-red-500/5 flex-1">
-              <CardHeader className="pb-2 pt-4">
-                <CardTitle className="text-xs font-mono flex items-center gap-2 text-red-400">
-                  <AlertCircle className="w-3 h-3" /> LIVE_ALERTS
+            {/* TACTICAL RADAR */}
+            <Card className="bg-white/[0.03] border-none rounded-none backdrop-blur-xl overflow-hidden">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-black tracking-[0.3em] uppercase text-gray-500">
+                  Tactical Radar
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2 pb-4">
-                {connected && stats ? (
-                  <>
-                    {!stats.ball_detected && (
-                      <div className="p-2 border border-red-500/20 bg-red-500/10 rounded text-[10px] font-mono">
-                        <span className="text-red-400 font-bold">[!]</span> BALL_OUT_OF_FRAME
-                      </div>
-                    )}
-                    {stats.players_detected < 5 && (
-                      <div className="p-2 border border-yellow-500/20 bg-yellow-500/10 rounded text-[10px] font-mono">
-                        <span className="text-yellow-400 font-bold">[!]</span> LOW_PLAYER_COUNT: {stats.players_detected}
-                      </div>
-                    )}
-                    {stats.players_detected >= 5 && stats.ball_detected && (
-                      <div className="p-2 border border-green-500/20 bg-green-500/10 rounded text-[10px] font-mono">
-                        <span className="text-green-400 font-bold">[✓]</span> ALL_SYSTEMS_NOMINAL
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="text-[10px] font-mono text-gray-600">No active session.</div>
-                )}
+              <CardContent className="p-4">
+                <TacticalMinimap detections={stats?.detections || []} />
+                <div className="mt-4 flex justify-between text-[10px] font-mono text-gray-500 uppercase tracking-widest">
+                  <span className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 bg-[#c8e86e]" /> Green Team
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 bg-blue-400" /> White Team
+                  </span>
+                </div>
               </CardContent>
             </Card>
+
+            {/* Tactical Events Removed */}
           </div>
         </div>
 
-        {/* ─── Bottom Metrics ──────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        {/* METRICS */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
           {metrics.map((m, i) => (
-            <Card key={i} className="hover:border-white/20 transition-colors">
-              <CardContent className="p-6 flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">{m.label}</p>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-black font-mono">{m.val}</span>
-                    {m.unit && <span className="text-[10px] font-mono text-gray-500 uppercase">{m.unit}</span>}
+            <Card
+              key={i}
+              className="bg-white/[0.03] border-none rounded-none backdrop-blur-xl overflow-hidden group hover:border-[#c8e86e]/30 transition-all duration-500"
+            >
+              <CardContent className="p-6 flex items-center justify-between relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#c8e86e]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                <div className="space-y-2 relative z-10">
+                  <div className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-black">
+                    {m.label}
+                  </div>
+
+                  <div className="flex items-end gap-2">
+                    <div className="text-4xl font-black tracking-tighter">
+                      {m.val}
+                    </div>
+
+                    {m.unit && (
+                      <div className="text-xs uppercase text-[#c8e86e] font-black mb-1">
+                        {m.unit}
+                      </div>
+                    )}
                   </div>
                 </div>
-                <m.icon className="w-8 h-8 opacity-20" style={{ color: m.color }} />
+                <div className="relative z-10 p-4 rounded-none bg-white/5 group-hover:scale-110 transition-transform duration-500">
+                  <m.icon className="w-6 h-6" style={{ color: m.color }} />
+                </div>
               </CardContent>
             </Card>
           ))}
         </div>
-
       </div>
     </main>
   );

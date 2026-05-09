@@ -50,14 +50,16 @@ export default function ReplayPage() {
           {/* Main Replay Viewer */}
           <div className="lg:col-span-2 space-y-6">
             <Card className="overflow-hidden bg-black border-white/5 shadow-2xl">
-              <div className="aspect-video bg-zinc-900 flex flex-col items-center justify-center space-y-4 relative group">
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                <PlayCircle className="w-16 h-16 text-[#c8e86e]/80 hover:text-[#c8e86e] cursor-pointer transition-all hover:scale-110" />
-                <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Select an event from the timeline</p>
+              <div className="aspect-video bg-zinc-900 flex flex-col items-center justify-center relative group">
+                <video 
+                  src="/videos/detected_test.mp4" 
+                  className="w-full h-full object-contain"
+                  controls
+                />
                 
                 {/* HUD Elements */}
-                <div className="absolute top-4 left-4 p-2 bg-black/60 rounded border border-white/10 text-[8px] font-mono text-[#c8e86e] tracking-widest">
-                  AI_VISION_OVERLAY: <span className="text-white">ENABLED</span>
+                <div className="absolute top-4 left-4 p-2 bg-black/60 rounded-none border border-white/10 text-[8px] font-mono text-[#c8e86e] tracking-widest z-10">
+                  AI_VISION_OVERLAY: <span className="text-white">SYNCHRONIZED</span>
                 </div>
               </div>
               <div className="p-4 bg-white/5 border-t border-white/5 flex items-center justify-between gap-6">
