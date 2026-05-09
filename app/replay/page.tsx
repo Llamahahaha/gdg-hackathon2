@@ -2,13 +2,13 @@
 
 import React from 'react';
 import Navbar from "@/components/Navbar";
-import { motion } from "framer-motion";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
+
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { 
-  LineChart, Line, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, XAxis, CartesianGrid, Tooltip,
   AreaChart, Area
 } from 'recharts';
-import { PlayCircle, Clock, FastForward, History, Share2, Download } from 'lucide-react';
+import { Clock, FastForward, History, Share2, Download } from 'lucide-react';
 
 const eventData = [
   { time: '0m', events: 0 },

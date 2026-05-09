@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
+import { Inter, Orbitron } from 'next/font/google'
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers"
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+const orbitron = Orbitron({ subsets: ['latin'], variable: '--font-orbitron' })
 
 export const metadata: Metadata = {
   title: "PulsePlay AI | Sports Intelligence Platform",
@@ -13,13 +17,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet" />
-      </head>
-      <body className="min-h-screen bg-white text-black dark:bg-[#080c08] dark:text-white transition-colors duration-300">
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${orbitron.variable}`}>
+      <body className="min-h-screen bg-white text-black dark:bg-[#080c08] dark:text-white transition-colors duration-300 font-sans">
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

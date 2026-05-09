@@ -11,7 +11,7 @@ export default function Navbar() {
 
   // Avoid hydration mismatch
   React.useEffect(() => {
-    setMounted(true)
+    setTimeout(() => setMounted(true), 0)
   }, [])
 
   return (

@@ -11,7 +11,7 @@ export async function GET() {
     const data = fs.readFileSync(filePath, 'utf8');
     const json = JSON.parse(data);
     return NextResponse.json(json);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

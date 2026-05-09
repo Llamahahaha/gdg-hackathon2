@@ -3,13 +3,13 @@
 import React from 'react';
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
-import { motion } from "framer-motion";
+
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { 
-  BarChart, Bar, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip,
+  BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip,
   Cell
 } from 'recharts';
-import { Brain, ShieldAlert, Zap, Target, Database, Cpu } from 'lucide-react';
+import { Brain, ShieldAlert, Zap, Target, Cpu } from 'lucide-react';
 
 const COLORS = ['#c8e86e', '#3b82f6', '#a78bfa'];
 

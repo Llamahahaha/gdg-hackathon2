@@ -7,7 +7,6 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   Activity,
   AlertCircle,
-  Zap,
   TrendingUp,
   Users,
   Play,
@@ -54,7 +53,7 @@ function useFrameStream(active: boolean) {
   const [fps, setFps] = useState(0);
 
   const frameCounter = useRef(0);
-  const lastTime = useRef(Date.now());
+  const lastTime = useRef(0);
 
   const connect = useCallback(() => {
     if (ws.current) ws.current.close();
@@ -140,9 +139,10 @@ function useFrameStream(active: boolean) {
 
   useEffect(() => {
     if (active) {
-      connect();
+      // Use a microtask or timeout to avoid synchronous setState in effect
+      setTimeout(() => connect(), 0);
     } else {
-      disconnect();
+      setTimeout(() => disconnect(), 0);
     }
 
     return () => {
@@ -164,7 +164,28 @@ function useFrameStream(active: boolean) {
 }
 
 // ─── Tactical Minimap ──────────────────────────────────────────
-function TacticalMinimap({ detections }: { detections: any[] }) {
+function TacticalMinimap({ detections }: { detections: { id: number; bbox: number[]; team: string }[] }) {
+  // Simple perspective projection: Maps trapezoidal camera view to rectangular pitch
+  const project = (x: number, y: number) => {
+    // Input is 0-1920, 0-1080
+    // Normalize to 0-1
+    const nx = x / 1920;
+    const ny = y / 1080;
+
+    // Simulate perspective: The further up (smaller y), the more compressed x is
+    // Let's assume the top of the screen (y=0) is about 60% the width of the bottom
+    const perspectiveFactor = 0.6 + (0.4 * ny);
+    
+    // Center-align the x after applying perspective factor
+    const px = (nx - 0.5) / perspectiveFactor + 0.5;
+    const py = ny;
+
+    return {
+      x: Math.max(0, Math.min(100, px * 100)),
+      y: Math.max(0, Math.min(100, py * 100))
+    };
+  };
+
   return (
     <div className="relative w-full aspect-[105/68] bg-[#0f172a] border border-white/10 overflow-hidden">
       {/* Pitch Lines */}
@@ -177,23 +198,26 @@ function TacticalMinimap({ detections }: { detections: any[] }) {
       <div className="absolute inset-y-12 right-2 w-12 border border-white/10" />
 
       {/* Players */}
-      {detections?.map((d, i) => {
-        // Map bbox center [x1, y1, x2, y2] to percentages
-        // Assuming 1920x1080 input
-        const x = ((d.bbox[0] + d.bbox[2]) / 2 / 1920) * 100;
-        const y = ((d.bbox[1] + d.bbox[3]) / 2 / 1080) * 100;
+      {detections?.map((d, index) => {
+        const cx = (d.bbox[0] + d.bbox[2]) / 2;
+        const cy = (d.bbox[1] + d.bbox[3]) / 2;
+        const { x, y } = project(cx, cy);
 
         return (
           <motion.div
-            key={i}
+            key={`${d.id}-${index}`}
             initial={false}
             animate={{ left: `${x}%`, top: `${y}%` }}
-            transition={{ type: "spring", stiffness: 100, damping: 20 }}
-            className={`absolute w-2 h-2 -translate-x-1/2 -translate-y-1/2 rounded-none ${d.team === "green"
-                ? "bg-[#c8e86e] shadow-[0_0_8px_#c8e86e]"
-                : "bg-blue-400 shadow-[0_0_8px_#3b82f6]"
+            transition={{ type: "spring", stiffness: 70, damping: 25, mass: 0.5 }}
+            className={`absolute w-2.5 h-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full z-10 ${d.team === "green"
+                ? "bg-[#c8e86e] shadow-[0_0_10px_#c8e86e]"
+                : "bg-blue-400 shadow-[0_0_10px_#3b82f6]"
               }`}
-          />
+          >
+             <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-[6px] font-mono text-white/40 font-black">
+                {d.id}
+             </div>
+          </motion.div>
         );
       })}
     </div>
@@ -207,7 +231,7 @@ function TacticalMinimap({ detections }: { detections: any[] }) {
 export default function LivePage() {
   const [sessionActive, setSessionActive] = useState(false);
 
-  const { imgRef, stats, players, connected, ready, error, fps, status } =
+  const { imgRef, stats, connected, ready, error, fps, status } =
     useFrameStream(sessionActive);
 
   const metrics = [
@@ -421,7 +445,7 @@ export default function LivePage() {
                 </div>
               )}
 
-              {/* VIDEO STREAM */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 ref={imgRef}
                 alt="Live AI Feed"

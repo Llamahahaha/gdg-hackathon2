@@ -24,8 +24,6 @@ interface ChartContainerProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export const ChartContainer = React.forwardRef<HTMLDivElement, ChartContainerProps>(
   ({ config, children, className, ...props }, ref) => {
-    const chartId = React.useId()
-
     return (
       <div
         ref={ref}
@@ -52,6 +50,24 @@ export const ChartContainer = React.forwardRef<HTMLDivElement, ChartContainerPro
 ChartContainer.displayName = "ChartContainer"
 
 export const ChartTooltip = Tooltip
+
+interface ChartTooltipContentProps {
+  active?: boolean
+  payload?: {
+    name: string
+    value: number | string
+    color: string
+    payload: {
+      fill?: string
+    }
+  }[]
+  label?: string | number
+  hideLabel?: boolean
+  indicator?: "dot" | "line"
+  labelFormatter?: (label: string | number) => React.ReactNode
+  className?: string
+}
+
 export const ChartTooltipContent = ({ 
   active, 
   payload, 
@@ -60,7 +76,7 @@ export const ChartTooltipContent = ({
   indicator = "dot", 
   labelFormatter,
   className
-}: any) => {
+}: ChartTooltipContentProps) => {
   if (!active || !payload) return null
 
   return (
@@ -74,7 +90,7 @@ export const ChartTooltipContent = ({
         </div>
       )}
       <div className="space-y-1.5">
-        {payload.map((item: any, index: number) => (
+        {payload.map((item, index) => (
           <div key={index} className="flex items-center gap-2">
             {indicator === "dot" && (
               <div 
@@ -98,11 +114,19 @@ export const ChartTooltipContent = ({
 }
 
 export const ChartLegend = Legend
-export const ChartLegendContent = ({ payload }: any) => {
+
+interface ChartLegendContentProps {
+  payload?: {
+    value: string
+    color: string
+  }[]
+}
+
+export const ChartLegendContent = ({ payload }: ChartLegendContentProps) => {
   if (!payload) return null
   return (
     <div className="flex items-center justify-center gap-4 pt-4">
-      {payload.map((item: any, index: number) => (
+      {payload.map((item, index) => (
         <div key={index} className="flex items-center gap-1.5">
           <div 
             className="h-2 w-2 rounded-full" 

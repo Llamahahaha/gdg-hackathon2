@@ -1,0 +1,319 @@
+$ eslint
+
+/home/noah/Desktop/NextJS/gdg/app/analytics/page.tsx
+    6:10  warning  'motion' is defined but never used        @typescript-eslint/no-unused-vars
+   12:3   warning  'Bar' is defined but never used           @typescript-eslint/no-unused-vars
+   13:3   warning  'BarChart' is defined but never used      @typescript-eslint/no-unused-vars
+  156:57  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  159:49  warning  'item' is defined but never used          @typescript-eslint/no-unused-vars
+  411:50  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/noah/Desktop/NextJS/gdg/app/api/telemetry/route.ts
+  14:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/noah/Desktop/NextJS/gdg/app/insights/page.tsx
+   6:10  warning  'motion' is defined but never used         @typescript-eslint/no-unused-vars
+   9:53  warning  'CartesianGrid' is defined but never used  @typescript-eslint/no-unused-vars
+  12:43  warning  'Database' is defined but never used       @typescript-eslint/no-unused-vars
+
+/home/noah/Desktop/NextJS/gdg/app/layout.tsx
+  20:9  warning  Custom fonts not added in `pages/_document.js` will only load for a single page. This is discouraged. See: https://nextjs.org/docs/messages/no-page-custom-font  @next/next/no-page-custom-font
+
+/home/noah/Desktop/NextJS/gdg/app/live/page.tsx
+   10:3   warning  'Zap' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+   57:27  error    Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/home/noah/Desktop/NextJS/gdg/app/live/page.tsx:57:27
+  55 |
+  56 |   const frameCounter = useRef(0);
+> 57 |   const lastTime = useRef(Date.now());
+     |                           ^^^^^^^^^^ Cannot call impure function
+  58 |
+  59 |   const connect = useCallback(() => {
+  60 |     if (ws.current) ws.current.close();                                                                                                                                                                                                                                                                                                                                    react-hooks/purity
+  143:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/home/noah/Desktop/NextJS/gdg/app/live/page.tsx:143:7
+  141 |   useEffect(() => {
+  142 |     if (active) {
+> 143 |       connect();
+      |       ^^^^^^^ Avoid calling setState() directly within an effect
+  144 |     } else {
+  145 |       disconnect();
+  146 |     }  react-hooks/set-state-in-effect
+  167:56  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
+  234:26  warning  'players' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+  449:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @next/next/no-img-element
+
+/home/noah/Desktop/NextJS/gdg/app/replay/page.tsx
+   5:10  warning  'motion' is defined but never used           @typescript-eslint/no-unused-vars
+   6:52  warning  'CardDescription' is defined but never used  @typescript-eslint/no-unused-vars
+   8:3   warning  'LineChart' is defined but never used        @typescript-eslint/no-unused-vars
+   8:14  warning  'Line' is defined but never used             @typescript-eslint/no-unused-vars
+   8:48  warning  'YAxis' is defined but never used            @typescript-eslint/no-unused-vars
+  11:10  warning  'PlayCircle' is defined but never used       @typescript-eslint/no-unused-vars
+
+/home/noah/Desktop/NextJS/gdg/app/technology/page.tsx
+  6:52  warning  'CardDescription' is defined but never used  @typescript-eslint/no-unused-vars
+  8:46  warning  'YAxis' is defined but never used            @typescript-eslint/no-unused-vars
+  9:3   warning  'Cell' is defined but never used             @typescript-eslint/no-unused-vars
+
+/home/noah/Desktop/NextJS/gdg/components/Navbar.tsx
+  14:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/home/noah/Desktop/NextJS/gdg/components/Navbar.tsx:14:5
+  12 |   // Avoid hydration mismatch
+  13 |   React.useEffect(() => {
+> 14 |     setMounted(true)
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  15 |   }, [])
+  16 |
+  17 |   return (  react-hooks/set-state-in-effect
+
+/home/noah/Desktop/NextJS/gdg/components/providers.tsx
+  6:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/noah/Desktop/NextJS/gdg/components/ui/chart.tsx
+   27:11  warning  'chartId' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   63:4   error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+   77:29  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  101:49  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  105:27  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+
+/home/noah/Desktop/NextJS/gdg/components/ui/select.tsx
+  12:53  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  37:56  warning  'value' is defined but never used         @typescript-eslint/no-unused-vars
+  37:65  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  50:46  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  54:59  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  62:55  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/noah/Desktop/NextJS/gdg/vision/.venv/lib/python3.14/site-packages/matplotlib/backends/web_backend/js/mpl.js
+   58:9   error    Unexpected aliasing of 'this' to local variable  @typescript-eslint/no-this-alias
+  107:54  warning  '_canvas_div' is defined but never used          @typescript-eslint/no-unused-vars
+  109:52  warning  '_canvas_div' is defined but never used          @typescript-eslint/no-unused-vars
+  112:9   error    Unexpected aliasing of 'this' to local variable  @typescript-eslint/no-this-alias
+  333:58  warning  '_e' is defined but never used                   @typescript-eslint/no-unused-vars
+  347:9   error    Unexpected aliasing of 'this' to local variable  @typescript-eslint/no-this-alias
+  354:26  warning  '_event' is defined but never used               @typescript-eslint/no-unused-vars
+  444:51  warning  '_msg' is defined but never used                 @typescript-eslint/no-unused-vars
+  495:51  warning  '_msg' is defined but never used                 @typescript-eslint/no-unused-vars
+  576:18  warning  'e' is defined but never used                    @typescript-eslint/no-unused-vars
+  657:51  warning  '_event' is defined but never used               @typescript-eslint/no-unused-vars
+  657:59  warning  '_name' is defined but never used                @typescript-eslint/no-unused-vars
+
+/home/noah/Desktop/NextJS/gdg/vision/.venv/lib/python3.14/site-packages/matplotlib/backends/web_backend/js/mpl_tornado.js
+  6:10  warning  'mpl_ondownload' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/noah/Desktop/NextJS/gdg/vision/.venv/lib/python3.14/site-packages/matplotlib/backends/web_backend/js/nbagg_mpl.js
+   11:31  warning  '_event' is defined but never used               @typescript-eslint/no-unused-vars
+   54:33  warning  '_format' is defined but never used              @typescript-eslint/no-unused-vars
+  101:49  warning  '_remove_interactive' is defined but never used  @typescript-eslint/no-unused-vars
+  113:9   error    Unexpected aliasing of 'this' to local variable  @typescript-eslint/no-this-alias
+  122:9   error    Unexpected aliasing of 'this' to local variable  @typescript-eslint/no-this-alias
+  129:26  warning  '_event' is defined but never used               @typescript-eslint/no-unused-vars
+  190:48  warning  '_evt' is defined but never used                 @typescript-eslint/no-unused-vars
+  230:58  warning  '_name' is defined but never used                @typescript-eslint/no-unused-vars
+  240:51  warning  '_msg' is defined but never used                 @typescript-eslint/no-unused-vars
+
+/home/noah/Desktop/NextJS/gdg/vision/.venv/lib/python3.14/site-packages/torch/utils/model_dump/code.js
+   57:17  warning  'children' is defined but never used             @typescript-eslint/no-unused-vars
+  524:21  warning  'offset' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  524:29  warning  'size' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  524:35  warning  'stride' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  524:43  warning  'grad' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  525:12  warning  'dtype' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  525:24  warning  'device' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  525:32  warning  'numel' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  529:21  warning  'offset' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  529:29  warning  'size' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  529:35  warning  'stride' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  529:43  warning  'quantizer' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  529:54  warning  'grad' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  530:12  warning  'dtype' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  530:24  warning  'device' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  530:32  warning  'numel' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  538:15  warning  'name' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  544:19  warning  'key' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  631:11  error    Unexpected aliasing of 'this' to local variable  @typescript-eslint/no-this-alias
+
+/home/noah/Desktop/NextJS/gdg/vision/.venv/lib/python3.14/site-packages/torch/utils/model_dump/htm.mjs
+  2:117  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:331  warning  Unexpected default export of anonymous function                        import/no-anonymous-default-export
+  2:501  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:763  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:814  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+
+/home/noah/Desktop/NextJS/gdg/vision/.venv/lib/python3.14/site-packages/torch/utils/model_dump/preact.mjs
+  2:180   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:256   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:464   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:803   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:1219  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:1358  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:1450  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:2155  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:2513  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:2720  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:2984  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:3078  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:3170  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:3267  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:3332  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:3465  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:3699  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:3742  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:3807  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:4208  warning  'e' is defined but never used                                          @typescript-eslint/no-unused-vars
+  2:4212  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:4531  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:5092  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:5448  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:5556  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:5602  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:5744  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:6185  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:6263  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:6291  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:6387  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:6428  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:6681  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:6759  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:6878  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:7120  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:7370  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:7390  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:7606  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:7988  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:8006  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:8095  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:8428  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:8858  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:8991  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:9091  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:9467  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:9686  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+
+/home/noah/Desktop/NextJS/gdg/vision/visionplay-pipeline/.venv/lib/python3.14/site-packages/matplotlib/backends/web_backend/js/mpl.js
+   58:9   error    Unexpected aliasing of 'this' to local variable  @typescript-eslint/no-this-alias
+  107:54  warning  '_canvas_div' is defined but never used          @typescript-eslint/no-unused-vars
+  109:52  warning  '_canvas_div' is defined but never used          @typescript-eslint/no-unused-vars
+  112:9   error    Unexpected aliasing of 'this' to local variable  @typescript-eslint/no-this-alias
+  333:58  warning  '_e' is defined but never used                   @typescript-eslint/no-unused-vars
+  347:9   error    Unexpected aliasing of 'this' to local variable  @typescript-eslint/no-this-alias
+  354:26  warning  '_event' is defined but never used               @typescript-eslint/no-unused-vars
+  444:51  warning  '_msg' is defined but never used                 @typescript-eslint/no-unused-vars
+  495:51  warning  '_msg' is defined but never used                 @typescript-eslint/no-unused-vars
+  576:18  warning  'e' is defined but never used                    @typescript-eslint/no-unused-vars
+  657:51  warning  '_event' is defined but never used               @typescript-eslint/no-unused-vars
+  657:59  warning  '_name' is defined but never used                @typescript-eslint/no-unused-vars
+
+/home/noah/Desktop/NextJS/gdg/vision/visionplay-pipeline/.venv/lib/python3.14/site-packages/matplotlib/backends/web_backend/js/mpl_tornado.js
+  6:10  warning  'mpl_ondownload' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/noah/Desktop/NextJS/gdg/vision/visionplay-pipeline/.venv/lib/python3.14/site-packages/matplotlib/backends/web_backend/js/nbagg_mpl.js
+   11:31  warning  '_event' is defined but never used               @typescript-eslint/no-unused-vars
+   54:33  warning  '_format' is defined but never used              @typescript-eslint/no-unused-vars
+  101:49  warning  '_remove_interactive' is defined but never used  @typescript-eslint/no-unused-vars
+  113:9   error    Unexpected aliasing of 'this' to local variable  @typescript-eslint/no-this-alias
+  122:9   error    Unexpected aliasing of 'this' to local variable  @typescript-eslint/no-this-alias
+  129:26  warning  '_event' is defined but never used               @typescript-eslint/no-unused-vars
+  190:48  warning  '_evt' is defined but never used                 @typescript-eslint/no-unused-vars
+  230:58  warning  '_name' is defined but never used                @typescript-eslint/no-unused-vars
+  240:51  warning  '_msg' is defined but never used                 @typescript-eslint/no-unused-vars
+
+/home/noah/Desktop/NextJS/gdg/vision/visionplay-pipeline/.venv/lib/python3.14/site-packages/torch/utils/model_dump/code.js
+   57:17  warning  'children' is defined but never used             @typescript-eslint/no-unused-vars
+  524:21  warning  'offset' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  524:29  warning  'size' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  524:35  warning  'stride' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  524:43  warning  'grad' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  525:12  warning  'dtype' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  525:24  warning  'device' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  525:32  warning  'numel' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  529:21  warning  'offset' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  529:29  warning  'size' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  529:35  warning  'stride' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  529:43  warning  'quantizer' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  529:54  warning  'grad' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  530:12  warning  'dtype' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  530:24  warning  'device' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  530:32  warning  'numel' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  538:15  warning  'name' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  544:19  warning  'key' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  631:11  error    Unexpected aliasing of 'this' to local variable  @typescript-eslint/no-this-alias
+
+/home/noah/Desktop/NextJS/gdg/vision/visionplay-pipeline/.venv/lib/python3.14/site-packages/torch/utils/model_dump/htm.mjs
+  2:117  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:331  warning  Unexpected default export of anonymous function                        import/no-anonymous-default-export
+  2:501  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:763  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:814  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+
+/home/noah/Desktop/NextJS/gdg/vision/visionplay-pipeline/.venv/lib/python3.14/site-packages/torch/utils/model_dump/preact.mjs
+  2:180   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:256   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:464   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:803   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:1219  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:1358  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:1450  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:2155  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:2513  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:2720  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:2984  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:3078  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:3170  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:3267  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:3332  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:3465  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:3699  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:3742  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:3807  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:4208  warning  'e' is defined but never used                                          @typescript-eslint/no-unused-vars
+  2:4212  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:4531  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:5092  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:5448  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:5556  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:5602  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:5744  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:6185  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:6263  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:6291  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:6387  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:6428  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:6681  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:6759  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:6878  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:7120  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:7370  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:7390  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:7606  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:7988  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:8006  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:8095  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:8428  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:8858  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:8991  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:9091  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:9467  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  2:9686  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+
+✖ 227 problems (28 errors, 199 warnings)
+
+error: script "lint" exited with code 1

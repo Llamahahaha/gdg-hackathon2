@@ -3,10 +3,9 @@
 import React from 'react';
 import Navbar from "@/components/Navbar";
 import { motion } from "framer-motion";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
-  BarChart, Bar, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip,
-  Cell
+  BarChart, Bar, ResponsiveContainer, XAxis, CartesianGrid, Tooltip,
 } from 'recharts';
 import { Layers, Database, Cpu, Camera, Network, Globe } from 'lucide-react';
 
