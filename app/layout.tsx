@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Orbitron } from 'next/font/google'
 import "./globals.css";
-import { ThemeProvider } from "@/components/providers"
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const orbitron = Orbitron({ subsets: ['latin'], variable: '--font-orbitron' })
@@ -17,16 +16,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${orbitron.variable}`}>
-      <body className="min-h-screen bg-[#0b0f1a] text-white transition-colors duration-300 font-sans">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
+    <html lang="en" className={`dark ${inter.variable} ${orbitron.variable}`}>
+      <body className="min-h-screen bg-charcoal text-white font-sans antialiased">
+        {children}
       </body>
     </html>
   );

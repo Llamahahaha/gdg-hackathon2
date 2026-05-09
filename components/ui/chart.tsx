@@ -84,7 +84,7 @@ export const ChartTooltipContent = ({
       "rounded-lg border bg-zinc-950 px-3 py-2 text-[11px] shadow-xl border-white/10",
       className
     )}>
-      {!hideLabel && (
+      {!hideLabel && label !== undefined && (
         <div className="mb-1 font-medium text-gray-400">
           {labelFormatter ? labelFormatter(label) : label}
         </div>
