@@ -28,7 +28,7 @@ const timelineSteps = [
 
 export default function Timeline() {
   return (
-    <section className="py-24 px-6 md:px-12 lg:px-16 bg-[#0b0f1a] relative overflow-hidden">
+    <section className="py-24 px-6 md:px-12 lg:px-16 bg-charcoal relative overflow-hidden">
       <div className="max-w-5xl mx-auto relative z-10">
         <div className="text-center mb-20 space-y-4">
           <motion.div 
@@ -75,7 +75,7 @@ export default function Timeline() {
                 >
                   <div className="liquid-glass p-6 group hover:border-blue-500/50 transition-colors">
                     <h3 className="text-lg font-orbitron font-bold text-white mb-1">{step.title}</h3>
-                    <div className="text-[10px] font-mono uppercase tracking-widest text-emerald-500 mb-4">{step.tech}</div>
+                    <div className="text-[10px] font-mono uppercase tracking-widest text-cyan-400 mb-4">{step.tech}</div>
                     <p className="text-sm text-gray-400 leading-relaxed">
                       {step.desc}
                     </p>
@@ -91,7 +91,7 @@ export default function Timeline() {
             whileInView={{ height: "100%" }}
             viewport={{ once: true }}
             transition={{ duration: 2, ease: "easeInOut" }}
-            className="absolute top-0 left-[-1px] md:left-[calc(50%-1px)] w-[2px] bg-gradient-to-b from-blue-500 via-emerald-500 to-transparent origin-top"
+            className="absolute top-0 left-[-1px] md:left-[calc(50%-1px)] w-[2px] bg-gradient-to-b from-blue-500 via-cyan-400 to-transparent origin-top"
           />
         </div>
       </div>

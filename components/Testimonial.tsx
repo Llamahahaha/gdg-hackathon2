@@ -9,7 +9,7 @@ const testimonials = [
     quote: "FieldTheory's topological graph engine completely changed how we analyze defensive fractures. We no longer look at players as points, but as a cohesive network.",
     author: "Elena Rostova",
     role: "Lead Data Scientist, FC Metro",
-    color: "#10b981" // Emerald
+    color: "#06b6d4" // Cyan
   },
   {
     quote: "The ability to visualize betweenness centrality live during a match allows us to identify the opponent's lynchpin instantly. It's a game-changer.",
@@ -21,15 +21,15 @@ const testimonials = [
     quote: "When we see the edges flicker and turn rose, we know a community collapse is imminent. We can adjust our formation before the opposition exploits the gap.",
     author: "Sarah Jenkins",
     role: "Head Coach, National Squad",
-    color: "#f59e0b" // Amber
+    color: "#f43f5e" // Rose
   }
 ];
 
 export default function Testimonial() {
   return (
-    <section className="py-24 px-6 md:px-12 lg:px-16 bg-[#0b0f1a] relative overflow-hidden">
+    <section className="py-24 px-6 md:px-12 lg:px-16 bg-charcoal relative overflow-hidden">
       {/* Background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan-500/5 rounded-full blur-[120px] pointer-events-none" />
       
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="text-center mb-16 space-y-4">
@@ -37,7 +37,7 @@ export default function Testimonial() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-[10px] font-black tracking-[0.3em] uppercase text-emerald-500"
+            className="text-[10px] font-black tracking-[0.3em] uppercase text-cyan-500"
           >
             System Feedback
           </motion.div>

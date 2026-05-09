@@ -18,43 +18,49 @@ export default function Navbar() {
       <div className="liquid-glass rounded-xl px-6 py-3 flex items-center justify-between border border-white/5 bg-black/40 backdrop-blur-xl pointer-events-auto">
         {/* Left: Logo */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-8 h-8 bg-emerald-500 flex items-center justify-center rounded-sm group-hover:rotate-45 transition-transform duration-500">
-            <Shield className="w-5 h-5 text-black -rotate-45 group-hover:rotate-0 transition-transform duration-500" />
+          <div className="relative w-10 h-10 overflow-hidden rounded-lg border border-cyan-500/30 group-hover:border-cyan-400 transition-colors">
+            <img 
+              src="/logo.png" 
+              alt="FieldTheory AI Logo" 
+              className="w-full h-full object-cover transform scale-150"
+            />
           </div>
           <span className="text-xl font-black tracking-tighter uppercase text-white font-orbitron">
-            Field<span className="text-emerald-500">Theory</span>
+            Field<span className="text-cyan-400">Theory</span><span className="text-xs ml-1 px-1.5 py-0.5 bg-cyan-500/20 text-cyan-400 rounded">AI</span>
           </span>
         </Link>
 
         {/* Center: HUD Links */}
-        <div className="hidden md:flex items-center gap-10">
+        <div className="hidden lg:flex items-center gap-8">
           {[
-            { name: "Tactical Nexus", path: "/" },
-            { name: "Technology", path: "#" },
-            { name: "Case Studies", path: "#" },
-            { name: "System Core", path: "#" }
+            { name: "Dashboard", path: "#" },
+            { name: "Live Engine", path: "#" },
+            { name: "Replay Lab", path: "#" },
+            { name: "Simulations", path: "#" },
+            { name: "Intelligence Report", path: "#" }
           ].map((link) => (
             <Link
               key={link.name}
               href={link.path}
-              className="text-[10px] font-black uppercase tracking-[0.2em] transition-all text-white/50 hover:text-emerald-500 flex items-center gap-2"
+              className="text-[10px] font-black uppercase tracking-[0.2em] transition-all text-white/50 hover:text-cyan-400 flex items-center gap-2 group/link"
             >
-              <div className="w-1 h-1 bg-white/20 rounded-full" />
+              <div className="w-1 h-1 bg-cyan-500/20 rounded-full group-hover/link:bg-cyan-400 group-hover/link:scale-150 transition-all" />
               {link.name}
             </Link>
           ))}
         </div>
 
-        {/* Right: System Status */}
-        <div className="flex items-center gap-6">
-          <div className="hidden lg:flex items-center gap-4 px-4 py-1.5 bg-white/5 border border-white/10 rounded-sm">
-             <div className="flex flex-col items-end">
-                <span className="text-[7px] font-black text-white/30 uppercase tracking-widest">System Engine</span>
-                <span className="text-[9px] font-bold text-emerald-500 uppercase font-mono">v4.2.0 Stable</span>
-             </div>
-             <Activity className="w-4 h-4 text-emerald-500 animate-pulse" />
+        {/* Right: Action */}
+        <div className="flex items-center gap-4">
+          <div className="hidden xl:flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full">
+            <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Hackathon</span>
+            <span className="text-[9px] font-bold text-white uppercase font-mono">GDG 2026</span>
           </div>
-          <button className="p-2 text-white/50 hover:text-white transition-colors">
+          <button className="hidden md:flex items-center gap-2 px-5 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 rounded-lg transition-all group/btn">
+            <span className="text-[10px] font-black text-cyan-400 uppercase tracking-widest">Launch Analysis</span>
+            <Activity className="w-4 h-4 text-cyan-400 group-hover/btn:animate-pulse" />
+          </button>
+          <button className="p-2 text-white/50 hover:text-white transition-colors lg:hidden">
             <Menu className="w-5 h-5" />
           </button>
         </div>

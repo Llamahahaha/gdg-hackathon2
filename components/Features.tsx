@@ -10,7 +10,7 @@ const features = [
     tagline: "Live Spanning Trees",
     desc: "Real-time coordinate extraction translated into dynamic node-edge matrices via algebraic connectivity heuristics.",
     data: ["YOLOv8 INGEST", "LATENCY < 15MS", "MST ALGORITHM: ACTIVE"],
-    color: "#10b981"
+    color: "#06b6d4"
   },
   {
     id: "analytics",
@@ -26,7 +26,7 @@ const features = [
     tagline: "Articulation point logic",
     desc: "Identify critical network bridges. Visualize vulnerabilities and gatekeepers within the team's structural graph.",
     data: ["CUT-VERTEX: DETECTED", "EDGE SYNERGY: ON", "CONNECTIVITY: 0.82"],
-    color: "#f59e0b"
+    color: "#22d3ee"
   },
   {
     id: "logs",
@@ -132,7 +132,7 @@ export default function Features() {
                 >
                   {/* Mock Visualizer Elements based on index */}
                   {activeIndex === 0 && (
-                    <svg className="w-64 h-64 text-[#c8e86e]" viewBox="0 0 100 100">
+                    <svg className="w-64 h-64 text-cyan-400" viewBox="0 0 100 100">
                       <motion.circle cx="50" cy="20" r="3" fill="currentColor" animate={{ y: [0, -2, 0] }} transition={{ duration: 2, repeat: Infinity }} />
                       <line x1="50" y1="20" x2="50" y2="50" stroke="currentColor" strokeWidth="1.5" />
                       <line x1="50" y1="30" x2="30" y2="45" stroke="currentColor" strokeWidth="1.5" />
@@ -167,14 +167,14 @@ export default function Features() {
                        <motion.div 
                         animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
                         transition={{ duration: 4, repeat: Infinity }}
-                        className="w-32 h-32 bg-orange-500/30 rounded-full blur-3xl"
+                        className="w-32 h-32 bg-cyan-500/30 rounded-full blur-3xl"
                        />
                        <div className="absolute inset-0 grid grid-cols-4 grid-rows-4 gap-4 p-4 opacity-30">
                           {Array.from({length: 16}).map((_, i) => (
                             <div key={i} className="border border-white/10 rounded-sm"></div>
                           ))}
                        </div>
-                       <div className="relative text-[10px] font-mono text-orange-400">HEATMAP_ACTIVE</div>
+                       <div className="relative text-[10px] font-mono text-cyan-400">HEATMAP_ACTIVE</div>
                     </div>
                   )}
 
@@ -188,7 +188,7 @@ export default function Features() {
                           transition={{ delay: i * 0.1 }}
                           className="flex justify-between p-2 bg-white/5 border border-white/10 rounded"
                          >
-                           <span className="text-emerald-400">#LOG_{i*100}</span>
+                           <span className="text-cyan-400">#LOG_{i*100}</span>
                            <span className="text-gray-500">EVENT: SPRINT_DETECTED</span>
                            <span className="text-gray-300">CONF: 99%</span>
                          </motion.div>

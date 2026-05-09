@@ -1,22 +1,25 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
-import Features from "@/components/Features";
+import HowItWorks from "@/components/HowItWorks";
+import CoreTechnologies from "@/components/CoreTechnologies";
+import SimulationPreview from "@/components/SimulationPreview";
 import Timeline from "@/components/Timeline";
 import Testimonial from "@/components/Testimonial";
-import Collaboration from "@/components/Collaboration";
 
 export default function Home() {
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen bg-charcoal">
       <Navbar />
       <Hero />
-      <Features />
+      <HowItWorks />
+      <CoreTechnologies />
+      <SimulationPreview />
       <Timeline />
       <Testimonial />
-      <Collaboration />
     </main>
   );
 }
+
 
 
 
