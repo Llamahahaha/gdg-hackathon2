@@ -67,6 +67,32 @@ export default function LiveEnginePage() {
               <div className="text-[8px] font-black text-cyan-400 uppercase tracking-widest">CAM_01 // WIDE_PITCH</div>
               <div className="text-[10px] font-mono text-white/50">40.2443° N, 3.7121° W</div>
             </div>
+
+            {/* Bounding Box Tracking Overlay */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none">
+              {players.slice(0, 4).map((p, i) => (
+                <motion.g 
+                  key={p.id}
+                  animate={{ 
+                    x: p.x * 0.4 + 50, 
+                    y: p.y * 0.4 + 20 
+                  }}
+                  transition={{ ease: "linear", duration: 0.1 }}
+                >
+                  <rect 
+                    width="24" height="40" 
+                    fill="transparent" 
+                    stroke={p.team === 'A' ? "#00f3ff" : "#ff0033"} 
+                    strokeWidth="1.5"
+                    className="opacity-60"
+                  />
+                  <text y="-4" x="12" textAnchor="middle" fill="white" fontSize="8" className="font-mono bg-black/50">
+                    ID:{p.id}
+                  </text>
+                  <circle cx="12" cy="20" r="2" fill={p.team === 'A' ? "#00f3ff" : "#ff0033"} />
+                </motion.g>
+              ))}
+            </svg>
           </div>
 
           <div className="h-1/3 liquid-glass p-4 rounded-xl border border-white/5 flex flex-col gap-3">
@@ -176,6 +202,50 @@ export default function LiveEnginePage() {
               <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Critical Node</div>
               <div className="text-4xl font-black font-orbitron text-white mt-1">PLAYER #6</div>
               <p className="text-[10px] text-gray-400 mt-3 font-light">Articulation point detected. Removal results in 42% connectivity loss.</p>
+            </div>
+
+            {/* Metric Card 3: Team Compactness */}
+            <div className="liquid-glass p-6 rounded-2xl border border-white/5 relative overflow-hidden">
+               <div className="flex justify-between items-center mb-4">
+                 <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Team Compactness</span>
+                 <Target className="w-4 h-4 text-emerald-500" />
+               </div>
+               <div className="text-2xl font-black font-orbitron text-emerald-400">OPTIMAL</div>
+               <div className="text-[10px] text-white/40 font-mono mt-1">DIAMETER: 32.4m</div>
+               <div className="mt-3 flex gap-1 h-6">
+                 {Array.from({ length: 6 }).map((_, i) => (
+                    <motion.div 
+                      key={i}
+                      animate={{ height: ['40%', '100%', '40%'] }}
+                      transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.15 }}
+                      className="flex-1 bg-emerald-500/20 border-t border-emerald-500/50"
+                    />
+                 ))}
+               </div>
+            </div>
+
+            {/* Metric Card 4: Passing Lanes */}
+            <div className="liquid-glass p-6 rounded-2xl border border-white/5">
+               <div className="flex justify-between items-center mb-4">
+                 <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Passing Lanes</span>
+                 <span className="text-[8px] font-black uppercase tracking-widest text-blue-500 animate-pulse">ACTIVE</span>
+               </div>
+               <div className="space-y-2">
+                 <div className="flex justify-between text-[10px] text-white/60 font-mono">
+                   <span>P1 → P4 (Synergy)</span>
+                   <span className="text-cyan-400">92%</span>
+                 </div>
+                 <div className="h-0.5 w-full bg-white/5">
+                   <div className="h-full bg-cyan-400 w-[92%]" />
+                 </div>
+                 <div className="flex justify-between text-[10px] text-white/60 font-mono mt-2">
+                   <span>P2 → P3 (Risk)</span>
+                   <span className="text-rose-500">41%</span>
+                 </div>
+                 <div className="h-0.5 w-full bg-white/5">
+                   <div className="h-full bg-rose-500 w-[41%]" />
+                 </div>
+               </div>
             </div>
 
             {/* Recommendation Card */}

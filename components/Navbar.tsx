@@ -51,9 +51,15 @@ export default function Navbar() {
 
         {/* Right: Action */}
         <div className="flex items-center gap-4">
-          <div className="hidden xl:flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full">
-            <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Hackathon</span>
-            <span className="text-[9px] font-bold text-white uppercase font-mono">GDG 2026</span>
+          <div className="hidden xl:flex flex-col px-3 py-1 bg-white/5 border border-white/10 rounded-lg min-w-[160px]">
+             <div className="flex items-center gap-2">
+               <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Auth:</span>
+               <span className="text-[9px] font-bold text-cyan-400 uppercase font-mono">Man Blue FC</span>
+             </div>
+             <div className="flex justify-between items-center mt-0.5 border-t border-white/5 pt-0.5">
+               <span className="text-[7px] font-black text-gray-400 uppercase tracking-widest">vs Red United</span>
+               <span className="text-[7px] font-black text-white/50 uppercase tracking-widest bg-black/40 px-1 rounded">4-3-3</span>
+             </div>
           </div>
           <Link href="/live" className="hidden md:flex items-center gap-2 px-5 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 rounded-lg transition-all group/btn pointer-events-auto">
             <span className="text-[10px] font-black text-cyan-400 uppercase tracking-widest">Launch Analysis</span>
