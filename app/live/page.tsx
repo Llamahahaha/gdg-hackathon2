@@ -20,68 +20,114 @@ const initialPlayers = [
 ];
 
 export default function LiveEnginePage() {
-  const [players, setPlayers] = useState(initialPlayers);
+  const [players, setPlayers] = useState<any[]>(initialPlayers);
   const [playerHistory, setPlayerHistory] = useState<Record<number, {x: number, y: number}[]>>({});
   const [neutralizedIds, setNeutralizedIds] = useState<number[]>([]);
   const [frameIndex, setFrameIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [entropy, setEntropy] = useState(0.42);
   const [phase, setPhase] = useState("MID_BLOCK");
+  const [ws, setWs] = useState<WebSocket | null>(null);
+  const [liveFrame, setLiveFrame] = useState<string | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState("DISCONNECTED");
 
-  // Sync with real match telemetry
+  // WebSocket Connection
   useEffect(() => {
-    if (!isPlaying) return;
+    const socket = new WebSocket('ws://localhost:8000/ws');
+    
+    socket.onopen = () => {
+      setConnectionStatus("CONNECTED");
+      setWs(socket);
+    };
 
-    const interval = setInterval(() => {
-      setFrameIndex(prev => {
-        const next = (prev + 1) % matchData.timeline.length;
-        const currentFrame = matchData.timeline[next];
-
-        if (currentFrame && currentFrame.detections) {
-          const uniqueDetections = new Map();
-          currentFrame.detections.forEach((d: any) => {
-            if (!uniqueDetections.has(d.id)) uniqueDetections.set(d.id, d);
-          });
-
-          const updatedPlayers = Array.from(uniqueDetections.values())
-            .filter((d: any) => !neutralizedIds.includes(d.id))
-            .map((d: any) => ({
-              id: d.id,
-              rawX: d.center[0],
-              rawY: d.center[1],
-              x: (d.center[0] / 1920) * 800,
-              y: (d.center[1] / 1080) * 400,
-              name: `P${d.id}`,
-              team: d.team === 'green' ? 'A' : 'B'
-            }));
-
-          // Update History for Ghosting
-          setPlayerHistory(prev => {
-            const newHistory = { ...prev };
-            updatedPlayers.forEach(p => {
-              if (!newHistory[p.id]) newHistory[p.id] = [];
-              newHistory[p.id] = [...newHistory[p.id].slice(-5), { x: p.x, y: p.y }];
+    socket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'frame') {
+          setLiveFrame(`data:image/jpeg;base64,${data.frame}`);
+          setFrameIndex(data.stats?.frame_id || 0);
+          
+          if (data.stats && data.stats.detections) {
+            const uniqueDetections = new Map();
+            data.stats.detections.forEach((d: any) => {
+              // Ensure we have center coordinates
+              const bbox = d.bbox || [0, 0, 0, 0];
+              const center = d.center || [(bbox[0] + bbox[2])/2, (bbox[1] + bbox[3])/2];
+              if (!uniqueDetections.has(d.id)) {
+                d.center = center;
+                uniqueDetections.set(d.id, d);
+              }
             });
-            return newHistory;
-          });
 
-          setPlayers(updatedPlayers);
+            const updatedPlayers = Array.from(uniqueDetections.values())
+              .filter((d: any) => !neutralizedIds.includes(d.id))
+              .map((d: any) => ({
+                id: d.id,
+                rawX: d.center[0],
+                rawY: d.center[1],
+                x: (d.center[0] / 1920) * 800,
+                y: (d.center[1] / 1080) * 400,
+                name: `P${d.id}`,
+                team: d.team === 'green' ? 'A' : 'B'
+              }));
 
-          // Phase Detection Logic (Mocked)
-          const teamA = updatedPlayers.filter(p => p.team === 'A');
-          const avgX = teamA.reduce((sum, p) => sum + p.x, 0) / (teamA.length || 1);
-          if (avgX > 500) setPhase("HIGH_PRESS");
-          else if (avgX < 300) setPhase("LOW_BLOCK");
-          else setPhase("MID_BLOCK");
+            // Update History for Ghosting
+            setPlayerHistory(prev => {
+              const newHistory = { ...prev };
+              updatedPlayers.forEach(p => {
+                if (!newHistory[p.id]) newHistory[p.id] = [];
+                newHistory[p.id] = [...newHistory[p.id].slice(-5), { x: p.x, y: p.y }];
+              });
+              return newHistory;
+            });
 
-          setEntropy(0.3 + (Math.abs(Math.sin(next / 50)) * 0.4));
+            setPlayers(updatedPlayers);
+
+            // Phase Detection
+            const teamA = updatedPlayers.filter(p => p.team === 'A');
+            const avgX = teamA.reduce((sum, p) => sum + p.x, 0) / (teamA.length || 1);
+            if (avgX > 500) setPhase("HIGH_PRESS");
+            else if (avgX < 300) setPhase("LOW_BLOCK");
+            else setPhase("MID_BLOCK");
+
+            // Mocked entropy for demo flow
+            setEntropy(0.3 + (Math.abs(Math.sin((data.stats?.frame_id || 0) / 50)) * 0.4));
+          }
+        } else if (data.type === 'status') {
+          console.log("[PIPELINE STATUS]", data.message);
         }
-        return next;
-      });
-    }, 100);
+      } catch (e) {
+        console.error("Failed to parse websocket message", e);
+      }
+    };
 
-    return () => clearInterval(interval);
-  }, [isPlaying, neutralizedIds]);
+    socket.onclose = () => {
+      setConnectionStatus("DISCONNECTED");
+      setWs(null);
+    };
+
+    return () => {
+      socket.close();
+    };
+  }, [neutralizedIds]);
+
+  const handleStart = async () => {
+    setIsPlaying(true);
+    try {
+      await fetch('http://localhost:8000/start', { method: 'POST' });
+    } catch (e) {
+      console.error("Failed to start pipeline:", e);
+    }
+  };
+
+  const handleStop = async () => {
+    setIsPlaying(false);
+    try {
+      await fetch('http://localhost:8000/stop', { method: 'POST' });
+    } catch (e) {
+      console.error("Failed to stop pipeline:", e);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-charcoal text-white font-sans overflow-hidden flex flex-col">
@@ -123,14 +169,14 @@ export default function LiveEnginePage() {
           
           <div className="flex items-center gap-2">
             <button 
-              onClick={() => setIsPlaying(true)}
+              onClick={handleStart}
               className={`px-6 py-2 border flex items-center gap-2 transition-all ${isPlaying ? 'bg-cyan-500 border-cyan-400 text-black' : 'bg-transparent border-white/10 text-white hover:bg-white/5'}`}
             >
               <Play className="w-3 h-3" />
               <span className="text-[10px] font-black uppercase tracking-widest">Initialize Engine</span>
             </button>
             <button 
-              onClick={() => setIsPlaying(false)}
+              onClick={handleStop}
               className={`px-6 py-2 border flex items-center gap-2 transition-all ${!isPlaying ? 'bg-rose-500 border-rose-400 text-white' : 'bg-transparent border-white/10 text-white hover:bg-white/5'}`}
             >
               <Pause className="w-3 h-3" />
@@ -155,11 +201,18 @@ export default function LiveEnginePage() {
             <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-cyan-500/40 z-10" />
             <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-cyan-500/40 z-10" />
 
-            <video
-              autoPlay loop muted playsInline
-              className="w-full h-full object-cover opacity-80"
-              src="/videos/test.mp4"
-            />
+            {liveFrame ? (
+              <img
+                src={liveFrame}
+                alt="Live Pipeline Feed"
+                className="w-full h-full object-cover opacity-80"
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center bg-black/80">
+                <div className="text-cyan-400 text-sm font-mono animate-pulse">AWAITING_SIGNAL...</div>
+                <div className="text-white/30 text-[10px] font-black uppercase tracking-widest mt-2">{connectionStatus}</div>
+              </div>
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60" />
 
             {/* HUD Overlay on Video */}
