@@ -39,3 +39,19 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+# Video & Media
+public/videos/
+vision/input_videos/
+vision/output_videos/
+vision/extracted_frames/
+vision/processed_frames/
+
+# AI Models (Very Large)
+vision/models/*.pt
+vision/models/*.onnx
+
+# Local Data & Logs
+public/data/match_telemetry.json
+lint_output*.txt
+.venv/
+__pycache__/
