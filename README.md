@@ -1,37 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FieldTheory AI: Spatio-Temporal Graph Intelligence Engine
 
-## Getting Started
+FieldTheory AI is a high-fidelity tactical intelligence platform designed for elite sports strategy. Unlike traditional analytics that focus on individual events (goals, passes, heatmaps), FieldTheory AI models the field as a **living, breathing temporal graph**, quantifying the invisible architecture of team coordination.
 
-First, run the development server:
+## 🚀 The Winning Strategy
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+FieldTheory AI transforms raw match telemetry into actionable structural insights. By analyzing the "structural health" of a formation, coaches can identify tactical fractures before they manifest as goals.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Core Algorithms & Tactical Meaning
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Algorithm | Football Strategy Meaning |
+| :--- | :--- |
+| **Graph Laplacian** | **Formation Stability**: Monitoring spectral health to detect "Formation Entropy." |
+| **Articulation Points** | **Lynchpin Isolation**: Identifying the single player whose neutralization fractures team connectivity. |
+| **Dijkstra’s Algorithm** | **Optimal Pathfinding**: Calculating the most efficient passing progression under pressure. |
+| **Floyd-Warshall** | **Global Connectivity**: Real-time team diameter and compactness audits. |
+| **Entropy Engine** | **Tactical Instability**: Predicting defensive collapse based on node displacement variance. |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🛠️ Tech Stack
 
-## Learn More
+- **Frontend**: Next.js 15, Tailwind CSS, Framer Motion (for cinematic HUD), Lucide React.
+- **Backend**: Python, YOLOv8 (Computer Vision), NetworkX (Graph Theory), OpenCV.
+- **Data Pipeline**: UV-managed virtual environment for high-performance telemetry extraction.
 
-To learn more about Next.js, take a look at the following resources:
+## 🧠 Key Features
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Live Tactical HUD**: Real-time bounding box tracking with unique player ID and team classification.
+- **Dynamic Topological Graph**: Visualizes the "living network" of the team with weighted edges representing synergy and pressure.
+- **Lynchpin Isolation**: Automatically detects and highlights the most critical player in the current formation.
+- **Simulation Sandbox**: Interactive "neutralization" mode to visualize the impact of player removal on team connectivity.
+- **Spectral Matrix Viewer**: Deep-dive into the Graph Laplacian and adjacency relationships.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📈 Why Football?
 
-## Deploy on Vercel
+Football is "Spatial Chess." It naturally possesses the visible formations, spacing, and passing networks that make graph concepts visually intuitive and strategically vital.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# gdg-hackathon2
+*Built with passion for the GDG Hackathon by Team CodeY.*

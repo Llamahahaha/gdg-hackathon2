@@ -1,0 +1,51 @@
+# FieldTheory AI: Project Status Report
+
+FieldTheory AI has transitioned from a standard sports analytics tool into a **Spatio-Temporal Graph Intelligence Engine**. Below is the current implementation status.
+
+## ✅ Implemented Features
+
+### 1. Intelligence HUD (Live Engine)
+- **Object Detection & Tracking**: Real-time YOLOv8 telemetry synchronization.
+- **Topological Graph Engine**: Models players as nodes and tactical relationships as weighted edges.
+- **Cinematic Visualization**: 
+    - CRT Scanline signal distortion.
+    - Kinetic "Ghosting" movement trails.
+    - Team-colored premium bounding boxes.
+- **Phase Detection**: Automated identification of `HIGH_PRESS`, `MID_BLOCK`, and `LOW_BLOCK`.
+- **Node Inspector**: Interactive hover tooltips showing individual player stability and centrality.
+
+### 2. Predictive Tactical Algorithms
+- **Formation Entropy Engine**: Real-time calculation of structural disorder with predictive collapse warnings.
+- **Lynchpin Isolation**: Automatic detection of **Articulation Points** (critical nodes holding the formation together).
+- **Interactive Neutralization**: A simulation sandbox to "fracture" the graph by removing key players.
+- **Spectral Matrix Viewer**: Visualizing the Graph Laplacian for spectral formation health.
+
+### 3. Mission Control (Command & Control)
+- **Command Bar**: Integrated "Initialize" and "Stop" controls for the analytical engine.
+- **Footage Uplink**: Mock upload module to represent the ingestion of new match clips.
+
+### 4. Command Center (Dashboard)
+- **Enterprise Overview**: High-level tactical KPIs (Uptime, Synergy, Active Nodes).
+- **Stability Index**: Comparative bar charts for home/away formation variance.
+- **Activity Feed**: Log of tactical events (Threshold alerts, Lynchpin detection).
+
+---
+
+## ❌ Not Yet Implemented (Missing Pages)
+
+- **Replay Lab**: Dedicated module for frame-by-frame post-match forensic analysis.
+- **Full Simulations Sandbox**: Manual node drag-and-drop to test "What If" scenarios (Live Engine currently only supports "Neutralization").
+- **Intelligence Reports**: Exportable PDF/CSV tactical audits for enterprise stakeholders.
+
+---
+
+## 🚀 Roadmap: Final Hackathon Push
+
+1.  **Refine Replay Lab**: Adapt the Live Engine code into a `ReplayLab` component with an interactive time-scrubber.
+2.  **PDF Tactical Audit**: Implement a "Generate Report" button that creates a summary of the match's most unstable moments.
+3.  **Landing Page Alignment**: Ensure the Landing Page messaging emphasizes "Graph Intelligence" and "Spatio-Temporal Modeling" over generic AI.
+4.  **Real-Time Processing Link**: Connect the "Upload" button to a backend endpoint that can (optionally) trigger a fresh YOLO run if server resources allow.
+
+---
+
+**Status**: *Ready for Deployment / Demo.*

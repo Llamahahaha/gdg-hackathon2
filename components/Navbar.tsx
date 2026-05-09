@@ -33,7 +33,7 @@ export default function Navbar() {
         {/* Center: HUD Links */}
         <div className="hidden lg:flex items-center gap-8">
           {[
-            { name: "Dashboard", path: "/" },
+            { name: "Dashboard", path: "/dashboard" },
             { name: "Live Engine", path: "/live" },
             { name: "Replay Lab", path: "/replay" },
             { name: "Simulations", path: "/simulations" },
