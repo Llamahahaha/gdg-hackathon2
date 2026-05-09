@@ -28,12 +28,12 @@ export default function LiveEnginePage() {
   // Sync with real match telemetry
   useEffect(() => {
     if (!isPlaying) return;
-    
+
     const interval = setInterval(() => {
       setFrameIndex(prev => {
         const next = (prev + 1) % matchData.timeline.length;
         const currentFrame = matchData.timeline[next];
-        
+
         if (currentFrame && currentFrame.detections) {
           const updatedPlayers = currentFrame.detections.map((d: any) => ({
             id: d.id,
@@ -44,17 +44,17 @@ export default function LiveEnginePage() {
             team: d.team === 'green' ? 'A' : 'B'
           }));
           setPlayers(updatedPlayers);
-          
+
           // Dynamically compute entropy based on team dispersion (mocked logic)
-          const dispersion = updatedPlayers.length > 0 ? 
+          const dispersion = updatedPlayers.length > 0 ?
             updatedPlayers.reduce((acc, p) => acc + p.x, 0) / updatedPlayers.length : 0.5;
           setEntropy(0.3 + (Math.abs(Math.sin(next / 50)) * 0.4));
         }
-        
+
         return next;
       });
     }, 100); // 10 FPS simulated sync
-    
+
     return () => clearInterval(interval);
   }, [isPlaying]);
 
@@ -91,19 +91,19 @@ export default function LiveEnginePage() {
             {/* Bounding Box Tracking Overlay */}
             <svg className="absolute inset-0 w-full h-full pointer-events-none">
               {players.slice(0, 12).map((p, i) => (
-                <motion.g 
+                <motion.g
                   key={p.id}
-                  animate={{ 
-                    x: p.x, 
-                    y: p.y 
+                  animate={{
+                    x: p.x,
+                    y: p.y
                   }}
                   transition={{ ease: "linear", duration: 0.1 }}
                 >
-                  <rect 
+                  <rect
                     x="-15" y="-25"
-                    width="30" height="50" 
-                    fill="transparent" 
-                    stroke={p.team === 'A' ? "#00f3ff" : "#ff0033"} 
+                    width="30" height="50"
+                    fill="transparent"
+                    stroke={p.team === 'A' ? "#00f3ff" : "#ff0033"}
                     strokeWidth="1.5"
                     className="opacity-60"
                   />
@@ -115,7 +115,7 @@ export default function LiveEnginePage() {
               ))}
             </svg>
           </div>
-          
+
           <div className="liquid-glass p-4 rounded-xl border border-white/5 flex flex-col gap-3">
             <div className="text-[10px] font-black uppercase tracking-widest text-white/30 border-b border-white/5 pb-2">Detection Logs</div>
             <div className="flex-1 overflow-y-auto font-mono text-[9px] space-y-2 text-white/50 h-24">
@@ -128,7 +128,7 @@ export default function LiveEnginePage() {
 
         {/* BOTTOM SECTION: Intelligence & Graph (Split) */}
         <div className="grid grid-cols-12 gap-6 pb-24">
-          
+
           {/* Tactical Graph */}
           <div className="col-span-12 lg:col-span-8 flex flex-col gap-4">
             <div className="flex items-center justify-between px-2">
@@ -190,98 +190,106 @@ export default function LiveEnginePage() {
             </div>
           </div>
 
-        {/* RIGHT PANEL: AI Tactical Intelligence */}
-        <div className="col-span-12 lg:col-span-3 flex flex-col gap-6">
-          <div className="px-2">
-            <span className="text-[10px] font-black uppercase tracking-widest text-white/40">AI Intelligence // Insights</span>
-          </div>
-
-          <div className="flex-1 flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar">
-
-            {/* Metric Card 1 */}
-            <motion.div
-              animate={{ borderColor: entropy > 0.7 ? '#ff0033' : 'rgba(255,255,255,0.05)' }}
-              className="liquid-glass p-6 rounded-2xl border transition-colors relative overflow-hidden"
-            >
-              <div className="flex justify-between items-start mb-4">
-                <Activity className={`w-5 h-5 ${entropy > 0.7 ? 'text-rose-500' : 'text-cyan-400'}`} />
-                <span className={`text-[8px] font-black uppercase tracking-widest ${entropy > 0.7 ? 'text-rose-500 animate-pulse' : 'text-white/30'}`}>
-                  {entropy > 0.7 ? 'WARNING: HIGH DISORDER' : 'STABLE'}
-                </span>
-              </div>
-              <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Formation Entropy</div>
-              <div className="text-4xl font-black font-orbitron text-white mt-1">{(entropy * 100).toFixed(1)}%</div>
-              <div className="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                <motion.div animate={{ width: `${entropy * 100}%`, backgroundColor: entropy > 0.7 ? '#ff0033' : '#00f3ff' }} className="h-full" />
-              </div>
-            </motion.div>
-
-            {/* Metric Card 2 */}
-            <div className="liquid-glass p-6 rounded-2xl border border-white/5">
-              <div className="flex justify-between items-start mb-4">
-                <Hexagon className="w-5 h-5 text-blue-500" />
-                <span className="text-[8px] font-black uppercase tracking-widest text-white/30">SYSTEM DETECTED</span>
-              </div>
-              <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Critical Node</div>
-              <div className="text-4xl font-black font-orbitron text-white mt-1">PLAYER #6</div>
-              <p className="text-[10px] text-gray-400 mt-3 font-light">Articulation point detected. Removal results in 42% connectivity loss.</p>
+          {/* RIGHT PANEL: AI Tactical Intelligence */}
+          <div className="col-span-12 lg:col-span-3 flex flex-col gap-6">
+            <div className="px-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-white/40">AI Intelligence // Insights</span>
             </div>
 
-            {/* Metric Card 3: Team Compactness */}
-            <div className="liquid-glass p-6 rounded-2xl border border-white/5 relative overflow-hidden">
-               <div className="flex justify-between items-center mb-4">
-                 <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Team Compactness</span>
-                 <Target className="w-4 h-4 text-emerald-500" />
-               </div>
-               <div className="text-2xl font-black font-orbitron text-emerald-400">OPTIMAL</div>
-               <div className="text-[10px] text-white/40 font-mono mt-1">DIAMETER: 32.4m</div>
-               <div className="mt-3 flex gap-1 h-6">
-                 {Array.from({ length: 6 }).map((_, i) => (
-                    <motion.div 
+            <div className="flex-1 flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar">
+
+              {/* Metric Card 1 */}
+              <motion.div
+                animate={{ borderColor: entropy > 0.7 ? '#ff0033' : 'rgba(255,255,255,0.05)' }}
+                className="liquid-glass p-6 rounded-2xl border transition-colors relative overflow-hidden"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <Activity className={`w-5 h-5 ${entropy > 0.7 ? 'text-rose-500' : 'text-cyan-400'}`} />
+                  <span className={`text-[8px] font-black uppercase tracking-widest ${entropy > 0.7 ? 'text-rose-500 animate-pulse' : 'text-white/30'}`}>
+                    {entropy > 0.7 ? 'WARNING: HIGH DISORDER' : 'STABLE'}
+                  </span>
+                </div>
+                <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Formation Entropy</div>
+                <div className="text-4xl font-black font-orbitron text-white mt-1">{(entropy * 100).toFixed(1)}%</div>
+                
+                {entropy > 0.7 && (
+                  <div className="mt-2 text-[9px] font-bold text-rose-500 uppercase tracking-tighter animate-bounce flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3" /> Predictive Collapse Risk: 84%
+                  </div>
+                )}
+                <div className="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                  <motion.div animate={{ width: `${entropy * 100}%`, backgroundColor: entropy > 0.7 ? '#ff0033' : '#00f3ff' }} className="h-full" />
+                </div>
+              </motion.div>
+
+              {/* Metric Card 2 */}
+              <div className="liquid-glass p-6 rounded-2xl border border-white/5">
+                <div className="flex justify-between items-start mb-4">
+                  <Hexagon className="w-5 h-5 text-blue-500" />
+                  <span className="text-[8px] font-black uppercase tracking-widest text-white/30">SYSTEM DETECTED</span>
+                </div>
+                <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Critical Node</div>
+                <div className="text-4xl font-black font-orbitron text-white mt-1">PLAYER #6</div>
+                <p className="text-[10px] text-gray-400 mt-3 font-light">Articulation point detected. Removal results in 42% connectivity loss.</p>
+              </div>
+
+              {/* Metric Card 3: Team Compactness */}
+              <div className="liquid-glass p-6 rounded-2xl border border-white/5 relative overflow-hidden">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Team Compactness</span>
+                  <Target className="w-4 h-4 text-emerald-500" />
+                </div>
+                <div className="text-2xl font-black font-orbitron text-emerald-400">OPTIMAL</div>
+                <div className="text-[10px] text-white/40 font-mono mt-1">DIAMETER: 32.4m</div>
+                <div className="mt-3 flex gap-1 h-6">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <motion.div
                       key={i}
                       animate={{ height: ['40%', '100%', '40%'] }}
                       transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.15 }}
                       className="flex-1 bg-emerald-500/20 border-t border-emerald-500/50"
                     />
-                 ))}
-               </div>
-            </div>
+                  ))}
+                </div>
+              </div>
 
-            {/* Metric Card 4: Passing Lanes */}
-            <div className="liquid-glass p-6 rounded-2xl border border-white/5">
-               <div className="flex justify-between items-center mb-4">
-                 <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Passing Lanes</span>
-                 <span className="text-[8px] font-black uppercase tracking-widest text-blue-500 animate-pulse">ACTIVE</span>
-               </div>
-               <div className="space-y-2">
-                 <div className="flex justify-between text-[10px] text-white/60 font-mono">
-                   <span>P1 → P4 (Synergy)</span>
-                   <span className="text-cyan-400">92%</span>
-                 </div>
-                 <div className="h-0.5 w-full bg-white/5">
-                   <div className="h-full bg-cyan-400 w-[92%]" />
-                 </div>
-                 <div className="flex justify-between text-[10px] text-white/60 font-mono mt-2">
-                   <span>P2 → P3 (Risk)</span>
-                   <span className="text-rose-500">41%</span>
-                 </div>
-                 <div className="h-0.5 w-full bg-white/5">
-                   <div className="h-full bg-rose-500 w-[41%]" />
-                 </div>
-               </div>
-            </div>
+              {/* Metric Card 4: Passing Lanes */}
+              <div className="liquid-glass p-6 rounded-2xl border border-white/5">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Passing Lanes</span>
+                  <span className="text-[8px] font-black uppercase tracking-widest text-blue-500 animate-pulse">ACTIVE</span>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-[10px] text-white/60 font-mono">
+                    <span>P1 → P4 (Synergy)</span>
+                    <span className="text-cyan-400">92%</span>
+                  </div>
+                  <div className="h-0.5 w-full bg-white/5">
+                    <div className="h-full bg-cyan-400 w-[92%]" />
+                  </div>
+                  <div className="flex justify-between text-[10px] text-white/60 font-mono mt-2">
+                    <span>P2 → P3 (Risk)</span>
+                    <span className="text-rose-500">41%</span>
+                  </div>
+                  <div className="h-0.5 w-full bg-white/5">
+                    <div className="h-full bg-rose-500 w-[41%]" />
+                  </div>
+                </div>
+              </div>
 
-            {/* Recommendation Card */}
-            <div className="bg-cyan-500/10 border border-cyan-500/30 p-6 rounded-2xl relative overflow-hidden">
-              <Zap className="absolute top-[-10px] right-[-10px] w-24 h-24 text-cyan-500/5 rotate-12" />
-              <div className="text-[10px] font-black text-cyan-400 uppercase tracking-widest mb-4">AI Recommendation</div>
-              <div className="text-lg font-bold text-white leading-tight">Compress midfield spacing to reduce passing lane distance by 15%.</div>
-              <button className="mt-6 flex items-center gap-2 text-[10px] font-black uppercase text-cyan-400 tracking-widest group">
-                Apply Simulation <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
-              </button>
-            </div>
+              {/* Recommendation Card */}
+              <div className="bg-cyan-500/10 border border-cyan-500/30 p-6 rounded-2xl relative overflow-hidden">
+                <Zap className="absolute top-[-10px] right-[-10px] w-24 h-24 text-cyan-500/5 rotate-12" />
+                <div className="text-[10px] font-black text-cyan-400 uppercase tracking-widest mb-4">AI Recommendation</div>
+                <div className="text-lg font-bold text-white leading-tight">Compress midfield spacing to reduce passing lane distance by 15%.</div>
+                <button className="mt-6 flex items-center gap-2 text-[10px] font-black uppercase text-cyan-400 tracking-widest group">
+                  Apply Simulation <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
 
+            </div>
           </div>
+
         </div>
 
         {/* BOTTOM PANEL: Timeline Replay */}

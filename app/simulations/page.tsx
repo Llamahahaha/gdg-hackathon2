@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
-import { MousePointer2, Move, RefreshCw, Zap, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { MousePointer2, Move, RefreshCw, Zap, AlertTriangle, CheckCircle2, LayoutGrid, Skull, Binary } from 'lucide-react';
 
 const initialPlayers = [
   { id: 1, x: 200, y: 150, name: "P1", team: 'A' },
@@ -16,6 +16,9 @@ const initialPlayers = [
 export default function SimulationSandboxPage() {
   const [players, setPlayers] = useState(initialPlayers);
   const [isSimulating, setIsSimulating] = useState(true);
+  const [showMatrix, setShowMatrix] = useState(false);
+  const [showMST, setShowMST] = useState(false);
+  const [isolatedId, setIsolatedId] = useState<number | null>(null);
 
   // Calculate metrics based on player positions
   const metrics = useMemo(() => {
@@ -99,8 +102,27 @@ export default function SimulationSandboxPage() {
 
            </div>
 
-           <div className="p-4 bg-white/5 rounded-xl border border-white/10 text-[9px] text-white/30 uppercase tracking-[0.2em] font-medium leading-relaxed">
-              * Interaction Guide: Drag player nodes to recalculate graph topology and entropy spikes in real-time.
+           <div className="p-4 bg-white/5 rounded-xl border border-white/10 space-y-4">
+              <div className="text-[9px] text-white/30 uppercase tracking-[0.2em] font-medium leading-relaxed">
+                 * Interaction Guide: Drag player nodes to recalculate graph topology and entropy spikes in real-time.
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                 <button 
+                   onClick={() => setShowMatrix(!showMatrix)}
+                   className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg border transition-all text-[9px] font-black uppercase tracking-widest ${showMatrix ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400' : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10'}`}
+                 >
+                   <Binary className="w-3 h-3" /> {showMatrix ? 'Close Matrix' : 'Open Matrix'}
+                 </button>
+                 <button 
+                   onClick={() => {
+                     const lynchpin = players[Math.floor(Math.random() * players.length)];
+                     setPlayers(prev => prev.filter(p => p.id !== lynchpin.id));
+                   }}
+                   className="flex items-center justify-center gap-2 px-3 py-2 bg-rose-500/10 border border-rose-500/30 rounded-lg text-rose-500 hover:bg-rose-500/20 transition-all text-[9px] font-black uppercase tracking-widest"
+                 >
+                   <Skull className="w-3 h-3" /> Isolate Lynchpin
+                 </button>
+              </div>
            </div>
         </div>
 
@@ -121,6 +143,47 @@ export default function SimulationSandboxPage() {
 
            <div className="flex-1 bg-black/40 rounded-3xl border border-white/10 relative overflow-hidden group shadow-2xl">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_2px_2px,rgba(255,255,255,0.03)_1px,transparent_0)] bg-[size:50px_50px]" />
+              
+              {/* Spectral Matrix Overlay */}
+              {showMatrix && (
+                <div className="absolute top-6 right-6 z-10 p-4 liquid-glass border border-cyan-500/30 rounded-xl space-y-4 animate-in fade-in zoom-in duration-300">
+                   <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                      <span className="text-[10px] font-black text-cyan-400 uppercase tracking-widest">Graph Laplacian [L]</span>
+                      <span className="text-[8px] font-mono text-white/30">DIM: {players.length}x{players.length}</span>
+                   </div>
+                   <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${players.length}, minmax(0, 1fr))` }}>
+                      {players.map((p1, i) => 
+                         players.map((p2, j) => {
+                            const val = i === j ? players.length - 1 : -1;
+                            return (
+                              <div key={`${i}-${j}`} className={`w-8 h-8 flex items-center justify-center border border-white/5 font-mono text-[9px] ${i === j ? 'text-cyan-400 bg-cyan-400/5' : 'text-white/20'}`}>
+                                {val}
+                              </div>
+                            );
+                         })
+                      )}
+                   </div>
+                   <div className="text-[8px] font-mono text-white/20 leading-tight">
+                      Σ Degree(v) - Adjacency(G)<br/>
+                      Spectral Gap: {(1 - metrics.entropy).toFixed(4)}
+                   </div>
+                </div>
+              )}
+
+              {/* Tactical Fracture Warning */}
+              {players.length < initialPlayers.length && (
+                <div className="absolute inset-0 z-20 pointer-events-none flex items-center justify-center bg-rose-500/10 backdrop-blur-[2px]">
+                   <motion.div 
+                     initial={{ scale: 0.9, opacity: 0 }}
+                     animate={{ scale: 1, opacity: 1 }}
+                     className="p-8 liquid-glass border border-rose-500/50 rounded-3xl text-center space-y-3 shadow-[0_0_50px_rgba(255,0,51,0.2)]"
+                   >
+                      <Skull className="w-12 h-12 text-rose-500 mx-auto animate-bounce" />
+                      <h3 className="text-2xl font-black font-orbitron text-white uppercase tracking-tighter">Tactical Fracture</h3>
+                      <p className="text-[10px] text-rose-400 font-bold uppercase tracking-[0.2em]">Articulation Point Removed // Graph Connectivity Fragmented</p>
+                   </motion.div>
+                </div>
+              )}
               
               <svg className="w-full h-full cursor-crosshair">
                  {/* Pitch Markings */}
