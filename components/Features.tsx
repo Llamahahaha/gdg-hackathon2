@@ -6,35 +6,35 @@ import { motion, AnimatePresence } from 'framer-motion';
 const features = [
   {
     id: "tracking",
-    title: "Optical Motion Capture",
-    tagline: "Vision-based tracking",
-    desc: "Real-time 3D skeletal tracking using standard 2D camera feeds. Our vision engine extracts biomechanical data points without wearable sensors.",
-    data: ["60 FPS", "LATENCY < 15MS", "98.4% ACCURACY"],
-    color: "#c8e86e"
+    title: "Topological Graph Pipeline",
+    tagline: "Live Spanning Trees",
+    desc: "Real-time coordinate extraction translated into dynamic node-edge matrices via algebraic connectivity heuristics.",
+    data: ["YOLOv8 INGEST", "LATENCY < 15MS", "MST ALGORITHM: ACTIVE"],
+    color: "#10b981"
   },
   {
     id: "analytics",
-    title: "Predictive Fatigue Index",
-    tagline: "Neural load monitoring",
-    desc: "Movement pattern analysis to forecast exhaustion and injury risk. Monitor training loads with medical-grade precision.",
-    data: ["AI DRIVEN", "RISK_PREDICTION: ACTIVE", "FATIGUE_SCORE: LIVE"],
-    color: "#60a5fa"
+    title: "Momentum Shift Engine",
+    tagline: "Centrality stretching",
+    desc: "Analyze network fractures via betweenness centrality and Louvain community detection. Identify vulnerability clusters dynamically.",
+    data: ["LOUVAIN CLUSTER", "FRACTURE RISK: HIGH", "ISOLATION METRIC: LIVE"],
+    color: "#3b82f6"
   },
   {
     id: "tactical",
-    title: "Tactical Spacing Engine",
-    tagline: "Positional intelligence",
-    desc: "Dynamic formation analysis and heatmaps. Visualize team structure, player density, and defensive gaps in real-time.",
-    data: ["FORMATION: 4-3-3", "GAP_DETECTION: ON", "DENSITY_MAP: LIVE"],
-    color: "#fb923c"
+    title: "Lynchpin Detection System",
+    tagline: "Articulation point logic",
+    desc: "Identify critical network bridges. Visualize vulnerabilities and gatekeepers within the team's structural graph.",
+    data: ["CUT-VERTEX: DETECTED", "EDGE SYNERGY: ON", "CONNECTIVITY: 0.82"],
+    color: "#f59e0b"
   },
   {
     id: "logs",
-    title: "Match Intelligence",
-    tagline: "Automated event tagging",
-    desc: "Semantic understanding of match events. Automatically tag sprints, jumps, and maneuvers for instant review.",
-    data: ["EVENT_TAGGING: AUTO", "REPLAY_GEN: FAST", "LOG_DB: SYNCED"],
-    color: "#2dd4bf"
+    title: "Triadic Closures",
+    tagline: "Synergy bias heuristics",
+    desc: "Analyze target states and sub-networks using human-guided connectivity overrides based on tactical chemistry.",
+    data: ["CHEMISTRY BIAS: AUTO", "REPLAY: SYNCED", "PIPELINE LOGS: LIVE"],
+    color: "#f43f5e"
   }
 ];
 

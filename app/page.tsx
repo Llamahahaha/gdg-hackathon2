@@ -1,6 +1,8 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Features from "@/components/Features";
+import Timeline from "@/components/Timeline";
+import Testimonial from "@/components/Testimonial";
 import Collaboration from "@/components/Collaboration";
 
 export default function Home() {
@@ -8,8 +10,10 @@ export default function Home() {
     <main className="min-h-screen">
       <Navbar />
       <Hero />
-      <Collaboration />
       <Features />
+      <Timeline />
+      <Testimonial />
+      <Collaboration />
     </main>
   );
 }

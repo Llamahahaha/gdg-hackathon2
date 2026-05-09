@@ -41,125 +41,42 @@ interface FrameStats {
 // ─────────────────────────────────────────────────────────────
 
 function useFrameStream(active: boolean) {
-  const ws = useRef<WebSocket | null>(null);
-  const imgRef = useRef<HTMLImageElement | null>(null);
-
-  const [stats, setStats] = useState<FrameStats | null>(null);
-  const [players, setPlayers] = useState<PlayerData[]>([]);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const [connected, setConnected] = useState(false);
   const [ready, setReady] = useState(false);
-  const [status, setStatus] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [fps, setFps] = useState(0);
 
-  const frameCounter = useRef(0);
-  const lastTime = useRef(0);
-
-  const connect = useCallback(() => {
-    if (ws.current) ws.current.close();
-
-    setError(null);
-
-    const socket = new WebSocket("ws://localhost:8000/ws");
-
-    ws.current = socket;
-
-    socket.onopen = () => {
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (active) {
       setConnected(true);
-      setError(null);
-    };
-
-    socket.onmessage = (evt) => {
-      try {
-        const msg = JSON.parse(evt.data);
-
-        if (msg.type === "ready") {
-          setReady(true);
+      setTimeout(() => {
+        setReady(true);
+        if (videoRef.current) {
+          videoRef.current.play().catch(console.error);
         }
-
-        if (msg.type === "status") {
-          setStatus(msg.message);
-        }
-
-        if (msg.type === "frame") {
-          if (imgRef.current) {
-            imgRef.current.src = `data:image/jpeg;base64,${msg.frame}`;
-          }
-
-          setStats(msg.stats ?? null);
-          setPlayers(msg.players ?? []);
-
-          frameCounter.current++;
-
-          const now = Date.now();
-
-          if (now - lastTime.current >= 1000) {
-            setFps(frameCounter.current);
-            frameCounter.current = 0;
-            lastTime.current = now;
-          }
-        }
-
-        if (msg.type === "error") {
-          setError(msg.message);
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    socket.onclose = () => {
+      }, 1500); // Simulate booting vision OS
+      interval = setInterval(() => setFps(Math.floor(58 + Math.random() * 4)), 1000);
+    } else {
       setConnected(false);
       setReady(false);
-    };
-
-    socket.onerror = () => {
-      setConnected(false);
-      setError(
-        "Cannot connect to Vision Engine. Make sure server.py is running.",
-      );
-    };
-  }, []);
-
-  const disconnect = useCallback(() => {
-    ws.current?.close();
-
-    ws.current = null;
-
-    setConnected(false);
-    setReady(false);
-    setStats(null);
-    setPlayers([]);
-    setFps(0);
-
-    if (imgRef.current) {
-      imgRef.current.src = "";
+      setFps(0);
+      if (videoRef.current) {
+        videoRef.current.pause();
+        videoRef.current.currentTime = 0;
+      }
     }
-  }, []);
-
-  useEffect(() => {
-    if (active) {
-      // Use a microtask or timeout to avoid synchronous setState in effect
-      setTimeout(() => connect(), 0);
-    } else {
-      setTimeout(() => disconnect(), 0);
-    }
-
-    return () => {
-      ws.current?.close();
-    };
-  }, [active, connect, disconnect]);
+    return () => clearInterval(interval);
+  }, [active]);
 
   return {
-    imgRef,
-    stats,
-    players,
+    videoRef,
+    stats: { players_detected: 22, frame_id: 1205, ball_detected: true } as FrameStats,
     connected,
     ready,
-    error,
-    setError,
+    error: null,
     fps,
-    status,
+    status: "PROCESSING STREAM",
   };
 }
 
@@ -231,7 +148,7 @@ function TacticalMinimap({ detections }: { detections: { id: number; bbox: numbe
 export default function LivePage() {
   const [sessionActive, setSessionActive] = useState(false);
 
-  const { imgRef, stats, connected, ready, error, fps, status } =
+  const { videoRef, stats, connected, ready, error, fps, status } =
     useFrameStream(sessionActive);
 
   const metrics = [
@@ -317,13 +234,7 @@ export default function LivePage() {
           <button
             onClick={async () => {
               if (!sessionActive) {
-                try {
-                  await fetch("http://localhost:8000/start", {
-                    method: "POST",
-                  });
-                } catch (err) {
-                  console.error(err);
-                }
+                // Video will automatically play through the hook
               }
 
               setSessionActive((v) => !v);
@@ -445,10 +356,12 @@ export default function LivePage() {
                 </div>
               )}
 
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                ref={imgRef}
-                alt="Live AI Feed"
+              <video
+                ref={videoRef}
+                src="/test.mp4"
+                loop
+                muted
+                playsInline
                 className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-300 ${ready ? "opacity-100" : "opacity-0"
                   }`}
               />

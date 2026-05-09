@@ -25,7 +25,7 @@ export default function Hero() {
           {/* Left Column */}
           <div className="flex flex-col">
             <AnimatedHeading
-              text={"Shaping the future\nof athletic performance."}
+              text={"Topological Intelligence\nfor Tactical Command."}
               className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-normal mb-4 dark:text-white text-black"
               initialDelay={200}
               charDelay={30}
@@ -34,16 +34,16 @@ export default function Hero() {
 
             <FadeIn delay={800} duration={1000}>
               <p className="text-base md:text-lg text-gray-700 dark:text-gray-300 mb-5 max-w-xl">
-                Real-time AI vision and performance intelligence for the next generation of champions.
+                Advanced graph analytics and real-time team connectivity mapping.
               </p>
             </FadeIn>
 
             <FadeIn delay={1200} duration={1000} className="flex flex-wrap gap-4">
               <button className="bg-black text-white dark:bg-white dark:text-black px-8 py-3 rounded-lg font-medium transition-all hover:scale-105">
-                Watch Demo
+                Enter HUD
               </button>
               <button className="liquid-glass border border-black/20 dark:border-white/20 text-black dark:text-white px-8 py-3 rounded-lg font-medium transition-all hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black">
-                Explore Tech
+                Initialize Pipeline
               </button>
             </FadeIn>
           </div>
@@ -53,7 +53,7 @@ export default function Hero() {
             <FadeIn delay={1400} duration={1000}>
               <div className="liquid-glass border border-black/20 dark:border-white/20 px-6 py-3 rounded-xl dark:text-white text-black bg-white/10 dark:bg-black/10">
                 <span className="text-lg md:text-xl lg:text-2xl font-light">
-                  Vision. Performance. Growth.
+                  Structure. Connectivity. Control.
                 </span>
               </div>
             </FadeIn>

@@ -7,8 +7,8 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const orbitron = Orbitron({ subsets: ['latin'], variable: '--font-orbitron' })
 
 export const metadata: Metadata = {
-  title: "PulsePlay AI | Sports Intelligence Platform",
-  description: "Real-time AI vision and performance intelligence for the next generation of champions.",
+  title: "FieldTheory | Tactical Graph Intelligence",
+  description: "Advanced topological sports analytics and real-time team connectivity mapping.",
 };
 
 export default function RootLayout({
@@ -18,7 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${orbitron.variable}`}>
-      <body className="min-h-screen bg-white text-black dark:bg-[#080c08] dark:text-white transition-colors duration-300 font-sans">
+      <body className="min-h-screen bg-[#0b0f1a] text-white transition-colors duration-300 font-sans">
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

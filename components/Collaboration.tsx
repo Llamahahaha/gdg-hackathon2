@@ -28,7 +28,7 @@ export default function Collaboration() {
             className="text-5xl md:text-8xl font-black text-black dark:text-white tracking-tighter uppercase"
             style={{ fontFamily: "'Orbitron', sans-serif" }}
           >
-            Join the PulsePlay Revolution!
+            Join the FieldTheory Engine!
           </motion.h2>
         </div>
       </div>
