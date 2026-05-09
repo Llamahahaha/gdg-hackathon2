@@ -17,11 +17,22 @@ export default function SimulationsPage() {
     { id: 8, x: 650, y: 200, team: 'B' },
   ]);
 
+  const [ghostNodes] = useState([
+    { id: 1, x: 200, y: 150, team: 'A' },
+    { id: 2, x: 300, y: 100, team: 'A' },
+    { id: 3, x: 300, y: 200, team: 'A' },
+    { id: 4, x: 450, y: 150, team: 'A' },
+    { id: 5, x: 100, y: 150, team: 'A' },
+    { id: 6, x: 550, y: 150, team: 'B' },
+    { id: 7, x: 650, y: 100, team: 'B' },
+    { id: 8, x: 650, y: 200, team: 'B' },
+  ]);
+
   const [entropy, setEntropy] = useState(0.42);
+  const [showGhost, setShowGhost] = useState(true);
 
   const handleDrag = (id: number, info: any) => {
     setNodes(prev => prev.map(n => n.id === id ? { ...n, x: n.x + info.delta.x, y: n.y + info.delta.y } : n));
-    // Recalculate entropy based on node dispersion (simplified)
     const center = nodes.reduce((acc, n) => ({ x: acc.x + n.x, y: acc.y + n.y }), { x: 0, y: 0 });
     const avgCenter = { x: center.x / nodes.length, y: center.y / nodes.length };
     const dispersion = nodes.reduce((acc, n) => acc + Math.hypot(n.x - avgCenter.x, n.y - avgCenter.y), 0);
@@ -42,6 +53,11 @@ export default function SimulationsPage() {
     setEntropy(0.42);
   };
 
+  const simulateCollapse = () => {
+    setNodes(prev => prev.map(n => n.id === 4 ? { ...n, x: n.x + 100, y: n.y + 50 } : n));
+    setEntropy(0.82);
+  };
+
   return (
     <div className="min-h-screen bg-charcoal text-white font-sans flex flex-col overflow-hidden">
       <Navbar />
@@ -55,7 +71,19 @@ export default function SimulationsPage() {
               <h1 className="text-xl font-black uppercase tracking-[0.2em]">Tactical Sandbox</h1>
               <div className="px-2 py-0.5 bg-cyan-500/20 border border-cyan-500/40 text-[8px] font-black text-cyan-400 tracking-widest uppercase">Simulation Mode</div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={simulateCollapse}
+                className="px-4 py-1.5 bg-rose-500/20 border border-rose-500/40 text-rose-500 text-[9px] font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all flex items-center gap-2"
+              >
+                <Zap className="w-3 h-3" /> Simulate Predictive Collapse
+              </button>
+              <button 
+                onClick={() => setShowGhost(!showGhost)}
+                className={`text-[9px] font-black uppercase tracking-widest px-3 py-1.5 border transition-all ${showGhost ? 'bg-cyan-500/20 border-cyan-400 text-cyan-400' : 'bg-transparent border-white/10 text-white/40'}`}
+              >
+                Ghost Formation: {showGhost ? 'ON' : 'OFF'}
+              </button>
               <button onClick={resetSimulation} className="p-2 bg-white/5 border border-white/10 hover:bg-white/10 text-white"><RefreshCw className="w-4 h-4" /></button>
               <button className="px-4 py-2 bg-cyan-500 text-black text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
                 <Save className="w-3 h-3" /> Save Scenario
@@ -73,19 +101,31 @@ export default function SimulationsPage() {
 
             <div className="absolute inset-0 p-12">
                <svg className="w-full h-full" viewBox="0 0 800 400">
-                  {/* Edges */}
+                  {/* Ghost Formation (Static Reference) */}
+                  {showGhost && ghostNodes.map(p => (
+                    <g key={`ghost-${p.id}`} opacity="0.1">
+                      <circle cx={p.x} cy={p.y} r={10} fill="white" />
+                      <circle cx={p.x} cy={p.y} r={16} fill="transparent" stroke="white" strokeWidth="1" />
+                    </g>
+                  ))}
+
+                  {/* Edges with Stress Visualization */}
                   {nodes.map((p, i) => (
                     nodes.slice(i + 1).map((other) => {
                       const dist = Math.hypot(p.x - other.x, p.y - other.y);
-                      if (dist > 180) return null;
+                      if (dist > 200) return null;
                       const isSameTeam = p.team === other.team;
+                      const isStressed = dist > 140;
+                      
                       return (
-                        <line
+                        <motion.line
                           key={`${p.id}-${other.id}`}
                           x1={p.x} y1={p.y} x2={other.x} y2={other.y}
-                          stroke={isSameTeam ? "#00f3ff" : "#ff0033"}
-                          strokeWidth={isSameTeam ? (180 - dist) / 50 : 0.5}
-                          strokeOpacity={isSameTeam ? 0.3 : 0.1}
+                          stroke={isStressed ? "#ff0033" : (isSameTeam ? "#00f3ff" : "#ffffff")}
+                          strokeWidth={isSameTeam ? (200 - dist) / 40 : 0.5}
+                          strokeOpacity={isSameTeam ? (isStressed ? 0.8 : 0.3) : 0.1}
+                          initial={false}
+                          animate={{ strokeDasharray: isStressed ? "4,4" : "0" }}
                         />
                       );
                     })
