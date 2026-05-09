@@ -35,7 +35,15 @@ export default function LiveEnginePage() {
         const currentFrame = matchData.timeline[next];
 
         if (currentFrame && currentFrame.detections) {
-          const updatedPlayers = currentFrame.detections.map((d: any) => ({
+          // Use a Map to filter out duplicate IDs from detections
+          const uniqueDetections = new Map();
+          currentFrame.detections.forEach((d: any) => {
+            if (!uniqueDetections.has(d.id)) {
+              uniqueDetections.set(d.id, d);
+            }
+          });
+
+          const updatedPlayers = Array.from(uniqueDetections.values()).map((d: any) => ({
             id: d.id,
             // Scale coordinates from 1920x1080 to roughly 800x400 for the graph SVG
             x: (d.center[0] / 1920) * 800,
@@ -46,8 +54,6 @@ export default function LiveEnginePage() {
           setPlayers(updatedPlayers);
 
           // Dynamically compute entropy based on team dispersion (mocked logic)
-          const dispersion = updatedPlayers.length > 0 ?
-            updatedPlayers.reduce((acc, p) => acc + p.x, 0) / updatedPlayers.length : 0.5;
           setEntropy(0.3 + (Math.abs(Math.sin(next / 50)) * 0.4));
         }
 
@@ -78,7 +84,7 @@ export default function LiveEnginePage() {
             <video
               autoPlay loop muted playsInline
               className="w-full h-full object-cover opacity-80"
-              src="/test.mp4"
+              src="/videos/test.mp4"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60" />
 
@@ -150,13 +156,14 @@ export default function LiveEnginePage() {
               <svg className="w-full h-full" viewBox="0 0 800 400">
                 {/* Edges */}
                 {players.map((p, i) => (
-                  players.slice(i + 1).map((other, j) => {
+                  players.slice(i + 1).map((other) => {
                     const dist = Math.hypot(p.x - other.x, p.y - other.y);
                     if (dist > 150) return null;
                     const isSameTeam = p.team === other.team;
+                    const edgeKey = [p.id, other.id].sort((a, b) => a - b).join('-');
                     return (
                       <motion.line
-                        key={`${p.id}-${other.id}`}
+                        key={edgeKey}
                         x1={p.x} y1={p.y} x2={other.x} y2={other.y}
                         stroke={isSameTeam ? "#00f3ff" : "#ff0033"}
                         strokeWidth={isSameTeam ? (150 - dist) / 50 : 0.5}
@@ -289,7 +296,6 @@ export default function LiveEnginePage() {
 
             </div>
           </div>
-
         </div>
 
         {/* BOTTOM PANEL: Timeline Replay */}
