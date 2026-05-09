@@ -33,11 +33,10 @@ export default function Navbar() {
         {/* Center: HUD Links */}
         <div className="hidden lg:flex items-center gap-8">
           {[
-            { name: "Dashboard", path: "#" },
-            { name: "Live Engine", path: "#" },
-            { name: "Replay Lab", path: "#" },
-            { name: "Simulations", path: "#" },
-            { name: "Intelligence Report", path: "#" }
+            { name: "Live Engine", path: "/live" },
+            { name: "Replay Lab", path: "/replay" },
+            { name: "Simulations", path: "/simulations" },
+            { name: "Intelligence Report", path: "/reports" }
           ].map((link) => (
             <Link
               key={link.name}
@@ -56,10 +55,10 @@ export default function Navbar() {
             <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Hackathon</span>
             <span className="text-[9px] font-bold text-white uppercase font-mono">GDG 2026</span>
           </div>
-          <button className="hidden md:flex items-center gap-2 px-5 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 rounded-lg transition-all group/btn">
+          <Link href="/live" className="hidden md:flex items-center gap-2 px-5 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 rounded-lg transition-all group/btn pointer-events-auto">
             <span className="text-[10px] font-black text-cyan-400 uppercase tracking-widest">Launch Analysis</span>
             <Activity className="w-4 h-4 text-cyan-400 group-hover/btn:animate-pulse" />
-          </button>
+          </Link>
           <button className="p-2 text-white/50 hover:text-white transition-colors lg:hidden">
             <Menu className="w-5 h-5" />
           </button>

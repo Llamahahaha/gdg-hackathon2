@@ -5,22 +5,22 @@ import { motion } from 'framer-motion';
 
 const timelineSteps = [
   {
-    title: "1. DATA INGESTION",
+    title: "DATA INGESTION",
     tech: "YOLOv8 & OpenCV",
     desc: "Raw video feeds are parsed in real-time. Player and ball coordinates are extracted via neural object detection, assigning unique tracking IDs to each entity."
   },
   {
-    title: "2. STREAM PROCESSING",
+    title: "STREAM PROCESSING",
     tech: "Apache Flink",
     desc: "Coordinate data is streamed and transformed. Noise is filtered out, and multi-camera perspectives are stitched into a unified 2D pitch projection."
   },
   {
-    title: "3. TOPOLOGICAL ENGINE",
+    title: "TOPOLOGICAL ENGINE",
     tech: "Memgraph / NetworkX",
     desc: "Players become nodes. Distances and tactical vectors are converted into weighted edges. The system computes Laplacian matrices and centrality live."
   },
   {
-    title: "4. COMMAND HUD",
+    title: "COMMAND HUD",
     tech: "Next.js & Framer Motion",
     desc: "Graph states are rendered into the tactical interface. AI heuristics output live recommendations based on detected community fractures."
   }

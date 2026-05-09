@@ -1,4 +1,4 @@
-import React from 'react';
+import { motion } from 'framer-motion';
 import AnimatedHeading from './AnimatedHeading';
 import FadeIn from './FadeIn';
 import TacticalBackground from './TacticalBackground';
@@ -41,21 +41,76 @@ export default function Hero() {
           {/* Right Column: Metric Panels */}
           <div className="hidden lg:grid grid-cols-2 gap-4">
             {[
-              { label: "Formation Entropy", value: "0.142", status: "STABLE", icon: Activity, color: "text-cyan-400" },
-              { label: "Tactical Stability", value: "98.4%", status: "OPTIMAL", icon: Zap, color: "text-blue-500" },
-              { label: "Team Compactness", value: "24.5m", status: "HIGH", icon: Target, color: "text-white" },
-              { label: "Lynchpin Detection", value: "ID: #7", status: "DETECTED", icon: Hexagon, color: "text-rose-500" }
+              { label: "Formation Entropy", type: "wave", status: "MONITORING", icon: Activity, color: "text-cyan-500" },
+              { label: "Tactical Stability", type: "bars", status: "OPTIMIZING", icon: Zap, color: "text-blue-500" },
+              { label: "Team Compactness", type: "grid", status: "ANALYZING", icon: Target, color: "text-white" },
+              { label: "Lynchpin Detection", type: "radar", status: "SCANNING", icon: Hexagon, color: "text-rose-500" }
             ].map((panel, i) => (
               <FadeIn key={i} delay={400 + (i * 100)} duration={800}>
-                <div className="liquid-glass p-6 rounded-2xl border border-white/5 space-y-3 hover:border-cyan-500/30 transition-colors group">
-                  <div className="flex justify-between items-start">
-                    <panel.icon className={`w-5 h-5 ${panel.color}`} />
+                <div className="liquid-glass p-6 rounded-2xl border border-white/5 space-y-4 hover:border-cyan-500/30 transition-all duration-500 group overflow-hidden">
+                  <div className="flex justify-between items-start relative z-10">
+                    <panel.icon className={`w-5 h-5 ${panel.color} group-hover:scale-110 transition-transform`} />
                     <span className="text-[8px] font-black uppercase tracking-widest text-white/30">{panel.status}</span>
                   </div>
-                  <div>
-                    <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{panel.label}</div>
-                    <div className="text-3xl font-black font-orbitron text-white group-hover:text-cyan-400 transition-colors">{panel.value}</div>
+                  <div className="relative z-10">
+                    <div className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-3">{panel.label}</div>
+                    
+                    {/* Abstract Visualizers instead of hardcoded numbers */}
+                    <div className="h-10 flex items-end gap-1">
+                      {panel.type === "bars" && Array.from({ length: 8 }).map((_, j) => (
+                        <motion.div 
+                          key={j}
+                          animate={{ height: [10, 40, 15, 35, 20] }}
+                          transition={{ duration: 1.5 + Math.random(), repeat: Infinity, ease: "easeInOut", delay: j * 0.1 }}
+                          className={`w-full rounded-t-sm ${panel.color} opacity-40`}
+                        />
+                      ))}
+                      {panel.type === "wave" && (
+                        <div className="w-full flex items-center h-full">
+                           <svg viewBox="0 0 100 20" className="w-full h-8 overflow-visible">
+                              <motion.path
+                                d="M0 10 Q 25 0, 50 10 T 100 10"
+                                fill="transparent"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                className={panel.color}
+                                animate={{ d: ["M0 10 Q 25 0, 50 10 T 100 10", "M0 10 Q 25 20, 50 10 T 100 10", "M0 10 Q 25 0, 50 10 T 100 10"] }}
+                                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                              />
+                           </svg>
+                        </div>
+                      )}
+                      {panel.type === "grid" && (
+                        <div className="grid grid-cols-4 grid-rows-2 gap-1 w-full h-full">
+                           {Array.from({ length: 8 }).map((_, j) => (
+                             <motion.div 
+                               key={j}
+                               animate={{ opacity: [0.1, 0.5, 0.1] }}
+                               transition={{ duration: 2, repeat: Infinity, delay: j * 0.2 }}
+                               className="bg-white/20 rounded-sm"
+                             />
+                           ))}
+                        </div>
+                      )}
+                      {panel.type === "radar" && (
+                        <div className="relative w-full h-full flex items-center justify-center">
+                           <motion.div 
+                            animate={{ scale: [1, 1.5, 1], opacity: [0.3, 0.6, 0.3] }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                            className="w-8 h-8 rounded-full border border-rose-500/50"
+                           />
+                           <motion.div 
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                            className="absolute inset-0 border-t border-rose-500/40 rounded-full"
+                           />
+                        </div>
+                      )}
+                    </div>
                   </div>
+                  
+                  {/* Decorative Background for Panel */}
+                  <div className={`absolute bottom-[-20%] right-[-10%] w-24 h-24 blur-3xl opacity-5 rounded-full ${panel.color.replace('text-', 'bg-')}`} />
                 </div>
               </FadeIn>
             ))}
@@ -68,14 +123,14 @@ export default function Hero() {
         <div className="flex gap-8">
            <div className="flex flex-col gap-1">
               <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Spatio-Temporal Sync</span>
-              <span className="text-[10px] font-bold text-cyan-400 uppercase font-mono">0.00ms Offset</span>
+              <span className="text-[9px] font-bold text-cyan-400 uppercase font-mono tracking-tighter animate-pulse">ACTIVE // 1:1 SCALE</span>
            </div>
            <div className="flex flex-col gap-1">
               <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Engine Load</span>
-              <span className="text-[10px] font-bold text-blue-500 uppercase font-mono">14.2% GFLOPs</span>
+              <span className="text-[9px] font-bold text-blue-500 uppercase font-mono tracking-tighter">DISTRIBUTED CLUSTERS</span>
            </div>
         </div>
-        <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest border-b border-white/10 pb-1">
+        <div className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] border-b border-white/5 pb-1">
           GDG Hackathon 2026 // Production Release
         </div>
       </div>

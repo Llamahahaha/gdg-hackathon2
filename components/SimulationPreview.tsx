@@ -36,13 +36,33 @@ export default function SimulationPreview() {
           </p>
           
           <div className="space-y-4">
-             <div className="flex justify-between items-end p-4 bg-white/5 border border-white/10 rounded-xl">
-                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Real-time Entropy</span>
-                <span className="text-2xl font-black text-cyan-400 font-orbitron">0.{(players[0].x / 1000).toFixed(3)}</span>
+             <div className="flex flex-col gap-2 p-4 bg-white/5 border border-white/10 rounded-xl">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Real-time Entropy</span>
+                  <span className="text-[8px] font-black text-cyan-400 uppercase tracking-widest animate-pulse">Scanning</span>
+                </div>
+                <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                   <motion.div 
+                    animate={{ width: [`${(players[0].x / 10)}%`, `${(players[1].x / 10)}%`, `${(players[0].x / 10)}%`] }}
+                    className="h-full bg-cyan-500" 
+                   />
+                </div>
              </div>
-             <div className="flex justify-between items-end p-4 bg-white/5 border border-white/10 rounded-xl">
-                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Passing Lanes</span>
-                <span className="text-2xl font-black text-blue-500 font-orbitron">ACTIVE</span>
+             <div className="flex flex-col gap-2 p-4 bg-white/5 border border-white/10 rounded-xl">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Passing Lanes</span>
+                  <span className="text-[8px] font-black text-blue-500 uppercase tracking-widest">Optimal</span>
+                </div>
+                <div className="flex gap-1">
+                   {Array.from({length: 12}).map((_, i) => (
+                     <motion.div 
+                      key={i}
+                      animate={{ opacity: [0.1, 1, 0.1] }}
+                      transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.1 }}
+                      className="h-1 flex-1 bg-blue-500 rounded-full" 
+                     />
+                   ))}
+                </div>
              </div>
           </div>
 

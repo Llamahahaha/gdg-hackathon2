@@ -35,16 +35,29 @@ export default function CoreTechnologies() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="liquid-glass p-8 rounded-2xl border border-white/5 hover:border-blue-500/30 transition-all flex flex-col gap-6 group"
+              className="liquid-glass p-8 rounded-2xl border border-white/5 hover:border-blue-500/30 transition-all flex flex-col gap-6 group relative overflow-hidden"
             >
-              <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
+              <div className="relative z-10 w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
                 <tech.icon className="w-6 h-6 text-blue-500" />
               </div>
-              <div className="space-y-2">
+              <div className="relative z-10 space-y-2">
                 <h3 className="text-lg font-bold text-white tracking-tight">{tech.name}</h3>
                 <p className="text-sm text-gray-500 font-light leading-relaxed">
                   {tech.desc}
                 </p>
+              </div>
+
+              {/* Matrix-style background effect on hover */}
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity pointer-events-none font-mono text-[8px] text-blue-500 leading-none p-4 overflow-hidden select-none">
+                 {Array.from({length: 10}).map((_, j) => (
+                   <motion.div 
+                    key={j}
+                    animate={{ y: ['-100%', '100%'] }}
+                    transition={{ duration: 2 + Math.random() * 2, repeat: Infinity, ease: "linear", delay: Math.random() }}
+                   >
+                     {Math.random().toString(2).slice(2, 10)}
+                   </motion.div>
+                 ))}
               </div>
             </motion.div>
           ))}

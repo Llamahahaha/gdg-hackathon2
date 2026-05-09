@@ -38,8 +38,14 @@ export default function HowItWorks() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
-          {/* Connecting Lines (Desktop) */}
-          <div className="hidden md:block absolute top-1/2 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-y-1/2" />
+          {/* Animated Connecting Lines (Desktop) */}
+          <div className="hidden md:block absolute top-1/2 left-0 w-full h-[1px] bg-white/5 -translate-y-1/2">
+             <motion.div 
+               animate={{ x: ['-100%', '200%'] }}
+               transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+               className="w-1/3 h-full bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent"
+             />
+          </div>
 
           {steps.map((step, i) => (
             <motion.div
@@ -48,20 +54,29 @@ export default function HowItWorks() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.2 }}
-              className={`liquid-glass p-10 rounded-3xl border border-white/5 group hover:border-cyan-500/30 transition-all ${step.glow} relative z-10`}
+              whileHover={{ y: -10 }}
+              className={`liquid-glass p-10 rounded-3xl border border-white/5 group hover:border-cyan-500/30 transition-all ${step.glow} relative z-10 overflow-hidden`}
             >
-              <div className="w-16 h-16 rounded-2xl bg-charcoal border border-white/10 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
-                <step.icon className={`w-8 h-8 ${step.color}`} />
+              <div className="w-16 h-16 rounded-2xl bg-charcoal border border-white/10 flex items-center justify-center mb-8 relative">
+                <motion.div 
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                  className="absolute inset-0 border border-dashed border-white/10 rounded-2xl"
+                />
+                <step.icon className={`w-8 h-8 ${step.color} group-hover:scale-125 transition-transform duration-500`} />
               </div>
               <h3 className="text-2xl font-black font-orbitron text-white mb-4 uppercase tracking-tighter">{step.title}</h3>
               <p className="text-gray-400 font-light leading-relaxed">
                 {step.desc}
               </p>
               
-              {/* Decorative Corner */}
-              <div className="absolute top-0 right-0 w-16 h-16 overflow-hidden pointer-events-none">
-                <div className="absolute top-[-32px] right-[-32px] w-16 h-16 bg-white/5 rotate-45" />
-              </div>
+              {/* Scanline Effect on Hover */}
+              <motion.div 
+                initial={{ y: '-100%' }}
+                whileHover={{ y: '200%' }}
+                transition={{ duration: 1, ease: "linear" }}
+                className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-500/5 to-transparent pointer-events-none"
+              />
             </motion.div>
           ))}
         </div>
