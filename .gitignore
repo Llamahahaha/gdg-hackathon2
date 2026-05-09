@@ -40,15 +40,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 # Video & Media
-public/videos/
-vision/visionplay-pipeline/input_videos/
-vision/visionplay-pipeline/output_videos/
-vision/visionplay-pipeline/extracted_frames/
-vision/visionplay-pipeline/processed_frames/
-
-# Explicitly ensure the pipeline code is tracked
-!vision/visionplay-pipeline/src/
-!vision/visionplay-pipeline/*.py
 
 # AI Models (Very Large)
 vision/models/*.pt
