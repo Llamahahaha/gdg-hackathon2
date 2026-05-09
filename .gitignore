@@ -55,3 +55,15 @@ public/data/match_telemetry.json
 lint_output*.txt
 .venv/
 __pycache__/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Catch-all for large media
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.weights
+*.h5
+*.onnx
+
