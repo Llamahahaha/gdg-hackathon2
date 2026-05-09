@@ -30,9 +30,8 @@ export default function Navbar() {
         <div className="hidden md:flex items-center gap-10">
           {[
             { name: "Tactical Nexus", path: "/" },
-            { name: "Live Tracking", path: "/live" },
-            { name: "Topology Lab", path: "/dashboard" },
-            { name: "Neural Forecast", path: "#" },
+            { name: "Technology", path: "#" },
+            { name: "Case Studies", path: "#" },
             { name: "System Core", path: "#" }
           ].map((link) => (
             <Link
