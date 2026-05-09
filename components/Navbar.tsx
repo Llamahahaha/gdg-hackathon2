@@ -2,10 +2,12 @@
 
 import * as React from "react"
 import Link from 'next/link'
-import { Shield, Activity, Share2, Menu } from "lucide-react"
+import { Shield, Activity, Share2, Menu, LogOut } from "lucide-react"
+import { useAuth } from "@/context/AuthContext"
 
 export default function Navbar() {
   const [mounted, setMounted] = React.useState(false)
+  const { user, logout } = useAuth()
 
   React.useEffect(() => {
     setMounted(true)
@@ -55,17 +57,30 @@ export default function Navbar() {
           <div className="hidden xl:flex flex-col px-3 py-1 bg-white/5 border border-white/10 rounded-lg min-w-[160px]">
              <div className="flex items-center gap-2">
                <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Auth:</span>
-               <span className="text-[9px] font-bold text-cyan-400 uppercase font-mono">Man Blue FC</span>
+               <span className="text-[9px] font-bold text-cyan-400 uppercase font-mono max-w-[100px] truncate" title={user?.email || "GUEST"}>
+                 {user ? user.email : "GUEST"}
+               </span>
              </div>
              <div className="flex justify-between items-center mt-0.5 border-t border-white/5 pt-0.5">
-               <span className="text-[7px] font-black text-gray-400 uppercase tracking-widest">vs Red United</span>
-               <span className="text-[7px] font-black text-white/50 uppercase tracking-widest bg-black/40 px-1 rounded">4-3-3</span>
+               <span className="text-[7px] font-black text-gray-400 uppercase tracking-widest">{user ? 'Authorized Analyst' : 'No Access'}</span>
+               <span className="text-[7px] font-black text-white/50 uppercase tracking-widest bg-black/40 px-1 rounded">{user ? 'L1' : '--'}</span>
              </div>
           </div>
-          <Link href="/live" className="hidden md:flex items-center gap-2 px-5 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 rounded-lg transition-all group/btn pointer-events-auto">
-            <span className="text-[10px] font-black text-cyan-400 uppercase tracking-widest">Launch Analysis</span>
-            <Activity className="w-4 h-4 text-cyan-400 group-hover/btn:animate-pulse" />
-          </Link>
+          {user ? (
+            <div className="flex items-center gap-2">
+              <Link href="/live" className="hidden md:flex items-center gap-2 px-5 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 rounded-lg transition-all group/btn pointer-events-auto">
+                <span className="text-[10px] font-black text-cyan-400 uppercase tracking-widest">Launch</span>
+                <Activity className="w-4 h-4 text-cyan-400 group-hover/btn:animate-pulse" />
+              </Link>
+              <button onClick={logout} className="p-2 border border-white/10 hover:bg-red-500/20 hover:border-red-500/30 text-white/50 hover:text-red-400 rounded-lg transition-all pointer-events-auto" title="Log Out">
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <Link href="/login" className="hidden md:flex items-center gap-2 px-5 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all pointer-events-auto">
+              <span className="text-[10px] font-black text-white uppercase tracking-widest">Authenticate</span>
+            </Link>
+          )}
           <button className="p-2 text-white/50 hover:text-white transition-colors lg:hidden">
             <Menu className="w-5 h-5" />
           </button>
