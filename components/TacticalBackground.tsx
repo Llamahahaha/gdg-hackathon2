@@ -4,16 +4,22 @@ import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 
 export default function TacticalBackground() {
-  // Generate random player nodes
-  const nodes = useMemo(() => {
-    return Array.from({ length: 11 }).map((_, i) => ({
+  const [isMounted, setIsMounted] = React.useState(false);
+  const [nodes, setNodes] = React.useState<{id: number, x: number, y: number, type: string, team: string}[]>([]);
+
+  React.useEffect(() => {
+    const generatedNodes = Array.from({ length: 11 }).map((_, i) => ({
       id: i,
       x: 20 + Math.random() * 60, // 20% to 80%
       y: 20 + Math.random() * 60, // 20% to 80%
       type: i === 0 ? 'ball' : 'player',
       team: i < 6 ? 'A' : 'B'
     }));
+    setNodes(generatedNodes);
+    setIsMounted(true);
   }, []);
+
+  if (!isMounted) return <div className="absolute inset-0 bg-charcoal" />;
 
   return (
     <div className="absolute inset-0 z-0 overflow-hidden bg-charcoal">

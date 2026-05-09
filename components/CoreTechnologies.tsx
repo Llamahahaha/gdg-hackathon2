@@ -14,6 +14,11 @@ const techs = [
 ];
 
 export default function CoreTechnologies() {
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => setMounted(true), []);
+
+  if (!mounted) return <section className="py-32 px-6 md:px-12 lg:px-16 bg-charcoal" />;
+
   return (
     <section className="py-32 px-6 md:px-12 lg:px-16 bg-charcoal">
       <div className="max-w-7xl mx-auto">

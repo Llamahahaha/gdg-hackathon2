@@ -8,6 +8,11 @@ import TacticalBackground from './TacticalBackground';
 import { Activity, Zap, Target, Hexagon } from 'lucide-react';
 
 export default function Hero() {
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => setMounted(true), []);
+
+  if (!mounted) return <section className="relative h-screen w-full bg-charcoal" />;
+
   return (
     <section className="relative h-screen w-full overflow-hidden bg-charcoal">
       <TacticalBackground />
