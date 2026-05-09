@@ -153,7 +153,16 @@ export default function LivePage() {
           </div>
 
           <button
-            onClick={() => setSessionActive(v => !v)}
+            onClick={async () => {
+              if (!sessionActive) {
+                try {
+                  await fetch('http://localhost:8000/start', { method: 'POST' });
+                } catch (e) {
+                  console.error("Failed to start vision engine", e);
+                }
+              }
+              setSessionActive(v => !v);
+            }}
             className={`px-6 py-3 font-bold rounded-xl text-xs uppercase tracking-widest hover:scale-105 transition-all flex items-center gap-2 shadow-lg ${
               sessionActive
                 ? 'bg-red-500/10 border border-red-500/40 text-red-400 hover:bg-red-500/20'
