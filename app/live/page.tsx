@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import { Activity, Zap, Target, Hexagon, Play, Pause, SkipBack, SkipForward, AlertTriangle, ChevronRight } from 'lucide-react';
 
+import matchData from '@/public/data/match_telemetry.json';
+
 // --- Mock Data & Helpers ---
 const initialPlayers = [
   { id: 1, x: 200, y: 150, name: "P1", team: 'A' },
@@ -19,22 +21,40 @@ const initialPlayers = [
 
 export default function LiveEnginePage() {
   const [players, setPlayers] = useState(initialPlayers);
-  const [time, setTime] = useState(0);
+  const [frameIndex, setFrameIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [entropy, setEntropy] = useState(0.42);
 
-  // Simple animation loop for "Live" feel
+  // Sync with real match telemetry
   useEffect(() => {
     if (!isPlaying) return;
+    
     const interval = setInterval(() => {
-      setPlayers(prev => prev.map(p => ({
-        ...p,
-        x: p.x + (Math.random() - 0.5) * 2,
-        y: p.y + (Math.random() - 0.5) * 2
-      })));
-      setTime(t => (t + 1) % 100);
-      setEntropy(e => Math.max(0.1, Math.min(0.9, e + (Math.random() - 0.5) * 0.05)));
-    }, 100);
+      setFrameIndex(prev => {
+        const next = (prev + 1) % matchData.timeline.length;
+        const currentFrame = matchData.timeline[next];
+        
+        if (currentFrame && currentFrame.detections) {
+          const updatedPlayers = currentFrame.detections.map((d: any) => ({
+            id: d.id,
+            // Scale coordinates from 1920x1080 to roughly 800x400 for the graph SVG
+            x: (d.center[0] / 1920) * 800,
+            y: (d.center[1] / 1080) * 400,
+            name: `P${d.id}`,
+            team: d.team === 'green' ? 'A' : 'B'
+          }));
+          setPlayers(updatedPlayers);
+          
+          // Dynamically compute entropy based on team dispersion (mocked logic)
+          const dispersion = updatedPlayers.length > 0 ? 
+            updatedPlayers.reduce((acc, p) => acc + p.x, 0) / updatedPlayers.length : 0.5;
+          setEntropy(0.3 + (Math.abs(Math.sin(next / 50)) * 0.4));
+        }
+        
+        return next;
+      });
+    }, 100); // 10 FPS simulated sync
+    
     return () => clearInterval(interval);
   }, [isPlaying]);
 
@@ -42,10 +62,10 @@ export default function LiveEnginePage() {
     <div className="min-h-screen bg-charcoal text-white font-sans overflow-hidden flex flex-col">
       <Navbar />
 
-      <main className="flex-1 pt-24 pb-6 px-6 grid grid-cols-12 gap-6 overflow-hidden">
+      <main className="flex-1 pt-24 pb-6 px-6 flex flex-col gap-6 overflow-y-auto custom-scrollbar">
 
-        {/* LEFT PANEL: Match Feed */}
-        <div className="col-span-12 lg:col-span-3 flex flex-col gap-4">
+        {/* TOP SECTION: Match Feed (Full Width) */}
+        <div className="w-full flex flex-col gap-4">
           <div className="flex items-center justify-between px-2">
             <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Match Feed // Live</span>
             <span className="flex items-center gap-1.5 text-[10px] font-bold text-rose-500 uppercase">
@@ -54,11 +74,11 @@ export default function LiveEnginePage() {
             </span>
           </div>
 
-          <div className="flex-1 bg-black rounded-xl border border-white/5 overflow-hidden relative group">
+          <div className="aspect-video bg-black rounded-xl border border-white/5 overflow-hidden relative group shadow-2xl">
             <video
               autoPlay loop muted playsInline
-              className="w-full h-full object-cover opacity-60"
-              src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260403_050628_c4e32401-fab4-4a27-b7a8-6e9291cd5959.mp4"
+              className="w-full h-full object-cover opacity-80"
+              src="/test.mp4"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60" />
 
@@ -70,102 +90,105 @@ export default function LiveEnginePage() {
 
             {/* Bounding Box Tracking Overlay */}
             <svg className="absolute inset-0 w-full h-full pointer-events-none">
-              {players.slice(0, 4).map((p, i) => (
+              {players.slice(0, 12).map((p, i) => (
                 <motion.g 
                   key={p.id}
                   animate={{ 
-                    x: p.x * 0.4 + 50, 
-                    y: p.y * 0.4 + 20 
+                    x: p.x, 
+                    y: p.y 
                   }}
                   transition={{ ease: "linear", duration: 0.1 }}
                 >
                   <rect 
-                    width="24" height="40" 
+                    x="-15" y="-25"
+                    width="30" height="50" 
                     fill="transparent" 
                     stroke={p.team === 'A' ? "#00f3ff" : "#ff0033"} 
                     strokeWidth="1.5"
                     className="opacity-60"
                   />
-                  <text y="-4" x="12" textAnchor="middle" fill="white" fontSize="8" className="font-mono bg-black/50">
+                  <text y="-30" x="0" textAnchor="middle" fill="white" fontSize="8" className="font-mono bg-black/50">
                     ID:{p.id}
                   </text>
-                  <circle cx="12" cy="20" r="2" fill={p.team === 'A' ? "#00f3ff" : "#ff0033"} />
+                  <circle cx="0" cy="0" r="2" fill={p.team === 'A' ? "#00f3ff" : "#ff0033"} />
                 </motion.g>
               ))}
             </svg>
           </div>
-
-          <div className="h-1/3 liquid-glass p-4 rounded-xl border border-white/5 flex flex-col gap-3">
+          
+          <div className="liquid-glass p-4 rounded-xl border border-white/5 flex flex-col gap-3">
             <div className="text-[10px] font-black uppercase tracking-widest text-white/30 border-b border-white/5 pb-2">Detection Logs</div>
-            <div className="flex-1 overflow-y-auto font-mono text-[9px] space-y-2 text-white/50">
-              <div className="flex justify-between"><span className="text-cyan-400">[00:{time.toString().padStart(2, '0')}]</span> <span>PLAYER_DETECTED: #7</span></div>
-              <div className="flex justify-between"><span className="text-cyan-400">[00:{time.toString().padStart(2, '0')}]</span> <span>FORMATION_SHIFT: 4-3-3</span></div>
-              <div className="flex justify-between"><span className="text-rose-500">[00:{time.toString().padStart(2, '0')}]</span> <span>ENTROPY_SPIKE: 0.82</span></div>
-              <div className="flex justify-between"><span className="text-cyan-400">[00:{time.toString().padStart(2, '0')}]</span> <span>POSSESSION: TEAM_A</span></div>
+            <div className="flex-1 overflow-y-auto font-mono text-[9px] space-y-2 text-white/50 h-24">
+              <div className="flex justify-between"><span className="text-cyan-400">[FRM:{frameIndex}]</span> <span>OBJECTS_DETECTED: {players.length}</span></div>
+              <div className="flex justify-between"><span className="text-cyan-400">[FRM:{frameIndex}]</span> <span>POSSESSION: {matchData.timeline[frameIndex]?.possession.toUpperCase()}</span></div>
+              <div className="flex justify-between"><span className="text-rose-500">[FRM:{frameIndex}]</span> <span>ENTROPY: {entropy.toFixed(3)}</span></div>
             </div>
           </div>
         </div>
 
-        {/* CENTER PANEL: Tactical Graph */}
-        <div className="col-span-12 lg:col-span-6 flex flex-col gap-4">
-          <div className="flex items-center justify-between px-2">
-            <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Topological Graph // Live</span>
-            <div className="flex gap-4">
-              <span className="text-[10px] font-bold text-cyan-400 font-mono">NODES: 22</span>
-              <span className="text-[10px] font-bold text-blue-500 font-mono">EDGES: 142</span>
-            </div>
-          </div>
-
-          <div className="flex-1 bg-black/40 rounded-2xl border border-white/10 relative overflow-hidden shadow-inner">
-            {/* Pitch Markings */}
-            <div className="absolute inset-0 opacity-10 pointer-events-none"
-              style={{
-                backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`,
-                backgroundSize: '10% 10%'
-              }} />
-
-            <svg className="w-full h-full" viewBox="0 0 800 400">
-              {/* Edges */}
-              {players.map((p, i) => (
-                players.slice(i + 1).map((other, j) => {
-                  const dist = Math.hypot(p.x - other.x, p.y - other.y);
-                  if (dist > 150) return null;
-                  const isSameTeam = p.team === other.team;
-                  return (
-                    <motion.line
-                      key={`${p.id}-${other.id}`}
-                      x1={p.x} y1={p.y} x2={other.x} y2={other.y}
-                      stroke={isSameTeam ? "#00f3ff" : "#ff0033"}
-                      strokeWidth={isSameTeam ? (150 - dist) / 50 : 0.5}
-                      strokeOpacity={isSameTeam ? 0.3 : 0.1}
-                    />
-                  );
-                })
-              ))}
-
-              {/* Nodes */}
-              {players.map((p) => (
-                <motion.g key={p.id} animate={{ x: p.x, y: p.y }}>
-                  <circle r={4} fill={p.team === 'A' ? "#00f3ff" : "#0066ff"} className="drop-shadow-[0_0_8px_currentColor]" />
-                  <circle r={8} fill="transparent" stroke={p.team === 'A' ? "#00f3ff" : "#0066ff"} strokeWidth={0.5} className="opacity-20" />
-                  <text y={-10} textAnchor="middle" fill="white" fontSize="8" className="font-mono opacity-50 uppercase tracking-tighter">{p.name}</text>
-                </motion.g>
-              ))}
-            </svg>
-
-            {/* Graph Legend */}
-            <div className="absolute bottom-6 left-6 p-3 bg-black/60 backdrop-blur-md border border-white/10 rounded-lg space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-cyan-500" />
-                <span className="text-[8px] font-bold text-white/50 uppercase tracking-widest">Home Synergy</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-rose-500" />
-                <span className="text-[8px] font-bold text-white/50 uppercase tracking-widest">Opponent Pressure</span>
+        {/* BOTTOM SECTION: Intelligence & Graph (Split) */}
+        <div className="grid grid-cols-12 gap-6 pb-24">
+          
+          {/* Tactical Graph */}
+          <div className="col-span-12 lg:col-span-8 flex flex-col gap-4">
+            <div className="flex items-center justify-between px-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Topological Graph // Live</span>
+              <div className="flex gap-4">
+                <span className="text-[10px] font-bold text-cyan-400 font-mono">NODES: 22</span>
+                <span className="text-[10px] font-bold text-blue-500 font-mono">EDGES: 142</span>
               </div>
             </div>
+
+            <div className="h-[500px] bg-black/40 rounded-2xl border border-white/10 relative overflow-hidden shadow-inner">
+              {/* Pitch Markings */}
+              <div className="absolute inset-0 opacity-10 pointer-events-none"
+                style={{
+                  backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`,
+                  backgroundSize: '10% 10%'
+                }} />
+
+              <svg className="w-full h-full" viewBox="0 0 800 400">
+                {/* Edges */}
+                {players.map((p, i) => (
+                  players.slice(i + 1).map((other, j) => {
+                    const dist = Math.hypot(p.x - other.x, p.y - other.y);
+                    if (dist > 150) return null;
+                    const isSameTeam = p.team === other.team;
+                    return (
+                      <motion.line
+                        key={`${p.id}-${other.id}`}
+                        x1={p.x} y1={p.y} x2={other.x} y2={other.y}
+                        stroke={isSameTeam ? "#00f3ff" : "#ff0033"}
+                        strokeWidth={isSameTeam ? (150 - dist) / 50 : 0.5}
+                        strokeOpacity={isSameTeam ? 0.3 : 0.1}
+                      />
+                    );
+                  })
+                ))}
+
+                {/* Nodes */}
+                {players.map((p) => (
+                  <motion.g key={p.id} animate={{ x: p.x, y: p.y }}>
+                    <circle r={4} fill={p.team === 'A' ? "#00f3ff" : "#0066ff"} className="drop-shadow-[0_0_8px_currentColor]" />
+                    <circle r={8} fill="transparent" stroke={p.team === 'A' ? "#00f3ff" : "#0066ff"} strokeWidth={0.5} className="opacity-20" />
+                    <text y={-10} textAnchor="middle" fill="white" fontSize="8" className="font-mono opacity-50 uppercase tracking-tighter">{p.name}</text>
+                  </motion.g>
+                ))}
+              </svg>
+
+              {/* Graph Legend */}
+              <div className="absolute bottom-6 left-6 p-3 bg-black/60 backdrop-blur-md border border-white/10 rounded-lg space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-cyan-500" />
+                  <span className="text-[8px] font-bold text-white/50 uppercase tracking-widest">Home Synergy</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-rose-500" />
+                  <span className="text-[8px] font-bold text-white/50 uppercase tracking-widest">Opponent Pressure</span>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
 
         {/* RIGHT PANEL: AI Tactical Intelligence */}
         <div className="col-span-12 lg:col-span-3 flex flex-col gap-6">
@@ -274,10 +297,10 @@ export default function LiveEnginePage() {
           <div className="flex-1 flex flex-col gap-2">
             <div className="flex justify-between text-[8px] font-black uppercase tracking-[0.2em] text-white/30">
               <span>Timeline // Match Progress</span>
-              <span>00:{time.toString().padStart(2, '0')} : 45:00</span>
+              <span>FRAME: {frameIndex} / {matchData.timeline.length}</span>
             </div>
             <div className="h-2 w-full bg-white/5 rounded-full relative overflow-hidden cursor-pointer group">
-              <motion.div animate={{ width: `${time}%` }} className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 relative">
+              <motion.div animate={{ width: `${(frameIndex / matchData.timeline.length) * 100}%` }} className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 relative">
                 <div className="absolute right-0 top-0 bottom-0 w-1 bg-white shadow-[0_0_10px_white]" />
               </motion.div>
               {/* Mock "Moments" markers */}
