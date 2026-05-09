@@ -22,15 +22,15 @@ const COLORS = ['#c8e86e', '#3b82f6', '#a78bfa', '#f472b6', '#fb923c'];
 
 export default function InsightsPage() {
   return (
-    <main className="min-h-screen bg-[#080c08] text-white pt-24 pb-12 px-6 md:px-12 lg:px-16">
+    <main className="min-h-screen bg-transparent text-black dark:text-white pt-24 pb-12 px-6 md:px-12 lg:px-16">
       <Navbar />
 
       <div className="max-w-7xl mx-auto space-y-12">
         <div className="space-y-4">
-          <h1 className="text-4xl md:text-6xl font-black tracking-tighter" style={{ fontFamily: "'Orbitron', sans-serif" }}>
-            AI <span className="text-[#c8e86e]">INSIGHTS</span>
+          <h1 className="text-4xl md:text-6xl font-black tracking-tighter dark:text-white text-black uppercase" style={{ fontFamily: "'Orbitron', sans-serif" }}>
+            AI Insights
           </h1>
-          <p className="text-gray-400 max-w-2xl leading-relaxed">Our proprietary neural network processes match telemetry to generate tactical recommendations and injury risk assessments.</p>
+          <p className="text-gray-500 dark:text-gray-400 max-w-2xl leading-relaxed">Our proprietary neural network processes match telemetry to generate tactical recommendations and injury risk assessments.</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

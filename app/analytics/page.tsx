@@ -6,7 +6,8 @@ import { motion } from "framer-motion"
 import { 
   Area, AreaChart, CartesianGrid, XAxis, 
   Bar, BarChart, 
-  Pie, PieChart 
+  Pie, PieChart,
+  Line, LineChart
 } from "recharts"
 import { TrendingUp } from "lucide-react"
 
@@ -36,7 +37,7 @@ import {
 
 // --- DATA ---
 
-const chartDataArea = [
+const chartDataInteractive = [
   { date: "2024-04-01", desktop: 222, mobile: 150 },
   { date: "2024-04-02", desktop: 97, mobile: 180 },
   { date: "2024-04-03", desktop: 167, mobile: 120 },
@@ -59,7 +60,7 @@ const chartDataArea = [
   { date: "2024-04-20", desktop: 89, mobile: 150 },
   { date: "2024-04-21", desktop: 137, mobile: 200 },
   { date: "2024-04-22", desktop: 224, mobile: 170 },
-  { date: "2024-04-23", desktop: 138, base: 230 },
+  { date: "2024-04-23", desktop: 138, mobile: 230 },
   { date: "2024-04-24", desktop: 387, mobile: 290 },
   { date: "2024-04-25", desktop: 215, mobile: 250 },
   { date: "2024-04-26", desktop: 75, mobile: 130 },
@@ -130,15 +131,7 @@ const chartDataArea = [
   { date: "2024-06-30", desktop: 446, mobile: 400 },
 ]
 
-const chartDataPie = [
-  { browser: "chrome", visitors: 275, fill: "var(--color-chrome)" },
-  { browser: "safari", visitors: 200, fill: "var(--color-safari)" },
-  { browser: "firefox", visitors: 187, fill: "var(--color-firefox)" },
-  { browser: "edge", visitors: 173, fill: "var(--color-edge)" },
-  { browser: "other", visitors: 90, fill: "var(--color-other)" },
-]
-
-const chartDataBar = [
+const chartDataSimple = [
   { month: "January", desktop: 186 },
   { month: "February", desktop: 305 },
   { month: "March", desktop: 237 },
@@ -147,10 +140,24 @@ const chartDataBar = [
   { month: "June", desktop: 214 },
 ]
 
+const chartDataPie = [
+  { browser: "chrome", visitors: 275, fill: "var(--color-chrome)" },
+  { browser: "safari", visitors: 200, fill: "var(--color-safari)" },
+  { browser: "firefox", visitors: 187, fill: "var(--color-firefox)" },
+  { browser: "edge", visitors: 173, fill: "var(--color-edge)" },
+  { browser: "other", visitors: 90, fill: "var(--color-other)" },
+]
+
 // --- CONFIG ---
 
-const chartConfigArea = {
+const chartConfigAreaInteractive = {
   visitors: { label: "Visitors" },
+  desktop: { label: "Desktop", color: "#c8e86e" },
+  mobile: { label: "Mobile", color: "#3b82f6" },
+} satisfies ChartConfig
+
+const chartConfigLineInteractive = {
+  views: { label: "Page Views" },
   desktop: { label: "Desktop", color: "#c8e86e" },
   mobile: { label: "Mobile", color: "#3b82f6" },
 } satisfies ChartConfig
@@ -164,16 +171,116 @@ const chartConfigPie = {
   other: { label: "Other", color: "#fb923c" },
 } satisfies ChartConfig
 
-const chartConfigBar = {
+const chartConfigAreaSimple = {
   desktop: { label: "Desktop", color: "#c8e86e" },
 } satisfies ChartConfig
 
 // --- COMPONENTS ---
 
+function ChartLineInteractive() {
+  const [activeChart, setActiveChart] =
+    React.useState<keyof typeof chartConfigLineInteractive>("desktop")
+
+  const total = React.useMemo(
+    () => ({
+      desktop: chartDataInteractive.reduce((acc, curr) => acc + curr.desktop, 0),
+      mobile: chartDataInteractive.reduce((acc, curr) => acc + curr.mobile, 0),
+    }),
+    []
+  )
+
+  return (
+    <Card className="py-4 sm:py-0 overflow-hidden">
+      <CardHeader className="flex flex-col items-stretch border-b border-white/5 p-0 sm:flex-row">
+        <div className="flex flex-1 flex-col justify-center gap-1 px-6 pb-3 sm:pb-0 min-h-[100px]">
+          <CardTitle>Line Chart - Interactive</CardTitle>
+          <CardDescription>
+            Showing total athletic data for the last 3 months
+          </CardDescription>
+        </div>
+        <div className="flex">
+          {["desktop", "mobile"].map((key) => {
+            const chart = key as keyof typeof chartConfigLineInteractive
+            return (
+              <button
+                key={chart}
+                data-active={activeChart === chart}
+                className="flex flex-1 flex-col justify-center gap-1 border-t border-white/5 px-6 py-4 text-left even:border-l even:border-white/5 data-[active=true]:bg-white/5 sm:border-t-0 sm:border-l sm:px-8 sm:py-6 transition-colors"
+                onClick={() => setActiveChart(chart)}
+              >
+                <span className="text-[10px] uppercase tracking-widest text-gray-500">
+                  {chartConfigLineInteractive[chart].label}
+                </span>
+                <span className="text-lg leading-none font-black sm:text-3xl tabular-nums">
+                  {total[key as keyof typeof total].toLocaleString()}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </CardHeader>
+      <CardContent className="px-2 sm:p-6">
+        <ChartContainer
+          config={chartConfigLineInteractive}
+          className="aspect-auto h-[250px] w-full"
+        >
+          <LineChart
+            accessibilityLayer
+            data={chartDataInteractive}
+            margin={{
+              left: 12,
+              right: 12,
+            }}
+          >
+            <CartesianGrid vertical={false} stroke="#1f2937" />
+            <XAxis
+              dataKey="date"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              minTickGap={32}
+              stroke="#4b5563"
+              tickFormatter={(value) => {
+                const date = new Date(value)
+                return date.toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                })
+              }}
+            />
+            <ChartTooltip
+              content={
+                <ChartTooltipContent
+                  className="w-[150px]"
+                  nameKey="views"
+                  labelFormatter={(value: string) => {
+                    return new Date(value).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                  }}
+                />
+              }
+            />
+            <Line
+              dataKey={activeChart}
+              type="monotone"
+              stroke={`var(--color-${activeChart})`}
+              strokeWidth={2}
+              dot={false}
+            />
+          </LineChart>
+        </ChartContainer>
+      </CardContent>
+    </Card>
+  )
+}
+
 function ChartAreaInteractive() {
   const [timeRange, setTimeRange] = React.useState("90d")
 
-  const filteredData = chartDataArea.filter((item) => {
+  const filteredData = chartDataInteractive.filter((item) => {
     const date = new Date(item.date)
     const referenceDate = new Date("2024-06-30")
     let daysToSubtract = 90
@@ -188,12 +295,12 @@ function ChartAreaInteractive() {
   })
 
   return (
-    <Card className="pt-0">
+    <Card className="pt-0 overflow-hidden">
       <CardHeader className="flex items-center gap-2 space-y-0 border-b border-white/5 py-5 sm:flex-row">
         <div className="grid flex-1 gap-1">
           <CardTitle>Area Chart - Interactive</CardTitle>
           <CardDescription>
-            Showing total visitors for the last 3 months
+            Showing total athletic data for the last 3 months
           </CardDescription>
         </div>
         <Select value={timeRange} onValueChange={setTimeRange}>
@@ -218,7 +325,7 @@ function ChartAreaInteractive() {
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
         <ChartContainer
-          config={chartConfigArea}
+          config={chartConfigAreaInteractive}
           className="aspect-auto h-[250px] w-full"
         >
           <AreaChart data={filteredData}>
@@ -300,6 +407,64 @@ function ChartAreaInteractive() {
   )
 }
 
+function ChartAreaDefault() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Area Chart - Simple</CardTitle>
+        <CardDescription>
+          Showing total metric distribution for the last 6 months
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ChartContainer config={chartConfigAreaSimple}>
+          <AreaChart
+            accessibilityLayer
+            data={chartDataSimple}
+            margin={{
+              left: 12,
+              right: 12,
+            }}
+          >
+            <CartesianGrid vertical={false} stroke="#1f2937" />
+            <XAxis
+              dataKey="month"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              stroke="#4b5563"
+              tickFormatter={(value) => value.slice(0, 3)}
+            />
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent indicator="line" />}
+            />
+            <Area
+              dataKey="desktop"
+              type="natural"
+              fill="var(--color-desktop)"
+              fillOpacity={0.4}
+              stroke="var(--color-desktop)"
+            />
+          </AreaChart>
+        </ChartContainer>
+      </CardContent>
+      <CardFooter>
+        <div className="flex w-full items-start gap-2 text-sm">
+          <div className="grid gap-2">
+            <div className="flex items-center gap-2 leading-none font-medium">
+              Trending up by 5.2% this month <TrendingUp className="h-4 w-4 text-[#c8e86e]" />
+            </div>
+            <div className="flex items-center gap-2 leading-none text-gray-500">
+              January - June 2024
+            </div>
+          </div>
+        </div>
+      </CardFooter>
+    </Card>
+  )
+}
+
 function ChartPieSeparatorNone() {
   return (
     <Card className="flex flex-col">
@@ -338,66 +503,36 @@ function ChartPieSeparatorNone() {
   )
 }
 
-function ChartBarDefault() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Bar Chart</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfigBar}>
-          <BarChart accessibilityLayer data={chartDataBar}>
-            <CartesianGrid vertical={false} stroke="#1f2937" />
-            <XAxis
-              dataKey="month"
-              tickLine={false}
-              tickMargin={10}
-              axisLine={false}
-              stroke="#4b5563"
-              tickFormatter={(value) => value.slice(0, 3)}
-            />
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent hideLabel />}
-            />
-            <Bar dataKey="desktop" fill="var(--color-desktop)" radius={8} />
-          </BarChart>
-        </ChartContainer>
-      </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="flex gap-2 leading-none font-medium">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4 text-[#c8e86e]" />
-        </div>
-        <div className="leading-none text-gray-500">
-          Showing total visitors for the last 6 months
-        </div>
-      </CardFooter>
-    </Card>
-  )
-}
-
 export default function AnalyticsPage() {
   return (
-    <main className="min-h-screen bg-[#080c08] text-white pt-24 pb-12 px-6 md:px-12 lg:px-16">
+    <main className="min-h-screen bg-transparent text-black dark:text-white pt-24 pb-12 px-6 md:px-12 lg:px-16">
       <Navbar />
       
-      <div className="max-w-7xl mx-auto space-y-12">
+      <div className="max-w-7xl mx-auto space-y-8">
         <div className="space-y-2">
-          <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase" style={{ fontFamily: "'Orbitron', sans-serif" }}>
-            Performance <span className="text-[#c8e86e]">Analytics</span>
+          <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase dark:text-white text-black" style={{ fontFamily: "'Orbitron', sans-serif" }}>
+            Performance Analytics
           </h1>
-          <p className="text-gray-400">Interactive data visualization powered by Shadcn charts.</p>
+          <p className="text-gray-500 dark:text-gray-400">Advanced interactive visualizations for elite athletic performance data.</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-           <div className="lg:col-span-2">
-              <ChartAreaInteractive />
-           </div>
-           <div className="space-y-8">
-              <ChartPieSeparatorNone />
-              <ChartBarDefault />
-           </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+           <ChartLineInteractive />
+           <ChartAreaInteractive />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+           <ChartAreaDefault />
+           <ChartPieSeparatorNone />
+           <Card className="flex flex-col justify-center p-8 bg-gradient-to-br from-[#c8e86e]/10 to-transparent border-[#c8e86e]/20">
+              <div className="space-y-4 text-center">
+                 <TrendingUp className="w-12 h-12 text-[#c8e86e] mx-auto" />
+                 <h2 className="text-xl font-bold uppercase tracking-tight">Intelligence Ready</h2>
+                 <p className="text-xs text-gray-400 leading-relaxed">
+                    Our AI models are currently processing historical data to refine predictive metrics. Expect higher fidelity insights as more sessions are logged.
+                 </p>
+              </div>
+           </Card>
         </div>
       </div>
     </main>

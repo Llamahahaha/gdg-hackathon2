@@ -20,7 +20,7 @@ const pipelineData = [
 
 export default function TechnologyPage() {
   return (
-    <main className="min-h-screen bg-[#080c08] text-white pt-24 pb-12 px-6 md:px-12 lg:px-16">
+    <main className="min-h-screen bg-transparent text-black dark:text-white pt-24 pb-12 px-6 md:px-12 lg:px-16">
       <Navbar />
 
       <div className="max-w-7xl mx-auto space-y-16">
@@ -28,10 +28,10 @@ export default function TechnologyPage() {
           <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="inline-flex items-center gap-2 px-3 py-1 bg-[#c8e86e]/10 border border-[#c8e86e]/20 rounded-full text-[10px] font-mono text-[#c8e86e] uppercase tracking-[0.2em] mb-4">
             <Layers className="w-3 h-3" /> System Architecture
           </motion.div>
-          <h1 className="text-4xl md:text-7xl font-black tracking-tighter uppercase" style={{ fontFamily: "'Orbitron', sans-serif" }}>
-            The <span className="text-[#c8e86e]">Technology</span>
+          <h1 className="text-4xl md:text-7xl font-black tracking-tighter uppercase dark:text-white text-black" style={{ fontFamily: "'Orbitron', sans-serif" }}>
+            The Technology
           </h1>
-          <p className="text-gray-400 max-w-2xl mx-auto leading-relaxed">A specialized computer vision pipeline engineered for low-latency athletic motion tracking on consumer hardware.</p>
+          <p className="text-gray-500 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">A specialized computer vision pipeline engineered for low-latency athletic motion tracking on consumer hardware.</p>
         </div>
 
         {/* Vision Pipeline Section */}

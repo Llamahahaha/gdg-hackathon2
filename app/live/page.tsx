@@ -26,14 +26,14 @@ const activityData = [
 
 export default function LivePage() {
   return (
-    <main className="min-h-screen bg-[#080c08] text-white pt-24 pb-12 px-6 md:px-12 lg:px-16">
+    <main className="min-h-screen bg-transparent text-black dark:text-white pt-24 pb-12 px-6 md:px-12 lg:px-16">
       <Navbar />
 
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="space-y-1">
-            <h1 className="text-3xl md:text-5xl font-black tracking-tighter" style={{ fontFamily: "'Orbitron', sans-serif" }}>
-              LIVE <span className="text-[#c8e86e]">TRACKING</span>
+            <h1 className="text-3xl md:text-5xl font-black tracking-tighter dark:text-white text-black" style={{ fontFamily: "'Orbitron', sans-serif" }}>
+              LIVE TRACKING
             </h1>
             <div className="flex items-center gap-2 text-xs font-mono text-gray-500">
               <span className="flex h-2 w-2 rounded-full bg-red-500 animate-pulse" />

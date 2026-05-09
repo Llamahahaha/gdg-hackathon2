@@ -25,16 +25,16 @@ const eventData = [
 
 export default function ReplayPage() {
   return (
-    <main className="min-h-screen bg-[#080c08] text-white pt-24 pb-12 px-6 md:px-12 lg:px-16">
+    <main className="min-h-screen bg-transparent text-black dark:text-white pt-24 pb-12 px-6 md:px-12 lg:px-16">
       <Navbar />
 
       <div className="max-w-7xl mx-auto space-y-12">
         <div className="flex justify-between items-end">
           <div className="space-y-4">
-            <h1 className="text-4xl md:text-6xl font-black tracking-tighter" style={{ fontFamily: "'Orbitron', sans-serif" }}>
-              REPLAY <span className="text-[#c8e86e]">CENTER</span>
+            <h1 className="text-4xl md:text-6xl font-black tracking-tighter dark:text-white text-black uppercase" style={{ fontFamily: "'Orbitron', sans-serif" }}>
+              Replay Center
             </h1>
-            <p className="text-gray-400 max-w-xl leading-relaxed">Review match performance with synchronized AI-vision data overlays and event-based quick seek.</p>
+            <p className="text-gray-500 dark:text-gray-400 max-w-xl leading-relaxed">Review match performance with synchronized AI-vision data overlays and event-based quick seek.</p>
           </div>
           <div className="flex gap-4 pb-2">
              <button className="p-2 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors">

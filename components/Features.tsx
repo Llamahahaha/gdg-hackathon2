@@ -65,7 +65,7 @@ export default function Features() {
   return (
     <section 
       ref={containerRef} 
-      className="relative min-h-[400vh] bg-[#0a0f0a] py-24 px-6 md:px-12 lg:px-16"
+      className="relative min-h-[400vh] bg-white dark:bg-[#0a0f0a] py-24 px-6 md:px-12 lg:px-16 transition-colors duration-300"
     >
       {/* Sticky Container */}
       <div className="sticky top-0 h-screen flex flex-col justify-center overflow-hidden">
@@ -84,12 +84,12 @@ export default function Features() {
               >
                 {features[activeIndex].tagline}
               </motion.span>
-              <h2 className="text-5xl md:text-7xl font-black tracking-tighter text-white leading-[0.9]">
+              <h2 className="text-5xl md:text-7xl font-black tracking-tighter text-black dark:text-white leading-[0.9]">
                 {features[activeIndex].title}
               </h2>
             </div>
 
-            <p className="text-lg md:text-xl text-gray-400 max-w-xl font-light leading-relaxed h-[100px]">
+            <p className="text-lg md:text-xl text-gray-500 dark:text-gray-400 max-w-xl font-light leading-relaxed h-[100px]">
               {features[activeIndex].desc}
             </p>
 
