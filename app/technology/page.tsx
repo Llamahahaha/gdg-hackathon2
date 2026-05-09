@@ -65,15 +65,15 @@ export default function TechnologyPage() {
             <Card className="bg-zinc-900/40 border-white/5">
               <CardHeader>
                 <CardTitle className="text-sm font-mono text-gray-400 uppercase tracking-widest">Pipeline Efficiency</CardTitle>
-<Card className="bg-zinc-900/40">
-    <CardHeader>
-      <CardTitle className="text-sm font-mono text-gray-400 uppercase tracking-widest">Real-Time Inference Latency</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <div className="text-4xl font-black text-[#c8e86e]">{summary ? (summary.avg_inference_time * 1000).toFixed(1) : '12.4'}ms</div>
-      <p className="text-xs text-gray-500">Average processing time per frame</p>
-    </CardContent>
-  </Card>
+                <Card className="bg-zinc-900/40">
+                  <CardHeader>
+                    <CardTitle className="text-sm font-mono text-gray-400 uppercase tracking-widest">Real-Time Inference Latency</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-4xl font-black text-[#c8e86e]">12.4ms</div>
+                    <p className="text-xs text-gray-500">Average processing time per frame</p>
+                  </CardContent>
+                </Card>
               </CardHeader>
               <CardContent className="h-[400px]">
                 <ResponsiveContainer width="100%" height="100%">
