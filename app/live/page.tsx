@@ -5,8 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import { Activity, Zap, Target, Hexagon, Play, Pause, SkipBack, SkipForward, AlertTriangle, ChevronRight } from 'lucide-react';
 
-import matchData from '@/public/data/match_telemetry.json';
-
 // --- Mock Data & Helpers ---
 const initialPlayers = [
   { id: 1, x: 200, y: 150, rawX: 200, rawY: 150, name: "P1", team: 'A' },
@@ -30,8 +28,9 @@ export default function LiveEnginePage() {
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [liveFrame, setLiveFrame] = useState<string | null>(null);
   const [connectionStatus, setConnectionStatus] = useState("DISCONNECTED");
+  const [possession, setPossession] = useState("UNKNOWN");
 
-  // WebSocket Connection
+  // WebSocket Connection for Real Live Stream
   useEffect(() => {
     const socket = new WebSocket('ws://localhost:8000/ws');
     
@@ -47,31 +46,32 @@ export default function LiveEnginePage() {
           setLiveFrame(`data:image/jpeg;base64,${data.frame}`);
           setFrameIndex(data.stats?.frame_id || 0);
           
-          if (data.stats && data.stats.detections) {
+          if (data.stats) {
+            const detections = data.stats.detections || [];
             const uniqueDetections = new Map();
-            data.stats.detections.forEach((d: any) => {
-              // Ensure we have center coordinates
+            
+            detections.forEach((d: any) => {
               const bbox = d.bbox || [0, 0, 0, 0];
               const center = d.center || [(bbox[0] + bbox[2])/2, (bbox[1] + bbox[3])/2];
-              if (!uniqueDetections.has(d.id)) {
-                d.center = center;
-                uniqueDetections.set(d.id, d);
+              // Enforce String ID to prevent mixed-type Map collisions
+              const id = d.id !== undefined ? String(d.id) : String(Math.random());
+              
+              if (!uniqueDetections.has(id)) {
+                uniqueDetections.set(id, {
+                  id: id,
+                  rawX: center[0],
+                  rawY: center[1],
+                  x: (center[0] / 1920) * 800,
+                  y: (center[1] / 1080) * 400,
+                  name: `P${id}`,
+                  team: d.team === 'green' ? 'A' : 'B'
+                });
               }
             });
 
             const updatedPlayers = Array.from(uniqueDetections.values())
-              .filter((d: any) => !neutralizedIds.includes(d.id))
-              .map((d: any) => ({
-                id: d.id,
-                rawX: d.center[0],
-                rawY: d.center[1],
-                x: (d.center[0] / 1920) * 800,
-                y: (d.center[1] / 1080) * 400,
-                name: `P${d.id}`,
-                team: d.team === 'green' ? 'A' : 'B'
-              }));
+              .filter((d: any) => !neutralizedIds.includes(d.id));
 
-            // Update History for Ghosting
             setPlayerHistory(prev => {
               const newHistory = { ...prev };
               updatedPlayers.forEach(p => {
@@ -82,16 +82,9 @@ export default function LiveEnginePage() {
             });
 
             setPlayers(updatedPlayers);
-
-            // Phase Detection
-            const teamA = updatedPlayers.filter(p => p.team === 'A');
-            const avgX = teamA.reduce((sum, p) => sum + p.x, 0) / (teamA.length || 1);
-            if (avgX > 500) setPhase("HIGH_PRESS");
-            else if (avgX < 300) setPhase("LOW_BLOCK");
-            else setPhase("MID_BLOCK");
-
-            // Mocked entropy for demo flow
-            setEntropy(0.3 + (Math.abs(Math.sin((data.stats?.frame_id || 0) / 50)) * 0.4));
+            setPossession(data.stats.possession || "UNKNOWN");
+            // Mocked entropy based on frame index just for the right panel UI
+            setEntropy(0.3 + (Math.abs(Math.sin((data.stats.frame_id || 0) / 50)) * 0.4));
           }
         } else if (data.type === 'status') {
           console.log("[PIPELINE STATUS]", data.message);
@@ -109,7 +102,7 @@ export default function LiveEnginePage() {
     return () => {
       socket.close();
     };
-  }, [neutralizedIds]);
+  }, []);
 
   const handleStart = async () => {
     setIsPlaying(true);
@@ -122,6 +115,7 @@ export default function LiveEnginePage() {
 
   const handleStop = async () => {
     setIsPlaying(false);
+    setLiveFrame(null);
     try {
       await fetch('http://localhost:8000/stop', { method: 'POST' });
     } catch (e) {
@@ -210,67 +204,20 @@ export default function LiveEnginePage() {
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center bg-black/80">
                 <div className="text-cyan-400 text-sm font-mono animate-pulse">AWAITING_SIGNAL...</div>
-                <div className="text-white/30 text-[10px] font-black uppercase tracking-widest mt-2">{connectionStatus}</div>
+                <div className="text-white/30 text-[10px] font-black uppercase tracking-widest mt-2">
+                  {connectionStatus}
+                </div>
               </div>
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60" />
 
             {/* HUD Overlay on Video */}
-            <div className="absolute top-6 left-6 space-y-1">
-              <div className="text-[10px] font-black text-cyan-400 uppercase tracking-[0.4em] bg-black/40 px-2 py-1 inline-block border-l-2 border-cyan-500">CAM_01 // SECURE_FEED</div>
-              <div className="text-[10px] font-mono text-white/50 bg-black/20 px-2">SAT_SYNC: 40.2443° N, 3.7121° W</div>
-            </div>
-
-            {/* Bounding Box Tracking Overlay */}
-            <svg
-              className="absolute inset-0 w-full h-full pointer-events-none"
-              viewBox="0 0 1920 1080"
-              preserveAspectRatio="xMidYMid slice"
-            >
-              {players.map((p) => {
-                const isTeamA = p.team === 'A';
-                const color = isTeamA ? "#00f3ff" : "#ff0033";
-
-                return (
-                  <motion.g
-                    key={p.id}
-                    animate={{
-                      x: p.rawX,
-                      y: p.rawY
-                    }}
-                    transition={{ ease: "linear", duration: 0.1 }}
-                  >
-                    {/* Premium Scanner Box */}
-                    <motion.rect
-                      x="-30" y="-60"
-                      width="60" height="120"
-                      fill="transparent"
-                      stroke={color}
-                      strokeWidth="2"
-                      initial={{ opacity: 0.4 }}
-                      animate={{ opacity: [0.4, 0.8, 0.4] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    />
-                    {/* Corners */}
-                    <path d="M-30,-40 V-60 H-10" fill="none" stroke={color} strokeWidth="4" />
-                    <path d="M10,-60 H30 V-40" fill="none" stroke={color} strokeWidth="4" />
-                    <path d="M30,40 V60 H10" fill="none" stroke={color} strokeWidth="4" />
-                    <path d="M-10,60 H-30 V40" fill="none" stroke={color} strokeWidth="4" />
-
-                    {/* ID Label */}
-                    <g transform="translate(0, -70)">
-                      <rect x="-25" y="-15" width="50" height="15" fill={color} className="opacity-90" />
-                      <text textAnchor="middle" y="-4" fill="black" fontSize="10" fontWeight="black" className="font-mono uppercase">
-                        ID:{p.id}
-                      </text>
-                    </g>
-
-                    {/* Team Indicator */}
-                    <rect x="-2" y="-2" width="4" height="4" fill={color} className="animate-pulse" />
-                  </motion.g>
-                );
-              })}
-            </svg>
+            {liveFrame && (
+              <div className="absolute top-6 left-6 space-y-1">
+                <div className="text-[10px] font-black text-cyan-400 uppercase tracking-[0.4em] bg-black/40 px-2 py-1 inline-block border-l-2 border-cyan-500">CAM_01 // SECURE_FEED</div>
+                <div className="text-[10px] font-mono text-white/50 bg-black/20 px-2">SAT_SYNC: 40.2443° N, 3.7121° W</div>
+              </div>
+            )}
           </div>
 
           <div className="bg-black/60 p-4 rounded-none border border-white/10 flex flex-col gap-3">
@@ -278,7 +225,7 @@ export default function LiveEnginePage() {
             <div className="flex-1 overflow-y-auto font-mono text-[9px] space-y-2 text-white/40 h-24">
               <div className="flex justify-between border-b border-white/5 pb-1"><span className="text-cyan-400">[STREAM_STABLE]</span> <span>PACKETS_RECV: 1024kbps</span></div>
               <div className="flex justify-between border-b border-white/5 pb-1"><span className="text-cyan-400">[FRM:{frameIndex}]</span> <span>OBJECTS_DETECTED: {players.length}</span></div>
-              <div className="flex justify-between border-b border-white/5 pb-1"><span className="text-cyan-400">[FRM:{frameIndex}]</span> <span>POSSESSION: {matchData.timeline[frameIndex]?.possession.toUpperCase()}</span></div>
+              <div className="flex justify-between border-b border-white/5 pb-1"><span className="text-cyan-400">[FRM:{frameIndex}]</span> <span>POSSESSION: {possession.toUpperCase()}</span></div>
               <div className="flex justify-between"><span className="text-rose-500">[FRM:{frameIndex}]</span> <span>ENTROPY: {entropy.toFixed(3)}</span></div>
             </div>
           </div>
@@ -321,7 +268,7 @@ export default function LiveEnginePage() {
                     key={`trail-${id}`}
                     points={trail.map(t => `${t.x},${t.y}`).join(' ')}
                     fill="none"
-                    stroke={players.find(p => p.id === Number(id))?.team === 'A' ? "#00f3ff" : "#0066ff"}
+                    stroke={players.find(p => String(p.id) === String(id))?.team === 'A' ? "#00f3ff" : "#0066ff"}
                     strokeWidth="1"
                     strokeOpacity="0.2"
                     strokeDasharray="2,2"
@@ -334,7 +281,7 @@ export default function LiveEnginePage() {
                     const dist = Math.hypot(p.x - other.x, p.y - other.y);
                     if (dist > 150) return null;
                     const isSameTeam = p.team === 'A';
-                    const edgeKey = [p.id, other.id].sort((a, b) => a - b).join('-');
+                    const edgeKey = [String(p.id), String(other.id)].sort().join('-');
                     return (
                       <motion.line
                         key={edgeKey}
