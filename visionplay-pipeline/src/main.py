@@ -138,8 +138,8 @@ def main():
 
     if result:
         summary = result["detection"]["summary"]
-        logger.info(f"Team 1 (green): {summary['team1_total']}")
-        logger.info(f"Team 2 (white): {summary['team2_total']}")
+        logger.info(f"Team 1 Total: {summary['team1_total']}")
+        logger.info(f"Team 2 Total: {summary['team2_total']}")
     
     logger.info("PIPELINE COMPLETE")
 

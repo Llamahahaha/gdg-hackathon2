@@ -120,26 +120,35 @@ async def websocket_endpoint(websocket: WebSocket):
         manager.disconnect(websocket)
 
 @app.post("/upload-video")
-def upload_video(file: UploadFile = File(...)):
+async def upload_video(file: UploadFile = File(...)):
     """Accept a video upload and set it as the active video for the YOLO pipeline."""
     global selected_video_path
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    input_dir = os.path.join(base_dir, "input_videos")
-    os.makedirs(input_dir, exist_ok=True)
+    try:
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        input_dir = os.path.join(base_dir, "input_videos")
+        os.makedirs(input_dir, exist_ok=True)
 
-    # Clear old videos from input_videos to avoid stale data
-    for f in os.listdir(input_dir):
-        if f.lower().endswith(('.mp4', '.avi', '.mov', '.mkv')):
-            os.remove(os.path.join(input_dir, f))
+        logger.info(f"Incoming upload: {file.filename}")
 
-    # Save new video
-    dest = os.path.join(input_dir, file.filename)
-    with open(dest, "wb") as out:
-        shutil.copyfileobj(file.file, out)
+        # Clear old videos from input_videos to avoid stale data
+        for f in os.listdir(input_dir):
+            if f.lower().endswith(('.mp4', '.avi', '.mov', '.mkv')):
+                try:
+                    os.remove(os.path.join(input_dir, f))
+                except Exception as e:
+                    logger.warning(f"Could not remove old video {f}: {e}")
 
-    selected_video_path = dest
-    logger.info(f"Video uploaded: {file.filename} ({Path(dest).stat().st_size // 1024}KB)")
-    return {"status": "uploaded", "filename": file.filename, "path": dest}
+        # Save new video
+        dest = os.path.join(input_dir, file.filename)
+        with open(dest, "wb") as out:
+            shutil.copyfileobj(file.file, out)
+
+        selected_video_path = dest
+        logger.info(f"Video saved successfully to {dest}")
+        return {"status": "uploaded", "filename": file.filename, "path": dest}
+    except Exception as e:
+        logger.error(f"Upload failed: {e}")
+        return {"error": str(e)}, 500
 
 @app.post("/chat")
 async def chat_endpoint(data: dict):

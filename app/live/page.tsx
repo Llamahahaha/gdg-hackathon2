@@ -43,8 +43,9 @@ export default function LiveEnginePage() {
           if (xhr.status === 200) resolve();
           else reject(new Error(`Upload failed: ${xhr.status}`));
         };
-        xhr.onerror = () => reject(new Error('Network error'));
-        xhr.open('POST', `http://${window.location.hostname}:8000/upload-video`);
+        xhr.onerror = () => reject(new Error('Network error: Could not reach the VisionPlay backend on port 8000.'));
+        const apiHost = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
+        xhr.open('POST', `http://${apiHost}:8000/upload-video`);
         xhr.send(formData);
       });
 
