@@ -139,22 +139,32 @@ export default function DashboardPage() {
               </div>
            </div>
            
-           <div className="flex items-end gap-[2px] h-[280px] mt-12 px-4 border-b border-white/10 w-full overflow-hidden">
-            {(engineIsRunning ? nodeHistory : (tacticalData?.timeline || [])).slice(-100).map((frame: any, i: number) => {
+           <div className="flex items-end gap-[4px] h-[280px] mt-12 px-4 border-b border-white/10 w-full overflow-hidden relative">
+            {(engineIsRunning ? nodeHistory : (tacticalData?.timeline || [])).slice(-120).map((frame: any, i: number) => {
               const t1 = frame.t1 || 0;
               const t2 = frame.t2 || 0;
               const maxNodes = 22;
+              const entropy = frame.metrics?.entropy || 0.5;
+
               return (
-                <div key={i} className="flex-1 flex flex-col justify-end gap-[1px]">
+                <div key={i} className="flex-1 flex flex-col justify-end gap-[2px] relative group">
+                  {/* Visual 'Node' indicator */}
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className={`absolute w-1.5 h-1.5 rounded-full z-10 -translate-x-1/2 left-1/2 ${entropy > 0.7 ? 'bg-rose-500 shadow-[0_0_8px_#f43f5e]' : 'bg-cyan-400 shadow-[0_0_8px_#22d3ee]'}`}
+                    style={{ bottom: `${((t1 + t2) / maxNodes) * 100}%` }}
+                  />
+
                   <motion.div 
                     initial={{ height: 0 }}
                     animate={{ height: `${(t2 / maxNodes) * 100}%` }}
-                    className="w-full bg-rose-500/30 border-t border-rose-500/50" 
+                    className="w-full bg-rose-500/20 border-t border-rose-500/40 group-hover:bg-rose-500/40 transition-colors" 
                   />
                   <motion.div 
                     initial={{ height: 0 }}
                     animate={{ height: `${(t1 / maxNodes) * 100}%` }}
-                    className="w-full bg-cyan-400/30 border-t border-cyan-400/50" 
+                    className="w-full bg-cyan-400/20 border-t border-cyan-400/40 group-hover:bg-cyan-400/40 transition-colors" 
                   />
                 </div>
               );
@@ -164,61 +174,53 @@ export default function DashboardPage() {
 
         {/* Predictive Intelligence Hub */}
         <div className="grid grid-cols-12 gap-8 mb-16">
-          <div className="col-span-12 lg:col-span-4 bg-cyan-500 p-12 rounded-none flex flex-col justify-between group shadow-[0_0_50px_rgba(6,182,212,0.2)]">
+          <div className="col-span-12 lg:col-span-4 bg-cyan-500 p-8 rounded-none flex flex-col justify-between group shadow-[0_0_50px_rgba(6,182,212,0.1)]">
             <div>
-              <Shield className="w-16 h-16 text-black mb-8" />
-              <h3 className="text-4xl font-black text-black font-orbitron uppercase tracking-tighter leading-none mb-4">Tactical Formation Prediction</h3>
-              <p className="text-black/60 text-sm font-bold uppercase tracking-widest leading-relaxed">System analyzing spatial centroids... Detected: <span className="text-black font-black underline">4-2-3-1 Fluid Transition</span></p>
+              <Shield className="w-10 h-10 text-black mb-6" />
+              <h3 className="text-xl font-black text-black font-orbitron uppercase tracking-tighter leading-none mb-3">Tactical Formation Prediction</h3>
+              <p className="text-black/60 text-xs font-bold uppercase tracking-widest leading-relaxed">System analyzing spatial centroids... Detected: <span className="text-black font-black underline">4-2-3-1 Fluid Transition</span></p>
             </div>
-            <div className="mt-8 pt-8 border-t border-black/10 flex justify-between items-end">
+            <div className="mt-6 pt-6 border-t border-black/10 flex justify-between items-end">
                <div>
-                  <div className="text-[10px] font-black text-black/40 uppercase tracking-widest">Confidence Score</div>
-                  <div className="text-4xl font-black text-black font-orbitron">94.2%</div>
+                  <div className="text-[9px] font-black text-black/40 uppercase tracking-widest">Confidence Score</div>
+                  <div className="text-3xl font-black text-black font-orbitron">94.2%</div>
                </div>
-               <ArrowUpRight className="w-8 h-8 text-black group-hover:translate-x-2 group-hover:-translate-y-2 transition-transform" />
+               <ArrowUpRight className="w-6 h-6 text-black group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
             </div>
           </div>
 
-          <div className="col-span-12 lg:col-span-4 bg-black/40 border border-white/10 p-12 rounded-none flex flex-col justify-between relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4">
-              <div className="flex gap-1">
-                {[1, 2, 3].map(i => <div key={i} className="w-1 h-8 bg-cyan-500/20" />)}
-              </div>
-            </div>
+          <div className="col-span-12 lg:col-span-4 bg-black/40 border border-white/10 p-8 rounded-none flex flex-col justify-between relative overflow-hidden">
             <div>
-              <h3 className="text-2xl font-black font-orbitron uppercase tracking-widest mb-8 flex items-center gap-4">
-                <Target className="w-6 h-6 text-rose-500" /> Defensive Line Height
+              <h3 className="text-lg font-black font-orbitron uppercase tracking-widest mb-6 flex items-center gap-4 text-white/90">
+                <Target className="w-5 h-5 text-rose-500" /> Defensive Line Height
               </h3>
-              <div className="space-y-10">
-                <div className="flex justify-between items-end border-b border-white/5 pb-4">
-                  <span className="text-xs font-black text-white/30 uppercase tracking-widest">Average Height</span>
-                  <span className="text-3xl font-black font-orbitron text-white">48.2m</span>
+              <div className="space-y-6">
+                <div className="flex justify-between items-end border-b border-white/5 pb-3">
+                  <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">Average Height</span>
+                  <span className="text-2xl font-black font-orbitron text-white">48.2m</span>
                 </div>
-                <div className="flex justify-between items-end border-b border-white/5 pb-4">
-                  <span className="text-xs font-black text-white/30 uppercase tracking-widest">Vertical Compactness</span>
-                  <span className="text-3xl font-black font-orbitron text-emerald-400">HIGH</span>
+                <div className="flex justify-between items-end border-b border-white/5 pb-3">
+                  <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">Vertical Compactness</span>
+                  <span className="text-2xl font-black font-orbitron text-emerald-400">HIGH</span>
                 </div>
-                <div className="flex justify-between items-end border-b border-white/5 pb-4">
-                  <span className="text-xs font-black text-white/30 uppercase tracking-widest">Offside Trap Efficiency</span>
-                  <span className="text-3xl font-black font-orbitron text-cyan-400">82%</span>
+                <div className="flex justify-between items-end border-b border-white/5 pb-3">
+                  <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">Offside Trap Efficiency</span>
+                  <span className="text-2xl font-black font-orbitron text-cyan-400">82%</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="col-span-12 lg:col-span-4 bg-black/40 border border-white/10 p-12 rounded-none flex flex-col justify-between">
+          <div className="col-span-12 lg:col-span-4 bg-black/40 border border-white/10 p-8 rounded-none flex flex-col justify-between">
             <div>
-              <h3 className="text-2xl font-black font-orbitron uppercase tracking-widest mb-8 flex items-center gap-4">
-                <Zap className="w-6 h-6 text-amber-400" /> Pressing Intensity
+              <h3 className="text-lg font-black font-orbitron uppercase tracking-widest mb-6 flex items-center gap-4 text-white/90">
+                <Zap className="w-5 h-5 text-amber-400" /> Pressing Intensity
               </h3>
-              <div className="flex items-center justify-center h-40 relative">
-                <div className="absolute inset-0 flex items-center justify-center">
-                   <div className="w-32 h-32 rounded-full border-4 border-dashed border-white/10 animate-pulse" />
-                </div>
-                <div className="text-6xl font-black font-orbitron text-white z-10">0.84</div>
-                <div className="absolute bottom-0 text-[10px] font-black text-amber-400 uppercase tracking-[0.4em]">PPDA Engine Active</div>
+              <div className="flex items-center justify-center h-32 relative">
+                <div className="text-5xl font-black font-orbitron text-white z-10">0.84</div>
+                <div className="absolute bottom-0 text-[8px] font-black text-amber-400 uppercase tracking-[0.4em]">PPDA Engine Active</div>
               </div>
-              <p className="text-[10px] text-white/30 uppercase tracking-widest mt-8 leading-relaxed text-center">
+              <p className="text-[9px] text-white/30 uppercase tracking-widest mt-6 leading-relaxed text-center italic">
                 High-intensity transition detected in the final third. Opponent buildup time reduced by 2.4s.
               </p>
             </div>
@@ -315,54 +317,48 @@ export default function DashboardPage() {
 
                          return (
                            <tr key={p.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                             <td className="py-8 px-6">
+                             <td className="py-4 px-6">
                                <div className="flex items-center gap-4">
-                                 <div className={`w-12 h-12 rounded-none border ${p.team === 'green' ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400' : 'bg-rose-500/20 border-rose-500/50 text-rose-400'} flex items-center justify-center font-black text-lg font-orbitron`}>
+                                 <div className={`w-10 h-10 rounded-none border ${p.team === 'green' ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400' : 'bg-rose-500/10 border-rose-500/30 text-rose-400'} flex items-center justify-center font-black text-sm font-orbitron`}>
                                    {p.id}
                                  </div>
                                </div>
                              </td>
-                             <td className="py-12 px-8">
-                               <div className="font-black text-white uppercase tracking-widest text-2xl mb-1">{role}</div>
-                               <div className="text-white/40 text-sm tracking-[0.3em] uppercase">Zone Control: {60 + (seed % 15)}%</div>
+                             <td className="py-6 px-8">
+                               <div className="font-black text-white uppercase tracking-widest text-lg mb-0.5">{role}</div>
+                               <div className="text-white/40 text-[9px] tracking-[0.2em] uppercase">Zone Control: {60 + (seed % 15)}%</div>
                              </td>
-                             <td className="py-12 px-8 text-center">
-                               <div className="flex flex-col gap-4">
-                                 <div className="flex items-baseline justify-center gap-2">
-                                   <span className="text-4xl font-black text-white">{speed}</span>
-                                   <span className="text-xs text-white/30 uppercase tracking-widest">km/h</span>
+                             <td className="py-6 px-8 text-center">
+                               <div className="flex flex-col gap-1">
+                                 <div className="flex items-baseline justify-center gap-1">
+                                   <span className="text-2xl font-black text-white">{speed}</span>
+                                   <span className="text-[9px] text-white/30 uppercase tracking-widest font-mono">km/h</span>
                                  </div>
-                                 <div className="flex items-baseline justify-center gap-2">
-                                   <span className="text-3xl font-black text-rose-400">{fatigue}%</span>
-                                   <span className="text-[10px] text-white/20 uppercase tracking-widest">Fatigue</span>
-                                 </div>
+                                 <div className="text-[9px] text-white/20 uppercase tracking-widest font-bold">Kinematic Velocity</div>
                                </div>
                              </td>
-                             <td className="py-12 px-8">
-                               <div className="flex flex-col gap-6">
-                                 <div>
-                                    <div className="text-[10px] text-white/30 uppercase tracking-[0.4em] mb-1">Centrality</div>
-                                    <div className="text-3xl font-black text-cyan-400 font-orbitron">{centrality}</div>
+                             <td className="py-6 px-8">
+                               <div className="flex flex-col gap-3">
+                                 <div className="flex justify-between items-center">
+                                    <span className="text-[9px] text-white/30 uppercase tracking-[0.2em]">Centrality</span>
+                                    <span className="text-xl font-black text-cyan-400 font-orbitron">{centrality}</span>
                                  </div>
-                                 <div>
-                                    <div className="text-[10px] text-white/30 uppercase tracking-[0.4em] mb-1">Synergy</div>
-                                    <div className="text-3xl font-black text-emerald-400 font-orbitron">{synergy}</div>
+                                 <div className="flex justify-between items-center">
+                                    <span className="text-[9px] text-white/30 uppercase tracking-[0.2em]">Synergy</span>
+                                    <span className="text-xl font-black text-emerald-400 font-orbitron">{synergy}</span>
                                  </div>
-                               </div>
+                                </div>
                              </td>
-                             <td className="py-12 px-8">
-                               <div className="flex flex-col gap-4">
-                                  <div>
-                                    <div className="text-[10px] text-white/30 uppercase tracking-widest mb-1">Decision Quality</div>
-                                    <div className="text-3xl font-black text-white">{decisionQuality}%</div>
-                                  </div>
-                                  <div className={`px-4 py-1.5 ${bg} ${statusColor} text-xs font-black uppercase tracking-widest text-center w-full shadow-lg`}>
+                             <td className="py-6 px-8 text-center">
+                               <div className="flex flex-col gap-2 items-center">
+                                  <div className="text-xl font-black text-white">{decisionQuality}%</div>
+                                  <div className={`px-3 py-1 ${bg} ${statusColor} text-[8px] font-black uppercase tracking-widest text-center w-fit`}>
                                     {status}
                                   </div>
                                </div>
                              </td>
-                             <td className="py-12 px-8 text-right">
-                                <span className="text-sm text-white/50 uppercase leading-relaxed tracking-wider max-w-[200px] block ml-auto italic">
+                             <td className="py-6 px-8 text-right">
+                                <span className="text-[10px] text-white/40 uppercase leading-tight tracking-wider max-w-[160px] block ml-auto italic">
                                   {pred}
                                 </span>
                              </td>

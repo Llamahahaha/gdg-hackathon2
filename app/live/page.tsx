@@ -108,7 +108,6 @@ export default function LiveEnginePage() {
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Topological Graph // Dynamic Adjacency</span>
               <div className="flex gap-4">
                 <span className="text-[10px] font-bold text-cyan-400 font-mono uppercase">Nodes: {players.length}</span>
-                <span className="text-[10px] font-bold text-blue-500 font-mono uppercase">Entropy: {entropy.toFixed(3)}</span>
               </div>
             </div>
 
@@ -180,46 +179,65 @@ export default function LiveEnginePage() {
             </div>
 
             {/* Entropy Card */}
-            <div className="bg-black/40 p-6 border border-white/10 relative overflow-hidden group">
-              <div className="flex justify-between items-start mb-4">
-                <Activity className={`w-5 h-5 ${entropy > 0.7 ? 'text-rose-500' : 'text-cyan-400'}`} />
-                <span className={`text-[8px] font-black uppercase tracking-widest ${entropy > 0.7 ? 'text-rose-500 animate-pulse' : 'text-white/30'}`}>
-                  {entropy > 0.7 ? 'Warning: High Disorder' : 'System Stable'}
-                </span>
+            <div className="bg-black/60 p-8 border border-white/10 relative overflow-hidden group min-h-[160px] flex flex-col justify-between">
+              <div className="flex justify-between items-start">
+                <div>
+                   <div className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-1">Formation Entropy</div>
+                   <div className="text-4xl font-black font-orbitron">{(entropy * 100).toFixed(1)}%</div>
+                </div>
+                <div className="flex flex-col items-end">
+                  <Activity className={`w-6 h-6 mb-2 ${entropy > 0.7 ? 'text-rose-500' : 'text-cyan-400'}`} />
+                  <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 border ${entropy > 0.7 ? 'border-rose-500/50 text-rose-500 animate-pulse' : 'border-emerald-500/30 text-emerald-500'}`}>
+                    {entropy > 0.7 ? 'Critical Disorder' : 'System Stable'}
+                  </span>
+                </div>
               </div>
-              <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Formation Entropy</div>
-              <div className="text-4xl font-black font-orbitron">{(entropy * 100).toFixed(1)}%</div>
-              <div className="mt-4 h-1 w-full bg-white/5 overflow-hidden">
-                <motion.div animate={{ width: `${entropy * 100}%`, backgroundColor: entropy > 0.7 ? '#ff0033' : '#00f3ff' }} className="h-full" />
+              <div className="mt-6 h-1 w-full bg-white/5 overflow-hidden">
+                <motion.div animate={{ width: `${entropy * 100}%`, backgroundColor: entropy > 0.7 ? '#ff0033' : '#00f3ff' }} className="h-full shadow-[0_0_10px_rgba(0,243,255,0.5)]" />
               </div>
             </div>
 
             {/* Diameter Card */}
-            <div className="bg-black/40 p-6 border border-white/10">
-              <div className="text-[10px] font-black text-white/30 uppercase mb-1">Team Diameter // Compactness</div>
-              <div className="text-2xl font-black font-orbitron">{metrics.diameter.toFixed(2)}px</div>
-              <p className="text-[8px] text-white/40 mt-2 uppercase tracking-tight">Floyd-Warshall all-pairs shortest path length across largest component.</p>
+            <div className="bg-black/60 p-8 border border-white/10 flex flex-col justify-between min-h-[140px]">
+              <div>
+                <div className="text-[10px] font-black text-white/30 uppercase tracking-widest mb-1">Team Diameter // Compactness</div>
+                <div className="text-3xl font-black font-orbitron text-white tracking-tight">{metrics.diameter.toFixed(2)}px</div>
+              </div>
+              <p className="text-[8px] text-white/40 mt-4 uppercase leading-relaxed font-mono">
+                Floyd-Warshall all-pairs shortest path length // Largest Component connectivity.
+              </p>
             </div>
 
             {/* Lynchpin Card */}
-            <div className="bg-rose-500/10 border border-rose-500/30 p-6 relative overflow-hidden">
-              <Target className="absolute top-[-10px] right-[-10px] w-20 h-20 text-rose-500/10" />
-              <div className="text-[10px] font-black text-rose-500 uppercase mb-2">Critical Lynchpin</div>
-              <div className="text-2xl font-black font-orbitron uppercase">
-                {metrics.articulation_points.length > 0 ? `Node #${metrics.articulation_points[0]}` : "None Detected"}
+            <div className="bg-rose-500/5 border border-rose-500/20 p-8 relative overflow-hidden flex flex-col justify-between min-h-[180px]">
+              <div className="absolute top-0 right-0 p-4">
+                 <div className="w-2 h-2 bg-rose-500 rounded-full animate-ping" />
               </div>
-              <p className="text-[9px] text-rose-500/70 mt-2 font-bold uppercase tracking-widest">
-                Tarjan's Articulation Point Analysis identifies structural vulnerability.
-              </p>
-              <button
-                onClick={() => {
-                  const lynchpin = metrics.articulation_points[0];
-                  if (lynchpin) setNeutralizedIds(prev => [...prev, Number(lynchpin)]);
-                }}
-                className="mt-4 w-full py-2 bg-rose-500/20 border border-rose-500/40 text-[9px] font-black uppercase text-rose-500 tracking-widest hover:bg-rose-500 hover:text-white transition-all"
-              >
-                Fracture Connectivity
-              </button>
+              <div>
+                <div className="text-[10px] font-black text-rose-500/60 uppercase tracking-widest mb-2">Structural Vulnerability Audit</div>
+                <div className="text-3xl font-black font-orbitron uppercase text-white">
+                  {metrics.articulation_points.length > 0 ? (
+                    <span className="text-rose-500">Node #{metrics.articulation_points[0]}</span>
+                  ) : (
+                    <span className="text-white/20 italic">None Detected</span>
+                  )}
+                </div>
+              </div>
+              <div className="mt-6 flex flex-col gap-4">
+                <p className="text-[9px] text-white/40 font-bold uppercase tracking-widest leading-tight">
+                  Tarjan's Articulation Point Analysis // Identifies high-risk nodes.
+                </p>
+                <button
+                  onClick={() => {
+                    const lynchpin = metrics.articulation_points[0];
+                    if (lynchpin) setNeutralizedIds(prev => [...prev, Number(lynchpin)]);
+                  }}
+                  disabled={metrics.articulation_points.length === 0}
+                  className="w-full py-3 bg-rose-500 text-black text-[10px] font-black uppercase tracking-widest hover:bg-rose-400 transition-all disabled:opacity-20 disabled:grayscale"
+                >
+                  Neutralize Lynchpin
+                </button>
+              </div>
             </div>
 
             {/* Recommendation Card */}

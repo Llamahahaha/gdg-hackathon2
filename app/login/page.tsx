@@ -19,10 +19,13 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   // Redirect if already logged in
-  if (user) {
-    router.push('/dashboard');
-    return null;
-  }
+  React.useEffect(() => {
+    if (user) {
+      router.push('/dashboard');
+    }
+  }, [user, router]);
+
+  if (user) return null;
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();

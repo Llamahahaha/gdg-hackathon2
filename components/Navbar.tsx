@@ -4,6 +4,7 @@ import * as React from "react"
 import Link from 'next/link'
 import { Shield, Activity, Share2, Menu, Hexagon, LogOut } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
+import path from "path"
 
 export default function Navbar() {
   const [mounted, setMounted] = React.useState(false)
@@ -31,6 +32,7 @@ export default function Navbar() {
         {/* Center: HUD Links - Only accessible if authenticated */}
         <div className="hidden lg:flex items-center gap-8">
           {user ? [
+            { name: "Home", path: "/" },
             { name: "Dashboard", path: "/dashboard" },
             { name: "Live Engine", path: "/live" },
             { name: "Replay Lab", path: "/replay" },
@@ -56,16 +58,16 @@ export default function Navbar() {
         {/* Right: Action */}
         <div className="flex items-center gap-4">
           <div className="hidden xl:flex flex-col px-3 py-1 bg-white/5 border border-white/10 rounded-lg min-w-[160px]">
-             <div className="flex items-center gap-2">
-               <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Auth:</span>
-               <span className="text-[9px] font-bold text-cyan-400 uppercase font-mono max-w-[100px] truncate" title={user?.email || "GUEST"}>
-                 {user ? user.email : "GUEST"}
-               </span>
-             </div>
-             <div className="flex justify-between items-center mt-0.5 border-t border-white/5 pt-0.5">
-               <span className="text-[7px] font-black text-gray-400 uppercase tracking-widest">{user ? 'Authorized Analyst' : 'No Access'}</span>
-               <span className="text-[7px] font-black text-white/50 uppercase tracking-widest bg-black/40 px-1 rounded">{user ? 'L1' : '--'}</span>
-             </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Auth:</span>
+              <span className="text-[9px] font-bold text-cyan-400 uppercase font-mono max-w-[100px] truncate" title={user?.email || "GUEST"}>
+                {user ? user.email : "GUEST"}
+              </span>
+            </div>
+            <div className="flex justify-between items-center mt-0.5 border-t border-white/5 pt-0.5">
+              <span className="text-[7px] font-black text-gray-400 uppercase tracking-widest">{user ? 'Authorized Analyst' : 'No Access'}</span>
+              <span className="text-[7px] font-black text-white/50 uppercase tracking-widest bg-black/40 px-1 rounded">{user ? 'L1' : '--'}</span>
+            </div>
           </div>
           {user ? (
             <div className="flex items-center gap-2">
