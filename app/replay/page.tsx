@@ -18,10 +18,25 @@ export default function ReplayLabPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [players, setPlayers] = useState<any[]>([]);
   const [selectedFrame, setSelectedFrame] = useState<any>(null);
+  const [neutralizedIds, setNeutralizedIds] = useState<number[]>([]);
 
   // Two-step audit state
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [reportData, setReportData] = useState<any>(null);
+
+  const [isCompareMode, setIsCompareMode] = useState(false);
+
+  const peakEntropyFrameIndex = React.useMemo(() => {
+    if (!timeline || timeline.length === 0) return 0;
+    let max = 0;
+    let idx = 0;
+    timeline.forEach((f: any, i: number) => {
+      if ((f.metrics?.entropy || 0) > max) { max = f.metrics.entropy; idx = i; }
+    });
+    return idx;
+  }, [timeline]);
+
+  const preCollapseFrameIndex = Math.max(0, peakEntropyFrameIndex - 45); // ~1.5s before peak
 
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -46,7 +61,8 @@ export default function ReplayLabPage() {
       }))
     );
     setSelectedFrame(frame);
-  }, [frameIndex, timeline]);
+    if (isPlaying) setNeutralizedIds([]); // reset destruction if playing resumes
+  }, [frameIndex, timeline, isPlaying]);
 
   // ── Auto-play scrubber ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -210,7 +226,8 @@ export default function ReplayLabPage() {
     doc.save('FieldTheory_AI_Tactical_Audit.pdf');
   };
 
-  const currentEntropy = selectedFrame?.metrics?.entropy ?? 0;
+  const baseEntropy = selectedFrame?.metrics?.entropy ?? 0;
+  const currentEntropy = neutralizedIds.length > 0 ? 1.00 : baseEntropy;
   const isAnomaly = currentEntropy > 0.6;
   const hasData = timeline && timeline.length > 0;
 
@@ -285,7 +302,7 @@ export default function ReplayLabPage() {
 
             {/* Player/edge SVG overlay */}
             {hasData && (
-              <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 1920 1080">
+              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1920 1080">
                 {/* Edges */}
                 {players.map((p, i) =>
                   players.slice(i + 1).map(other => {
@@ -304,6 +321,7 @@ export default function ReplayLabPage() {
                         strokeWidth={same ? 1.5 : 0.5}
                         opacity={same ? (stressed ? 0.8 : 0.3) : 0.1}
                         strokeDasharray={stressed ? '4 4' : '0'}
+                        className="pointer-events-none"
                       />
                     );
                   })
@@ -319,25 +337,25 @@ export default function ReplayLabPage() {
                     <g 
                       key={p.id} 
                       transform={`translate(${p.rawX},${p.rawY})`}
-                      className={isArticulation ? 'cursor-pointer' : ''}
+                      className={isArticulation ? 'cursor-pointer pointer-events-auto' : 'pointer-events-none'}
                       onClick={() => {
-                        if (isArticulation) {
+                        if (isArticulation && !isPlaying) {
                            setNeutralizedIds(prev => [...prev, Number(p.id)]);
                         }
                       }}
                     >
                       <circle 
-                        r={isArticulation ? 18 : 14} 
+                        r={isArticulation ? 28 : 14} 
                         fill={isArticulation ? '#ff003344' : p.team === 'A' ? '#00f3ff22' : '#ff003322'} 
                         stroke={isArticulation ? '#ff0055' : p.team === 'A' ? '#00f3ff' : '#ff0033'} 
                         strokeWidth={isArticulation ? 3 : 2} 
                         className={isArticulation ? 'animate-pulse' : ''}
                       />
                       {isArticulation && (
-                        <circle r={24} fill="transparent" stroke="#ff0055" strokeWidth={1} className="animate-ping pointer-events-none" />
+                        <circle r={36} fill="transparent" stroke="#ff0055" strokeWidth={1} className="animate-ping pointer-events-none" />
                       )}
-                      <text y={-26} textAnchor="middle" fill="white" fontSize={11} fontFamily="monospace" opacity={0.7} className="pointer-events-none">
-                        P{p.id} {isArticulation && '[LYNCHPIN]'}
+                      <text y={-32} textAnchor="middle" fill="white" fontSize={14} fontFamily="monospace" opacity={0.9} className="pointer-events-none font-bold shadow-black drop-shadow-md">
+                        P{p.id} {isArticulation && '[NEUTRALIZE]'}
                       </text>
                     </g>
                   );
@@ -373,21 +391,42 @@ export default function ReplayLabPage() {
                   <span className="text-[8px] font-black uppercase text-rose-400 animate-pulse">● PLAYING</span>
                 )}
               </div>
-              <div className="flex gap-1">
-                <button
-                  onClick={() => setFrameIndex(i => Math.max(0, i - 1))}
-                  disabled={!hasData}
-                  className="p-2 hover:bg-white/5 disabled:opacity-40"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setFrameIndex(i => Math.min((timeline?.length || 1) - 1, i + 1))}
-                  disabled={!hasData}
-                  className="p-2 hover:bg-white/5 disabled:opacity-40"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
+              <div className="flex items-center gap-4">
+                {hasData && (
+                  <button
+                    onClick={() => {
+                      if (!isCompareMode) {
+                        setFrameIndex(peakEntropyFrameIndex);
+                        setIsCompareMode(true);
+                      } else {
+                        setFrameIndex(preCollapseFrameIndex);
+                        setIsCompareMode(false);
+                      }
+                      setIsPlaying(false);
+                      setNeutralizedIds([]);
+                    }}
+                    className={`px-4 py-1.5 border text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${isCompareMode ? 'bg-rose-500/20 border-rose-500/50 text-rose-400' : 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20'}`}
+                  >
+                    <AlertTriangle className="w-3 h-3" />
+                    {isCompareMode ? 'Viewing: Peak Collapse' : 'Viewing: Stable Pre-Collapse'}
+                  </button>
+                )}
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => { setFrameIndex(i => Math.max(0, i - 1)); setIsCompareMode(false); }}
+                    disabled={!hasData}
+                    className="p-2 hover:bg-white/5 disabled:opacity-40"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => { setFrameIndex(i => Math.min((timeline?.length || 1) - 1, i + 1)); setIsCompareMode(false); }}
+                    disabled={!hasData}
+                    className="p-2 hover:bg-white/5 disabled:opacity-40"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
 

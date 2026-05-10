@@ -117,58 +117,100 @@ export default function DashboardPage() {
           ))}
         </div>
 
-        {/* Tactical Overview - Full Width Chart */}
+        {/* Tactical Overview - FEI Timeline */}
         <div className="bg-black/40 border border-white/10 p-12 rounded-none relative overflow-hidden h-[500px] mb-16 shadow-2xl">
            <div className="flex justify-between items-center mb-10">
               <div className="flex items-center gap-6">
                 <Activity className="w-10 h-10 text-cyan-400 animate-pulse" />
                 <div>
-                  <h3 className="text-3xl font-black font-orbitron uppercase tracking-widest">Global Graph Nodes Over Time</h3>
-                  <p className="text-xs text-white/40 uppercase tracking-[0.4em] mt-2">Real-time personnel distribution across the topological plane</p>
+                  <h3 className="text-3xl font-black font-orbitron uppercase tracking-widest">Formational Entropy Index (FEI)</h3>
+                  <p className="text-xs text-white/40 uppercase tracking-[0.4em] mt-2">Continuous timeline of structural connectivity and tactical disorder</p>
                 </div>
               </div>
               <div className="flex gap-10">
                 <div className="flex items-center gap-4">
                   <div className="w-4 h-4 bg-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.5)]" />
-                  <span className="text-sm font-black uppercase tracking-widest text-white/50">Home Cluster</span>
+                  <span className="text-sm font-black uppercase tracking-widest text-white/50">Optimal Cohesion</span>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="w-4 h-4 bg-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.5)]" />
-                  <span className="text-sm font-black uppercase tracking-widest text-white/50">Away Cluster</span>
+                  <span className="text-sm font-black uppercase tracking-widest text-white/50">Critical Fracture</span>
                 </div>
               </div>
            </div>
            
-           <div className="flex items-end gap-[4px] h-[280px] mt-12 px-4 border-b border-white/10 w-full overflow-hidden relative">
-            {(engineIsRunning ? nodeHistory : (tacticalData?.timeline || [])).slice(-120).map((frame: any, i: number) => {
-              const t1 = frame.t1 || 0;
-              const t2 = frame.t2 || 0;
-              const maxNodes = 22;
-              const entropy = frame.metrics?.entropy || 0.5;
+           <div className="h-[280px] mt-12 border-b border-l border-white/10 w-full relative">
+             <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-20 text-[10px] font-mono -ml-8">
+                <span>1.00</span>
+                <span>0.75</span>
+                <span>0.50</span>
+                <span>0.25</span>
+                <span>0.00</span>
+             </div>
+             
+             {/* Threshold line */}
+             <div className="absolute top-[30%] left-0 right-0 border-b border-rose-500/50 border-dashed pointer-events-none" />
+             <span className="absolute top-[30%] right-4 -translate-y-[120%] text-[10px] font-black text-rose-500 uppercase tracking-widest pointer-events-none">Collapse Threshold</span>
 
-              return (
-                <div key={i} className="flex-1 flex flex-col justify-end gap-[2px] relative group">
-                  {/* Visual 'Node' indicator */}
-                  <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className={`absolute w-1.5 h-1.5 rounded-full z-10 -translate-x-1/2 left-1/2 ${entropy > 0.7 ? 'bg-rose-500 shadow-[0_0_8px_#f43f5e]' : 'bg-cyan-400 shadow-[0_0_8px_#22d3ee]'}`}
-                    style={{ bottom: `${((t1 + t2) / maxNodes) * 100}%` }}
-                  />
+             <svg className="w-full h-full preserve-3d" preserveAspectRatio="none">
+               {(() => {
+                  const data = (engineIsRunning ? nodeHistory : (tacticalData?.timeline || [])).slice(-150);
+                  if (data.length === 0) return null;
+                  
+                  const width = 100; // viewbox percentage
+                  const step = width / (Math.max(data.length - 1, 1));
+                  
+                  // Construct path
+                  const points = data.map((frame: any, i: number) => {
+                     const entropy = frame.metrics?.entropy ?? 0.4;
+                     const x = i * step;
+                     const y = 100 - (entropy * 100); // SVG y goes down
+                     return `${x},${y}`;
+                  }).join(' L ');
+                  
+                  return (
+                    <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full overflow-visible">
+                       {/* Area Fill */}
+                       <path 
+                         d={`M 0,100 L ${points} L 100,100 Z`} 
+                         fill="url(#entropyGradient)" 
+                         opacity="0.3"
+                       />
+                       {/* Line */}
+                       <path 
+                         d={`M ${points}`} 
+                         fill="none" 
+                         stroke="#00f3ff" 
+                         strokeWidth="0.8" 
+                         vectorEffect="non-scaling-stroke"
+                         className="drop-shadow-[0_0_8px_#00f3ff]"
+                       />
+                       {/* Highlight Spikes */}
+                       {data.map((frame: any, i: number) => {
+                          const entropy = frame.metrics?.entropy ?? 0.4;
+                          if (entropy < 0.7) return null;
+                          return (
+                            <circle 
+                              key={i}
+                              cx={i * step} cy={100 - (entropy * 100)} r="1.5" 
+                              fill="#f43f5e" 
+                              className="animate-pulse"
+                              vectorEffect="non-scaling-stroke"
+                            />
+                          );
+                       })}
 
-                  <motion.div 
-                    initial={{ height: 0 }}
-                    animate={{ height: `${(t2 / maxNodes) * 100}%` }}
-                    className="w-full bg-rose-500/20 border-t border-rose-500/40 group-hover:bg-rose-500/40 transition-colors" 
-                  />
-                  <motion.div 
-                    initial={{ height: 0 }}
-                    animate={{ height: `${(t1 / maxNodes) * 100}%` }}
-                    className="w-full bg-cyan-400/20 border-t border-cyan-400/40 group-hover:bg-cyan-400/40 transition-colors" 
-                  />
-                </div>
-              );
-            })}
+                       <defs>
+                         <linearGradient id="entropyGradient" x1="0" x2="0" y1="0" y2="1">
+                           <stop offset="0%" stopColor="#f43f5e" stopOpacity="0.8" />
+                           <stop offset="50%" stopColor="#00f3ff" stopOpacity="0.5" />
+                           <stop offset="100%" stopColor="#00f3ff" stopOpacity="0" />
+                         </linearGradient>
+                       </defs>
+                    </svg>
+                  );
+               })()}
+             </svg>
            </div>
         </div>
 
@@ -214,14 +256,41 @@ export default function DashboardPage() {
           <div className="col-span-12 lg:col-span-4 bg-black/40 border border-white/10 p-8 rounded-none flex flex-col justify-between">
             <div>
               <h3 className="text-lg font-black font-orbitron uppercase tracking-widest mb-6 flex items-center gap-4 text-white/90">
-                <Zap className="w-5 h-5 text-amber-400" /> Pressing Intensity
+                <Target className="w-5 h-5 text-emerald-400" /> Spatial Compression Radar
               </h3>
-              <div className="flex items-center justify-center h-32 relative">
-                <div className="text-5xl font-black font-orbitron text-white z-10">0.84</div>
-                <div className="absolute bottom-0 text-[8px] font-black text-amber-400 uppercase tracking-[0.4em]">PPDA Engine Active</div>
+              <div className="flex items-center justify-center h-40 relative mt-4">
+                <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
+                   {/* Background grids */}
+                   <polygon points="50,10 90,50 50,90 10,50" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+                   <polygon points="50,30 70,50 50,70 30,50" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+                   
+                   {/* Axes */}
+                   <line x1="50" y1="10" x2="50" y2="90" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+                   <line x1="10" y1="50" x2="90" y2="50" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+
+                   {/* Data Polygon - Dynamic based on entropy */}
+                   <motion.polygon 
+                     animate={{ 
+                       points: engineIsRunning && liveEntropy > 0.7 
+                         ? "50,20 85,50 50,85 20,50" // Fractured (spread out)
+                         : "50,35 65,50 50,60 30,50"  // Compact
+                     }}
+                     transition={{ type: "spring", stiffness: 60 }}
+                     fill="rgba(52, 211, 153, 0.2)" 
+                     stroke="#34d399" 
+                     strokeWidth="1.5"
+                     className="drop-shadow-[0_0_8px_#34d399]"
+                   />
+                   
+                   {/* Labels */}
+                   <text x="50" y="5" textAnchor="middle" fill="white" fontSize="4" className="font-mono opacity-50">DIAMETER</text>
+                   <text x="50" y="98" textAnchor="middle" fill="white" fontSize="4" className="font-mono opacity-50">COMPACTNESS</text>
+                   <text x="2" y="51" textAnchor="start" fill="white" fontSize="4" className="font-mono opacity-50">OVERLOAD</text>
+                   <text x="98" y="51" textAnchor="end" fill="white" fontSize="4" className="font-mono opacity-50">TRUST</text>
+                </svg>
               </div>
-              <p className="text-[9px] text-white/30 uppercase tracking-widest mt-6 leading-relaxed text-center italic">
-                High-intensity transition detected in the final third. Opponent buildup time reduced by 2.4s.
+              <p className="text-[9px] text-emerald-400/70 uppercase tracking-widest mt-6 leading-relaxed text-center font-bold">
+                Floyd-Warshall Shortest Path Telemetry Active.
               </p>
             </div>
           </div>
