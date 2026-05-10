@@ -288,18 +288,7 @@ export default function SimulationsPage() {
             </div>
           </div>
 
-          {/* AI Recommendation Engine */}
-          <div className="flex-1 bg-cyan-500 p-8 text-black flex flex-col gap-6 relative overflow-hidden">
-            <Hexagon className="absolute top-[-20px] right-[-20px] w-32 h-32 text-black/5 rotate-12" />
-            <div className="text-[10px] font-black uppercase tracking-[0.2em] mb-2">Simulation Intelligence</div>
-            <div className="text-2xl font-black font-orbitron uppercase leading-tight">Recommended Structure Adjustment</div>
-            <p className="text-sm font-medium leading-relaxed mt-4">
-              Current dispersion indicates a {sandboxState.entropy > 0.5 ? 'weakening' : 'stable'} core. {sandboxState.entropy > 0.6 ? 'Compress lines to regain central stability and avoid through-ball vulnerability.' : 'Maintain spatial distribution; connectivity is optimal.'}
-            </p>
-            <button className="mt-auto w-full py-4 bg-black text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-black/80 transition-all">
-              Apply AI Optimization
-            </button>
-          </div>
+
 
         </div>
       </main>

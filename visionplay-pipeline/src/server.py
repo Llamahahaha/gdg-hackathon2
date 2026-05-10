@@ -141,6 +141,40 @@ def upload_video(file: UploadFile = File(...)):
     logger.info(f"Video uploaded: {file.filename} ({Path(dest).stat().st_size // 1024}KB)")
     return {"status": "uploaded", "filename": file.filename, "path": dest}
 
+@app.post("/chat")
+async def chat_endpoint(data: dict):
+    """
+    Accepts a user message and returns an AI-generated tactical response.
+    """
+    user_message = data.get("message", "")
+    if not user_message:
+        return {"error": "No message provided"}
+    
+    prompt = f"""
+    You are FieldTheory AI, an elite tactical football analyst.
+    A coach is asking you: "{user_message}"
+    
+    Provide a professional, data-driven, and high-impact response in 2-3 sentences.
+    Focus on spatio-temporal graph intelligence, formation entropy, and structural stability.
+    Keep the tone clinical, authoritative, and strategic.
+    """
+    
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.post(
+                f"{OLLAMA_BASE_URL}/api/generate",
+                json={
+                    "model": "llama3.2",
+                    "prompt": prompt,
+                    "stream": False
+                }
+            )
+            result = response.json()
+            return {"response": result.get("response", "").strip()}
+    except Exception as e:
+        logger.error(f"Chat failed: {e}")
+        return {"response": "Strategic Engine offline. Ensure Ollama is running with Llama 3.2."}
+
 @app.post("/generate-audit")
 async def generate_audit_endpoint(data: dict):
     """
