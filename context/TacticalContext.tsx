@@ -48,6 +48,8 @@ interface TacticalContextType {
   frameIndex: number;
   timelineData: FrameData[];       // full frame records for Replay Lab
   uploadedVideoSrc: string | null; // blob URL of the video uploaded in Live Engine
+  analysisTeam: 'green' | 'white';
+  setAnalysisTeam: (team: 'green' | 'white') => void;
   setUploadedVideoSrc: (src: string | null) => void;
   currentStats: FrameData | null;  // stats of the most-recent frame (for pause snapshot)
   startEngine: () => Promise<void>;
@@ -69,6 +71,7 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
   const [timelineData, setTimelineData] = useState<FrameData[]>([]);
   const [uploadedVideoSrc, setUploadedVideoSrc] = useState<string | null>(null);
   const [currentStats, setCurrentStats] = useState<FrameData | null>(null);
+  const [analysisTeam, setAnalysisTeam] = useState<'green' | 'white'>('green');
   
   const isPlayingRef = useRef(isPlaying);
   const timelineDataRef = useRef<FrameData[]>([]);
@@ -110,23 +113,28 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
                 const detections: Detection[] = data.stats.detections || [];
                 const uniqueDetections = new Map<string, Player>();
                 
-                detections.forEach((d) => {
-                  const bbox = d.bbox || [0, 0, 0, 0];
-                  const center = d.center || [(bbox[0] + bbox[2])/2, (bbox[1] + bbox[3])/2];
-                  const id = d.id !== undefined ? String(d.id) : String(Math.random());
-                  
-                  if (!uniqueDetections.has(id)) {
-                    uniqueDetections.set(id, {
-                      id: id,
-                      rawX: center[0],
-                      rawY: center[1],
-                      x: (center[0] / 1920) * 800,
-                      y: (center[1] / 1080) * 400,
-                      name: `P${id}`,
-                      team: d.team === 'green' ? 'A' : 'B'
-                    });
-                  }
-                });
+                detections
+                  .filter(d => (d.team === 'green' || d.team === 'white') && d.id !== undefined)
+                  .forEach((d) => {
+                    const center = d.center || [0, 0];
+                    
+                    // Filter out zero-coordinate noise from top-left corner
+                    if (center[0] <= 0 && center[1] <= 0) return;
+
+                    const id = String(d.id);
+                    
+                    if (!uniqueDetections.has(id)) {
+                      uniqueDetections.set(id, {
+                        id: id,
+                        rawX: center[0],
+                        rawY: center[1],
+                        x: (center[0] / 1920) * 800,
+                        y: (center[1] / 1080) * 400,
+                        name: `P${id}`,
+                        team: d.team === 'green' ? 'A' : 'B'
+                      });
+                    }
+                  });
 
                 setPlayers(Array.from(uniqueDetections.values()));
                 setPossession(data.stats.possession || "UNKNOWN");
@@ -225,6 +233,7 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
       possession, isPlaying, frameIndex, timelineData,
       uploadedVideoSrc, setUploadedVideoSrc,
       currentStats,
+      analysisTeam, setAnalysisTeam,
       startEngine, stopEngine
     }}>
       {children}

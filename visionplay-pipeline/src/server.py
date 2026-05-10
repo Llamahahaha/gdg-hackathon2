@@ -16,9 +16,10 @@ if current_dir not in sys.path:
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
+import httpx
 from main import run_pipeline
 from graph_engine import compute_tactical_metrics, get_ai_recommendation, generate_full_audit_report
-from ai_service import AIService
+from ai_service import AIService, OLLAMA_BASE_URL
 
 # ─── Configuration ────────────────────────────────────────────────────────────
 logging.basicConfig(level=logging.INFO)
@@ -73,7 +74,7 @@ def frame_to_base64(frame):
     new_height = int(height * (new_width / width))
     small_frame = cv2.resize(frame, (new_width, new_height))
     
-    _, buffer = cv2.imencode('.jpg', small_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
+    _, buffer = cv2.imencode('.jpg', small_frame, [int(cv2.IMWRITE_QUALITY), 70])
     return base64.b64encode(buffer).decode('utf-8')
 
 async def stream_frame(frame, stats):
@@ -223,6 +224,52 @@ async def generate_audit_endpoint(data: dict):
     
     report = await generate_full_audit_report(summary)
     return report
+
+@app.post("/generate-ideal-scenario")
+async def generate_ideal_scenario():
+    """
+    Calls Ollama to propose a 'healthy' tactical formation (low entropy).
+    """
+    prompt = """
+    Propose an ideal, high-stability 4-3-3 football formation for the 'Home Team'.
+    Provide the (x, y) coordinates for 11 players on an 800x400 canvas.
+    The response must be a RAW JSON array of objects, each with 'id', 'x', 'y', and 'role'.
+    Example: [{"id": 1, "x": 50, "y": 200, "role": "GK"}, ...]
+    Ensure the formation is symmetric, balanced, and has LOW entropy.
+    RESPOND ONLY WITH THE JSON ARRAY.
+    """
+    
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.post(
+                f"{OLLAMA_BASE_URL}/api/generate",
+                json={
+                    "model": "llama3.2",
+                    "prompt": prompt,
+                    "stream": False,
+                    "format": "json"
+                }
+            )
+            result = response.json()
+            raw_response = result.get("response", "[]")
+            return {"nodes": json.loads(raw_response)}
+    except Exception as e:
+        logger.error(f"Ideal scenario generation failed: {e}")
+        # Fallback to a hardcoded healthy 4-3-3 if AI fails
+        fallback_nodes = [
+            {"id": 1, "x": 50, "y": 200, "role": "GK"},
+            {"id": 2, "x": 200, "y": 50, "role": "LB"},
+            {"id": 3, "x": 180, "y": 150, "role": "CB"},
+            {"id": 4, "x": 180, "y": 250, "role": "CB"},
+            {"id": 5, "x": 200, "y": 350, "role": "RB"},
+            {"id": 6, "x": 400, "y": 100, "role": "CM"},
+            {"id": 7, "x": 380, "y": 200, "role": "CDM"},
+            {"id": 8, "x": 400, "y": 300, "role": "CM"},
+            {"id": 9, "x": 650, "y": 100, "role": "LW"},
+            {"id": 10, "x": 700, "y": 200, "role": "ST"},
+            {"id": 11, "x": 650, "y": 300, "role": "RW"},
+        ]
+        return {"nodes": fallback_nodes}
 
 @app.post("/start")
 async def start_session():

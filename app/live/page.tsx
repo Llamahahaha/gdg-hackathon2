@@ -10,6 +10,7 @@ export default function LiveEnginePage() {
   const {
     players, liveFrame, connectionStatus, status, entropy, metrics,
     possession, isPlaying, frameIndex, timelineData,
+    analysisTeam, setAnalysisTeam,
     startEngine, stopEngine, setUploadedVideoSrc
   } = useTactical();
 
@@ -95,6 +96,24 @@ export default function LiveEnginePage() {
               <span className="text-[8px] font-black text-white/30 uppercase tracking-widest">Neural Status</span>
               <span className="text-[10px] font-bold text-cyan-400 tracking-widest uppercase">{status.replace(/_/g, ' ')}</span>
             </div>
+          </div>
+
+          <div className="ml-auto flex items-center gap-4 border-l border-white/10 pl-6">
+             <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">Target Team</span>
+             <div className="flex bg-white/5 p-1 rounded-sm border border-white/10">
+                <button 
+                  onClick={() => setAnalysisTeam('green')}
+                  className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all ${analysisTeam === 'green' ? 'bg-emerald-500 text-black' : 'text-white/40 hover:text-white'}`}
+                >
+                  Green
+                </button>
+                <button 
+                  onClick={() => setAnalysisTeam('white')}
+                  className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all ${analysisTeam === 'white' ? 'bg-slate-200 text-black' : 'text-white/40 hover:text-white'}`}
+                >
+                  White
+                </button>
+             </div>
           </div>
         </div>
 
@@ -191,16 +210,22 @@ export default function LiveEnginePage() {
                 ))}
 
                 {/* Nodes */}
-                {players.map((p) => {
-                  const isArticulation = metrics.articulation_points.includes(String(p.id));
-                  return (
-                    <motion.g key={p.id} animate={{ x: p.x, y: p.y }}>
-                      <circle r={isArticulation ? 6 : 4} fill={isArticulation ? "#ff0055" : (p.team === 'A' ? "#00f3ff" : "#0066ff")} className={isArticulation ? "drop-shadow-[0_0_8px_#ff0055]" : ""} />
-                      {isArticulation && <circle r={12} fill="transparent" stroke="#ff0055" strokeWidth={1} className="animate-pulse" />}
-                      <text y={-10} textAnchor="middle" fill="white" fontSize="8" className="font-mono opacity-50 uppercase tracking-widest">{p.name}</text>
-                    </motion.g>
-                  );
-                })}
+                {players
+                  .filter(p => (analysisTeam === 'green' ? p.team === 'A' : p.team === 'B'))
+                  .map((p) => {
+                    const isArticulation = metrics.articulation_points.includes(String(p.id));
+                    return (
+                      <motion.g key={p.id} animate={{ x: p.x, y: p.y }}>
+                        <circle 
+                          r={isArticulation ? 8 : 6} 
+                          fill={isArticulation ? "#ff0055" : (analysisTeam === 'green' ? "#00f3ff" : "#ffffff")} 
+                          className={isArticulation ? "drop-shadow-[0_0_12px_#ff0055]" : ""} 
+                        />
+                        {isArticulation && <circle r={14} fill="transparent" stroke="#ff0055" strokeWidth={1} className="animate-pulse" />}
+                        <text y={-15} textAnchor="middle" fill="white" fontSize="9" className="font-bold uppercase tracking-widest">{p.name}</text>
+                      </motion.g>
+                    );
+                  })}
               </svg>
 
               {/* Legend */}

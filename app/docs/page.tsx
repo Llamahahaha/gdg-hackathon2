@@ -34,7 +34,7 @@ export default function DocumentationPage() {
               </div>
               <h3 className="text-xl font-bold uppercase tracking-widest">Live Engine</h3>
               <p className="text-gray-400 text-sm leading-relaxed">
-                The Live Engine processes real-time video feeds (or uploaded footage) using YOLOv8 to detect player positions. It calculates real-time tactical metrics and streams the data over WebSockets for instantaneous analysis.
+                The **Neural Stream Processor**. It ingests match footage at 30fps, performing high-fidelity YOLOv11 player detection. The engine abstracts 22 moving entities into a **Dynamic Adjacency Matrix**, streaming topological updates over low-latency WebSockets.
               </p>
             </div>
 
@@ -42,9 +42,9 @@ export default function DocumentationPage() {
               <div className="w-12 h-12 bg-cyan-500/20 rounded-lg flex items-center justify-center border border-cyan-500/30">
                 <Target className="w-6 h-6 text-cyan-400" />
               </div>
-              <h3 className="text-xl font-bold uppercase tracking-widest">Dashboard</h3>
+              <h3 className="text-xl font-bold uppercase tracking-widest">Command Center</h3>
               <p className="text-gray-400 text-sm leading-relaxed">
-                The central command hub. It provides a high-level overview of the match, including the Formational Entropy Index (FEI) timeline, structural fracture alerts, and spatial vulnerability heatmaps.
+                The **Spatio-Temporal Command Hub**. Features the **Formational Entropy Index (FEI)** timeline—a continuous audit of structural stability. It tracks neural status, possession cycles, and generates real-time alerts for defensive fractures.
               </p>
             </div>
 
@@ -52,9 +52,9 @@ export default function DocumentationPage() {
               <div className="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center border border-emerald-500/30">
                 <Cpu className="w-6 h-6 text-emerald-400" />
               </div>
-              <h3 className="text-xl font-bold uppercase tracking-widest">Simulations (Sandbox)</h3>
+              <h3 className="text-xl font-bold uppercase tracking-widest">Tactical Sandbox</h3>
               <p className="text-gray-400 text-sm leading-relaxed">
-                An interactive tactical sandbox. Users can drag and drop nodes (players) to simulate different formations and instantly see how structural changes affect team entropy and stability.
+                The **Predictive Laboratory**. Allows coaches to perform **Manual Node Overrides**. Drag players to test hypothetical formations while the **Ghost Formation** (static match-state reference) provides a baseline for tactical drift analysis.
               </p>
             </div>
 
@@ -62,75 +62,113 @@ export default function DocumentationPage() {
               <div className="w-12 h-12 bg-rose-500/20 rounded-lg flex items-center justify-center border border-rose-500/30">
                 <FileText className="w-6 h-6 text-rose-400" />
               </div>
-              <h3 className="text-xl font-bold uppercase tracking-widest">Forensic Replay & Reports</h3>
+              <h3 className="text-xl font-bold uppercase tracking-widest">Forensic Intelligence</h3>
               <p className="text-gray-400 text-sm leading-relaxed">
-                Review historical footage frame-by-frame. The system generates automated PDF Intelligence Reports detailing critical structural failures, lynchpin vulnerabilities, and tactical recommendations powered by local LLMs.
+                The **Audit Engine**. Combines computer vision telemetry with **Llama 3.2 Reasoning**. Generates formal PDF Intelligence Reports that translate complex graph eigenvalues into actionable coaching directives.
               </p>
             </div>
           </div>
         </section>
 
-        {/* Section 2: Mathematical Algorithms */}
+        {/* Section 2: Predictive Intelligence */}
+        <section className="space-y-8">
+          <h2 className="text-3xl font-black font-orbitron uppercase tracking-widest border-l-4 border-cyan-500 pl-4">Simulative Predictive Collapse</h2>
+          <div className="p-8 bg-black/40 border border-white/10 rounded-2xl space-y-6">
+            <p className="text-gray-300 leading-relaxed">
+              The platform's signature predictive feature. Rather than waiting for a tactical error to occur, FieldTheory forecasts it using **Spectral Topology**.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-2">
+                <div className="text-cyan-400 font-bold uppercase text-xs">Initialization</div>
+                <p className="text-[10px] text-gray-500 uppercase leading-relaxed">The Sandbox ingests the match midpoint frame, establishing a ground-truth topological state.</p>
+              </div>
+              <div className="space-y-2">
+                <div className="text-cyan-400 font-bold uppercase text-xs">Stress Testing</div>
+                <p className="text-[10px] text-gray-500 uppercase leading-relaxed">Coaches drag nodes to widen team diameter. The system calculates real-time dispersion variance.</p>
+              </div>
+              <div className="space-y-2">
+                <div className="text-rose-500 font-bold uppercase text-xs">Critical Fracture</div>
+                <p className="text-[10px] text-gray-500 uppercase leading-relaxed">Once Entropy crosses 60%, the system predicts a "Structural Collapse," signifying the point where passing lanes mathematically fracture.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 3: Mathematical Algorithms */}
         <section className="space-y-8">
           <h2 className="text-3xl font-black font-orbitron uppercase tracking-widest border-l-4 border-cyan-500 pl-4">Mathematical Algorithms</h2>
           
           <div className="space-y-6">
+            <div className="p-6 bg-white/5 border border-white/10 rounded-xl space-y-4">
+              <h4 className="text-lg font-bold text-cyan-400 uppercase tracking-widest flex items-center gap-2">
+                <Database className="w-4 h-4" /> Stabilized Graph Entropy (FEI)
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-3">
+                  <p className="text-gray-300 text-sm leading-relaxed">
+                    Quantifies formational "disorder" using the Shannon Entropy of the Laplacian Spectrum.
+                  </p>
+                  <div className="p-4 bg-black/50 border border-white/5 font-mono text-cyan-500 text-xs">
+                    L = D - A <br />
+                    p_i = exp(k * lambda_i) / sum(exp(k * lambda_j)) <br />
+                    H = -sum(p_i * log2(p_i))
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <p className="text-gray-300 text-sm leading-relaxed">
+                    <strong className="text-white">Calibration Layers:</strong>
+                  </p>
+                  <ul className="text-[10px] text-gray-500 uppercase space-y-1 list-disc list-inside">
+                    <li>Adjacency Persistence ($\gamma=0.7$)</li>
+                    <li>Spectral Softmax Normalization ($k=2.0$)</li>
+                    <li>Compactness Modulation ($\beta=0.15$)</li>
+                    <li>EMA Temporal Smoothing ($\alpha=0.2$)</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
             <div className="p-6 bg-white/5 border border-white/10 rounded-xl space-y-3">
               <h4 className="text-lg font-bold text-cyan-400 uppercase tracking-widest flex items-center gap-2">
-                <Database className="w-4 h-4" /> Graph Laplacian Matrix (L)
+                <Activity className="w-4 h-4" /> Dijkstra's Path Efficiency
               </h4>
               <p className="text-gray-300 text-sm leading-relaxed">
-                The core of our spectral analysis. The Laplacian matrix is defined as <code className="text-cyan-400 bg-white/5 px-1">L = D - A</code>, where <code className="text-white">D</code> is the Degree Matrix (diagonal matrix of node connectivity) and <code className="text-white">A</code> is the Adjacency Matrix (representing the weighted proximity of players).
+                Determines the **Optimal Pass Vector**. Edges are weighted as $W = 1/d \cdot OppImpedance$. The algorithm identifies the shortest path to goal-scoring zones through the lowest-entropy lanes.
                 <br /><br />
-                The eigenvalues of <code className="text-white">L</code> provide a deep fingerprint of the team's structural integrity. The second smallest eigenvalue, known as the <strong className="text-white italic">Algebraic Connectivity</strong> or <strong className="text-white italic">Fiedler Value</strong>, specifically measures how difficult it is to fracture the team's network.
-                <br /><br />
-                <strong className="text-white">Tactical Meaning:</strong> Higher Fiedler values represent a "cohesive unit" that is mathematically resistant to being bypassed.
+                <strong className="text-white">Tactical Meaning:</strong> Recommends the "Path of Least Resistance" for progression.
               </p>
             </div>
 
             <div className="p-6 bg-white/5 border border-white/10 rounded-xl space-y-3">
               <h4 className="text-lg font-bold text-cyan-400 uppercase tracking-widest flex items-center gap-2">
-                <Activity className="w-4 h-4" /> Dijkstra's Algorithm (Path Efficiency)
+                <Shield className="w-4 h-4" /> Tarjan's Lynchpin Detection
               </h4>
               <p className="text-gray-300 text-sm leading-relaxed">
-                A greedy graph search algorithm that finds the shortest path between a source node (the player with the ball) and all other nodes in the network.
+                Uses Depth-First Search to locate **Cut Vertices**. These are players whose removal (neutralization) would split the team's connectivity into two or more disjoint components.
                 <br /><br />
-                FieldTheory uses Dijkstra's to calculate <strong className="text-white">Pass Efficiency Hubs</strong>. By weighting edges based on passing lanes (considering opponent proximity as an "impedance"), we identify the most efficient route for ball progression.
-                <br /><br />
-                <strong className="text-white">Tactical Meaning:</strong> Recommends the optimal next pass in real-time, mathematically selecting the path of least resistance to the opponent's goal.
+                <strong className="text-white">Tactical Meaning:</strong> Identifies players who are single points of structural failure.
               </p>
             </div>
 
             <div className="p-6 bg-white/5 border border-white/10 rounded-xl space-y-3">
               <h4 className="text-lg font-bold text-cyan-400 uppercase tracking-widest flex items-center gap-2">
-                <Shield className="w-4 h-4" /> Tarjan's Algorithm (Articulation Points)
+                <Target className="w-4 h-4" /> Floyd-Warshall Team Diameter
               </h4>
               <p className="text-gray-300 text-sm leading-relaxed">
-                A Depth-First Search (DFS) algorithm used to find Cut Vertices in the graph. These are single nodes whose removal would increase the number of disconnected components in the team's network.
+                Computes all-pairs shortest paths to determine the **Graph Eccentricity**. The Team Diameter is the maximum of these eccentricities, measuring total spatial stretch.
                 <br /><br />
-                <strong className="text-white">Tactical Meaning:</strong> Identifies "Lynchpin" players holding the formation together. Neutralizing these players mathematically severs the team's passing network.
+                <strong className="text-white">Tactical Meaning:</strong> Audits defensive "Stretch." A diameter &gt; 60m signifies a high risk of through-ball penetration.
               </p>
             </div>
 
             <div className="p-6 bg-white/5 border border-white/10 rounded-xl space-y-3">
               <h4 className="text-lg font-bold text-cyan-400 uppercase tracking-widest flex items-center gap-2">
-                <Target className="w-4 h-4" /> Floyd-Warshall (Graph Diameter)
+                <Cpu className="w-4 h-4" /> Eigenvector Centrality (Playmaker Index)
               </h4>
               <p className="text-gray-300 text-sm leading-relaxed">
-                We compute the shortest path between all pairs of nodes to find the Graph Diameter (the longest of all shortest paths) and the Average Shortest Path length.
+                Calculates the **Principal Eigenvector** of the adjacency matrix. Players are scored not just by their connections, but by the connectivity of the players they are linked to.
                 <br /><br />
-                <strong className="text-white">Tactical Meaning:</strong> Audits how stretched or compact a team is. A massive graph diameter implies the team is vulnerable to through-balls.
-              </p>
-            </div>
-
-            <div className="p-6 bg-white/5 border border-white/10 rounded-xl space-y-3">
-              <h4 className="text-lg font-bold text-cyan-400 uppercase tracking-widest flex items-center gap-2">
-                <Cpu className="w-4 h-4" /> Eigenvector Centrality
-              </h4>
-              <p className="text-gray-300 text-sm leading-relaxed">
-                Measures the influence of a node in a network. A high eigenvector score means a player is not only well-connected but connected to other highly-influential players.
-                <br /><br />
-                <strong className="text-white">Tactical Meaning:</strong> Identifies the "True Playmaker." Unlike simple pass counts, this highlights players who are central to high-impact tactical sequences.
+                <strong className="text-white">Tactical Meaning:</strong> Identifies the "Neural Hub" of the team—the true playmaker controlling the game's flow.
               </p>
             </div>
           </div>

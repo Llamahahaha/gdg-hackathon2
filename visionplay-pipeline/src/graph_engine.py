@@ -15,6 +15,61 @@ from ai_service import AIService
 
 logger = logging.getLogger("graph-engine")
 
+# ─── Stabilization Layers ───────────────────────────────────────────────────
+
+class TacticalStabilizer:
+    """
+    Handles mathematical stabilization of the tactical entropy pipeline to reduce
+    frame-to-frame jitter and improve tactical interpretability.
+    """
+    def __init__(self):
+        self.prev_adj = None
+        self.prev_entropy = 0.42
+        self.gamma = 0.7  # Adjacency persistence
+        self.alpha = 0.2  # Entropy smoothing
+        self.k = 2.0      # Spectral Softmax k-factor
+        self.beta = 0.15  # Compactness modulation factor
+
+    def apply_adjacency_persistence(self, A_new):
+        """A_t = gamma * A_prev + (1 - gamma) * A_new"""
+        if self.prev_adj is None or self.prev_adj.shape != A_new.shape:
+            self.prev_adj = A_new
+            return A_new
+        A_t = self.gamma * self.prev_adj + (1 - self.gamma) * A_new
+        self.prev_adj = A_t
+        return A_t
+
+    def apply_temporal_smoothing(self, H_new):
+        """H_smooth_t = alpha * H_t + (1 - alpha) * H_smooth_(t-1)"""
+        H_smooth = self.alpha * H_new + (1 - self.alpha) * self.prev_entropy
+        self.prev_entropy = H_smooth
+        return H_smooth
+
+    def spectral_softmax(self, eigenvalues):
+        """p_i = exp(k * lambda_i) / sum(exp(k * lambda_j))"""
+        # Subtract max for numerical stability (avoid Overflow)
+        shifted_eigs = self.k * (eigenvalues - np.max(eigenvalues))
+        exp_eigs = np.exp(shifted_eigs)
+        return exp_eigs / (np.sum(exp_eigs) + 1e-10)
+
+    def compute_compactness(self, player_positions):
+        """C = 1 / (1 + spatial_variance)"""
+        if len(player_positions) < 2: return 1.0
+        pos_array = np.array(player_positions)
+        variance = np.mean(np.var(pos_array, axis=0))
+        # Normalize variance to pitch-relative scale (assuming 1920x1080)
+        norm_variance = variance / 50000 
+        return 1.0 / (1.0 + norm_variance)
+
+    def calibrate_output(self, H_smooth, compactness):
+        """H_adj = H_smooth * (1 - beta * C) with safe normalization"""
+        H_adj = H_smooth * (1.0 - self.beta * compactness)
+        # Smooth scaling to target tactical ranges
+        # Organized: 0.2-0.45 | Neutral: 0.45-0.7 | Chaotic: >0.7
+        return np.clip(H_adj, 0.1, 1.0)
+
+stabilizer = TacticalStabilizer()
+
 def compute_tactical_metrics(players):
     """
     Computes graph-based metrics for a set of players.
@@ -34,12 +89,22 @@ def compute_tactical_metrics(players):
     team_a_nodes = []
     
     for p in players:
+        # Skip invalid/noise detections at origin (0,0) or missing ID
+        if p.get('id') is None: continue
+        center = p.get('center', [0, 0])
+        if center[0] <= 0 and center[1] <= 0: continue
+
         p_id = str(p['id'])
-        G.add_node(p_id, pos=p['center'], team=p['team'])
-        if p['team'] == 'green': # Assuming team 'A' is green
+        team = p.get('team', 'unknown')
+        G.add_node(p_id, pos=center, team=team)
+        
+        # Collect nodes for the active team (green or white)
+        # Default to green if team is unknown but we have nodes
+        if team == 'green' or team == 'white':
             team_a_nodes.append(p_id)
 
-    # We mostly care about Team A's (Home Team) stability
+    # We mostly care about the primary team's stability
+    # In a real scenario, this would be passed as a parameter
     subG = G.subgraph(team_a_nodes)
     
     # Add edges based on proximity
@@ -52,48 +117,72 @@ def compute_tactical_metrics(players):
             if dist < threshold:
                 G.add_edge(n1, n2, weight=1/dist if dist > 0 else 1)
 
-    # 2. Formation Entropy
+    # 2. Formation Entropy with Stabilization Layers
     entropy = 0
     if len(subG.nodes) > 1:
         try:
-            L = nx.laplacian_matrix(subG).toarray()
-            eigs = np.linalg.eigvals(L)
-            eigs = eigs[eigs > 1e-10]
+            # 2.1 Adjacency Persistence
+            A_new = nx.to_numpy_array(subG, weight='weight')
+            A_stabilized = stabilizer.apply_adjacency_persistence(A_new)
+            
+            # 2.2 Construct Stabilized Laplacian
+            D = np.diag(np.sum(A_stabilized, axis=1))
+            L = D - A_stabilized
+            
+            # 2.3 Compute Eigenvalues
+            eigs = np.linalg.eigvals(L).real
+            eigs = np.sort(eigs[eigs > 1e-10])
+            
             if len(eigs) > 0:
-                normalized_eigs = eigs / np.sum(eigs)
-                entropy = -np.sum(normalized_eigs * np.log2(normalized_eigs))
-                entropy = min(1.0, entropy / 2.0)
+                # 2.4 Spectral Softmax Normalization
+                p = stabilizer.spectral_softmax(eigs)
+                
+                # 2.5 Compute Shannon Entropy
+                raw_entropy = -np.sum(p * np.log2(p + 1e-10))
+                # Base normalization for spectral range
+                raw_entropy = min(1.0, raw_entropy / (np.log2(len(eigs)) + 1e-10))
+                
+                # 2.6 Temporal Smoothing
+                H_smooth = stabilizer.apply_temporal_smoothing(raw_entropy)
+                
+                # 2.7 Compactness Modulation
+                player_positions = [G.nodes[n]['pos'] for n in team_a_nodes]
+                compactness = stabilizer.compute_compactness(player_positions)
+                
+                # 2.8 Safe Output Normalization
+                calibrated_entropy = stabilizer.calibrate_output(H_smooth, compactness)
+                entropy = calibrated_entropy # Main output for existing consumers
+                
         except Exception as e:
-            logger.error(f"Entropy calculation failed: {e}")
+            logger.error(f"Stabilized Entropy calculation failed: {e}")
+            raw_entropy = 0.5
+            calibrated_entropy = 0.5
 
-    # 3. Articulation Points
+    # 3. Structural Vulnerability (Articulation Points)
     articulation_points = []
-    if len(subG.nodes) > 2:
+    if len(subG.nodes) > 1:
         articulation_points = list(nx.articulation_points(subG))
 
-    # 4. Team Diameter
+    # 4. Global Connectivity (Diameter via Floyd-Warshall)
     diameter = 0
-    diameter_nodes = []
-    if len(team_a_nodes) > 1:
+    if len(subG.nodes) > 1:
         try:
-            max_d = 0
-            for i, n1 in enumerate(team_a_nodes):
-                for n2 in team_a_nodes[i+1:]:
-                    p1 = G.nodes[n1]['pos']
-                    p2 = G.nodes[n2]['pos']
-                    dist = np.linalg.norm(np.array(p1) - np.array(p2))
-                    if dist > max_d:
-                        max_d = dist
-                        diameter_nodes = [n1, n2]
-            diameter = max_d
-        except Exception as e:
-            logger.error(f"Diameter calculation failed: {e}")
+            path_lengths = dict(nx.all_pairs_dijkstra_path_length(subG))
+            # Flatten dict of dicts and get max
+            all_distances = [d for targets in path_lengths.values() for d in targets.values()]
+            if all_distances:
+                diameter = max(all_distances)
+        except:
+            diameter = 0
 
     return {
         "entropy": float(entropy),
+        "raw_entropy": round(float(raw_entropy), 4),
+        "calibrated_entropy": round(float(calibrated_entropy), 4),
         "articulation_points": articulation_points,
         "diameter": float(diameter),
-        "diameter_nodes": diameter_nodes
+        "diameter_nodes": [],
+        "recommendation": "Maintain structure" if entropy < 0.6 else "Consolidate lines"
     }
 
 async def get_ai_recommendation(metrics):
