@@ -15,6 +15,51 @@ export default function LiveEnginePage() {
 
   const [neutralizedIds, setNeutralizedIds] = useState<number[]>([]);
   const [recommendation, setRecommendation] = useState("Awaiting tactical analysis...");
+  const [alertLogs, setAlertLogs] = useState<{ time: string, msg: string, type: 'info'|'warning'|'critical'|'success' }[]>([]);
+  
+  const lastLogState = React.useRef({ isHighEntropy: false, lastLynchpin: null as string | null, isSpread: false });
+
+  // Generate Cause -> Effect Predictive Logs
+  useEffect(() => {
+    if (!metrics) return;
+    const { articulation_points, diameter } = metrics;
+    
+    let added = false;
+    const newLogs: { time: string, msg: string, type: 'info'|'warning'|'critical'|'success' }[] = [];
+    const timeNow = `[${String(Math.floor((frameIndex || 0) / 30)).padStart(2, '0')}:${String((frameIndex || 0) % 30).padStart(2, '0')}]`;
+
+    // Entropy logs
+    if (entropy > 0.8 && !lastLogState.current.isHighEntropy) {
+      newLogs.push({ time: timeNow, msg: `Predictive Collapse: Defensive cohesion lost. Graph Laplacian threshold breached.`, type: 'critical' });
+      lastLogState.current.isHighEntropy = true;
+      added = true;
+    } else if (entropy < 0.5 && lastLogState.current.isHighEntropy) {
+      newLogs.push({ time: timeNow, msg: `Structure Restabilized: Connectivity restored to baseline.`, type: 'success' });
+      lastLogState.current.isHighEntropy = false;
+      added = true;
+    }
+
+    // Lynchpin displacement
+    const currentLynchpin = articulation_points.length > 0 ? String(articulation_points[0]) : null;
+    if (currentLynchpin && currentLynchpin !== lastLogState.current.lastLynchpin) {
+      newLogs.push({ time: timeNow, msg: `Player #${currentLynchpin} drifting. Critical tactical fracture probability increased.`, type: 'warning' });
+      lastLogState.current.lastLynchpin = currentLynchpin;
+      added = true;
+    }
+
+    // Diameter spread
+    if (diameter > 450 && !lastLogState.current.isSpread) {
+      newLogs.push({ time: timeNow, msg: `Team Diameter exceeded 450px. Flank overload risk increased by 37%.`, type: 'warning' });
+      lastLogState.current.isSpread = true;
+      added = true;
+    } else if (diameter < 350 && lastLogState.current.isSpread) {
+      lastLogState.current.isSpread = false;
+    }
+
+    if (added) {
+      setAlertLogs(prev => [...newLogs, ...prev].slice(0, 8)); // keep last 8
+    }
+  }, [entropy, metrics, frameIndex]);
 
   // Video upload state
   const [uploadState, setUploadState] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle');
@@ -287,30 +332,32 @@ export default function LiveEnginePage() {
               </div>
             </div>
 
-            {/* Recommendation Card */}
-            <div className="relative overflow-hidden p-[2px] rounded-lg mt-2 h-full min-h-[140px]">
-              <motion.div 
-                animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                className="absolute inset-0 z-0 bg-[linear-gradient(90deg,transparent,#00f3ff,transparent)] opacity-60"
-                style={{ backgroundSize: "200% 100%" }}
-              />
-              <div className="relative z-10 bg-black/90 backdrop-blur-sm p-6 rounded-lg border border-cyan-500/20 h-full flex flex-col">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-[10px] font-black text-cyan-400 uppercase tracking-widest flex items-center gap-2">
-                    <Zap className="w-4 h-4 animate-pulse" /> Live Tactical AI
-                  </span>
-                  <span className="text-[8px] font-mono text-cyan-500/50">YOLO ⇿ Gemini Sync</span>
-                </div>
-                <motion.div
-                  key={recommendation}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ type: "spring", stiffness: 100 }}
-                  className="text-sm font-bold text-white leading-relaxed uppercase tracking-tight flex-1"
-                >
-                  {recommendation}
-                </motion.div>
+            {/* Predictive Collapse Terminal */}
+            <div className="bg-black border border-white/10 p-4 h-full min-h-[160px] flex flex-col font-mono relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-3 opacity-50 group-hover:opacity-100 transition-opacity"><AlertTriangle className="w-3 h-3 text-cyan-400" /></div>
+              <span className="text-[10px] font-black text-cyan-400/60 uppercase tracking-[0.2em] border-b border-white/10 pb-3 mb-3 flex items-center gap-2">
+                <Activity className="w-3 h-3" /> Cause-Effect Alert Stream
+              </span>
+              <div className="flex-1 overflow-y-auto space-y-3 flex flex-col">
+                <AnimatePresence>
+                  {alertLogs.length === 0 && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[9px] text-white/30 uppercase tracking-widest mt-2 flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                      Awaiting tactical anomalies...
+                    </motion.div>
+                  )}
+                  {alertLogs.map((log, i) => (
+                    <motion.div 
+                      initial={{ opacity: 0, x: -10 }} 
+                      animate={{ opacity: 1, x: 0 }} 
+                      key={i + log.time} 
+                      className={`text-[9px] flex gap-3 uppercase tracking-wider leading-relaxed ${log.type === 'critical' ? 'text-rose-500' : log.type === 'warning' ? 'text-amber-400' : log.type === 'success' ? 'text-emerald-400' : 'text-cyan-400'}`}
+                    >
+                      <span className="opacity-50 flex-shrink-0">sys{log.time}</span>
+                      <span>{log.msg}</span>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
               </div>
             </div>
           </div>

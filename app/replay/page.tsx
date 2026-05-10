@@ -289,6 +289,9 @@ export default function ReplayLabPage() {
                 {/* Edges */}
                 {players.map((p, i) =>
                   players.slice(i + 1).map(other => {
+                    const isNeutralized = neutralizedIds.includes(Number(p.id)) || neutralizedIds.includes(Number(other.id));
+                    if (isNeutralized) return null; // Break edges if neutralized
+
                     const dist = Math.hypot(p.rawX - other.rawX, p.rawY - other.rawY);
                     if (dist > 400) return null;
                     const same = p.team === other.team;
@@ -306,14 +309,39 @@ export default function ReplayLabPage() {
                   })
                 )}
                 {/* Player nodes */}
-                {players.map(p => (
-                  <g key={p.id} transform={`translate(${p.rawX},${p.rawY})`}>
-                    <circle r={14} fill={p.team === 'A' ? '#00f3ff22' : '#ff003322'} stroke={p.team === 'A' ? '#00f3ff' : '#ff0033'} strokeWidth={2} />
-                    <text y={-22} textAnchor="middle" fill="white" fontSize={11} fontFamily="monospace" opacity={0.7}>
-                      P{p.id}
-                    </text>
-                  </g>
-                ))}
+                {players.map(p => {
+                  const isArticulation = selectedFrame?.metrics?.articulation_points?.includes(String(p.id));
+                  const isNeutralized = neutralizedIds.includes(Number(p.id));
+
+                  if (isNeutralized) return null; // Remove from map entirely
+                  
+                  return (
+                    <g 
+                      key={p.id} 
+                      transform={`translate(${p.rawX},${p.rawY})`}
+                      className={isArticulation ? 'cursor-pointer' : ''}
+                      onClick={() => {
+                        if (isArticulation) {
+                           setNeutralizedIds(prev => [...prev, Number(p.id)]);
+                        }
+                      }}
+                    >
+                      <circle 
+                        r={isArticulation ? 18 : 14} 
+                        fill={isArticulation ? '#ff003344' : p.team === 'A' ? '#00f3ff22' : '#ff003322'} 
+                        stroke={isArticulation ? '#ff0055' : p.team === 'A' ? '#00f3ff' : '#ff0033'} 
+                        strokeWidth={isArticulation ? 3 : 2} 
+                        className={isArticulation ? 'animate-pulse' : ''}
+                      />
+                      {isArticulation && (
+                        <circle r={24} fill="transparent" stroke="#ff0055" strokeWidth={1} className="animate-ping pointer-events-none" />
+                      )}
+                      <text y={-26} textAnchor="middle" fill="white" fontSize={11} fontFamily="monospace" opacity={0.7} className="pointer-events-none">
+                        P{p.id} {isArticulation && '[LYNCHPIN]'}
+                      </text>
+                    </g>
+                  );
+                })}
               </svg>
             )}
 

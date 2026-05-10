@@ -4,7 +4,7 @@ import HowItWorks from "@/components/HowItWorks";
 import CoreTechnologies from "@/components/CoreTechnologies";
 import SimulationPreview from "@/components/SimulationPreview";
 import Timeline from "@/components/Timeline";
-import Testimonial from "@/components/Testimonial";
+import PlatformExtensibility from "@/components/PlatformExtensibility";
 
 export default function Home() {
   return (
@@ -15,7 +15,7 @@ export default function Home() {
       <CoreTechnologies />
       <SimulationPreview />
       <Timeline />
-      <Testimonial />
+      <PlatformExtensibility />
     </main>
   );
 }
