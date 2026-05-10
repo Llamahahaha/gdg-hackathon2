@@ -16,6 +16,46 @@ export default function LiveEnginePage() {
   const [neutralizedIds, setNeutralizedIds] = useState<number[]>([]);
   const [recommendation, setRecommendation] = useState("Awaiting tactical analysis...");
 
+  // Video upload state
+  const [uploadState, setUploadState] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle');
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadedFilename, setUploadedFilename] = useState('');
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadState('uploading');
+    setUploadProgress(0);
+    setUploadedFilename(file.name);
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      // Use XMLHttpRequest for real upload progress tracking
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100));
+        };
+        xhr.onload = () => {
+          if (xhr.status === 200) resolve();
+          else reject(new Error(`Upload failed: ${xhr.status}`));
+        };
+        xhr.onerror = () => reject(new Error('Network error'));
+        xhr.open('POST', 'http://localhost:8000/upload-video');
+        xhr.send(formData);
+      });
+
+      setUploadState('done');
+      setUploadProgress(100);
+    } catch (err) {
+      console.error('Video upload failed:', err);
+      setUploadState('error');
+    }
+  };
+
   // Recommendation sync
   useEffect(() => {
     if (metrics.recommendation) setRecommendation(metrics.recommendation);
@@ -59,9 +99,11 @@ export default function LiveEnginePage() {
         {/* Command Bar */}
         <div className="flex justify-between items-center bg-black/40 p-4 border-x border-t border-white/10">
           <div className="flex items-center gap-4">
-            <label className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 hover:bg-white/10 cursor-pointer transition-all">
-              <input type="file" className="hidden" accept="video/*" />
-              <span className="text-[10px] font-black uppercase tracking-widest">Sync Dataset</span>
+            <label className={`flex items-center gap-2 px-4 py-2 border cursor-pointer transition-all ${uploadState === 'uploading' ? 'bg-amber-500/20 border-amber-500/40 text-amber-400' : uploadState === 'done' ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : uploadState === 'error' ? 'bg-rose-500/20 border-rose-500/40 text-rose-400' : 'bg-white/5 border-white/10 text-white hover:bg-white/10'}`}>
+              <input type="file" className="hidden" accept="video/*,video/mp4,video/avi,video/mov" onChange={handleVideoUpload} />
+              <span className="text-[10px] font-black uppercase tracking-widest">
+                {uploadState === 'uploading' ? `Uploading ${uploadProgress}%...` : uploadState === 'done' ? `✓ ${uploadedFilename}` : uploadState === 'error' ? '✗ Upload Failed' : 'Sync Dataset'}
+              </span>
             </label>
             <span className="text-[9px] font-mono text-white/30 tracking-tighter uppercase">{connectionStatus} // PORT:8000</span>
           </div>

@@ -4,7 +4,9 @@ import base64
 import json
 import asyncio
 import logging
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+import shutil
+from pathlib import Path
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from main import run_pipeline
@@ -26,6 +28,7 @@ app.add_middleware(
 
 # ─── Global State ─────────────────────────────────────────────────────────────
 background_task: asyncio.Task = None
+selected_video_path: str = None  # Updated by /upload-video endpoint
 
 class ConnectionManager:
     def __init__(self):
@@ -108,6 +111,28 @@ async def websocket_endpoint(websocket: WebSocket):
         logger.error(f"WebSocket error: {e}")
         manager.disconnect(websocket)
 
+@app.post("/upload-video")
+async def upload_video(file: UploadFile = File(...)):
+    """Accept a video upload and set it as the active video for the YOLO pipeline."""
+    global selected_video_path
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    input_dir = os.path.join(base_dir, "input_videos")
+    os.makedirs(input_dir, exist_ok=True)
+
+    # Clear old videos from input_videos to avoid stale data
+    for f in os.listdir(input_dir):
+        if f.lower().endswith(('.mp4', '.avi', '.mov', '.mkv')):
+            os.remove(os.path.join(input_dir, f))
+
+    # Save new video
+    dest = os.path.join(input_dir, file.filename)
+    with open(dest, "wb") as out:
+        shutil.copyfileobj(file.file, out)
+
+    selected_video_path = dest
+    logger.info(f"Video uploaded: {file.filename} ({Path(dest).stat().st_size // 1024}KB)")
+    return {"status": "uploaded", "filename": file.filename, "path": dest}
+
 @app.post("/start")
 async def start_session():
     """Trigger the pipeline"""
@@ -152,13 +177,17 @@ async def run_detection_task():
         processed_dir = os.path.join(base_dir, "processed_frames")
         model_path    = os.path.join(base_dir, "models", "yolov8n.pt")
         
-        # Pick first video
-        video_files = [f for f in os.listdir(input_dir) if f.lower().endswith(('.mp4', '.avi'))]
-        if not video_files:
-            await manager.broadcast({"type": "error", "message": "No video found in input_videos/"})
-            return
-
-        video_path = os.path.join(input_dir, video_files[0])
+        # Use uploaded video if set, otherwise fall back to first in input_videos/
+        if selected_video_path and os.path.exists(selected_video_path):
+            video_path = selected_video_path
+            logger.info(f"Using uploaded video: {video_path}")
+        else:
+            video_files = [f for f in os.listdir(input_dir) if f.lower().endswith(('.mp4', '.avi', '.mov'))]
+            if not video_files:
+                await manager.broadcast({"type": "error", "message": "No video found in input_videos/. Upload a video first."})
+                return
+            video_path = os.path.join(input_dir, video_files[0])
+            logger.info(f"Using existing video: {video_path}")
         main_loop = asyncio.get_running_loop()
 
         def on_frame_sync(frame, stats):

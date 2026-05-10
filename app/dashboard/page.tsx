@@ -228,15 +228,15 @@ export default function DashboardPage() {
         </div>
 
         {/* Massive Player Intelligence Table */}
-        <div className="mt-8 bg-black/40 border border-white/10 p-12 rounded-none overflow-hidden flex flex-col gap-10">
-           <div className="flex justify-between items-center border-b border-white/5 pb-8">
+        <div className="mt-8 bg-black/40 border border-white/10 p-8 rounded-none overflow-hidden flex flex-col gap-6">
+           <div className="flex justify-between items-center border-b border-white/5 pb-6">
               <div>
-                <h3 className="text-3xl font-black font-orbitron uppercase tracking-widest flex items-center gap-4">
-                   <Users className="w-8 h-8 text-cyan-400" /> Player Intelligence Engine
+                <h3 className="text-xl font-black font-orbitron uppercase tracking-widest flex items-center gap-3">
+                   <Users className="w-5 h-5 text-cyan-400" /> Player Intelligence Engine
                 </h3>
-                <p className="text-xs text-white/40 uppercase tracking-[0.3em] mt-3">Cross-referencing YOLO topology, kinematic loads, and graph centrality.</p>
+                <p className="text-[10px] text-white/40 uppercase tracking-[0.3em] mt-2">Cross-referencing YOLO topology, kinematic loads, and graph centrality.</p>
               </div>
-              <div className="px-5 py-2 bg-rose-500/10 border border-rose-500/30 text-xs font-black text-rose-500 uppercase tracking-widest animate-pulse">
+              <div className="px-4 py-1.5 bg-rose-500/10 border border-rose-500/30 text-[10px] font-black text-rose-500 uppercase tracking-widest animate-pulse">
                 Live Data Stream Active
               </div>
            </div>

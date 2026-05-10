@@ -6,12 +6,12 @@
   --color-cyan-500: #00f3ff;
   --color-blue-500: #0066ff;
   --color-rose-500: #ff0033;
-  --color-charcoal: #121212;
-  --color-obsidian: #0b0f1a;
+  --color-charcoal: #07080f;
+  --color-obsidian: #07080f;
 }
 
 :root {
-  --background: #0b0f1a;
+  --background: #07080f;
   --foreground: #ffffff;
 }
 
@@ -24,10 +24,10 @@ body {
 }
 
 .liquid-glass {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.07);
   position: relative;
   overflow: hidden;
 }

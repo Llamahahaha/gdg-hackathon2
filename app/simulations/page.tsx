@@ -4,8 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import { Move, RefreshCw, Save, Zap, AlertTriangle, Hexagon } from 'lucide-react';
+import { useTactical } from '@/context/TacticalContext';
 
 export default function SimulationsPage() {
+  const { timelineData: timeline } = useTactical();
+  
   const [nodes, setNodes] = useState<any[]>([]);
   const [ghostNodes, setGhostNodes] = useState<any[]>([]);
   const [originalNodes, setOriginalNodes] = useState<any[]>([]);
@@ -15,37 +18,31 @@ export default function SimulationsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/data/tactical_data.json')
-      .then(res => res.json())
-      .then(data => {
-        if (data.timeline && data.timeline.length > 0) {
-          const firstFrame = data.timeline[0];
-          
-          // Deduplicate based on ID
-          const uniqueDetections = new Map();
-          firstFrame.detections.forEach((d: any) => {
-            if (!uniqueDetections.has(d.id)) uniqueDetections.set(d.id, d);
-          });
-          
-          const initialNodes = Array.from(uniqueDetections.values()).map((d: any) => ({
-            id: d.id,
-            x: (d.center[0] / 1920) * 800,
-            y: (d.center[1] / 1080) * 400,
-            team: d.team === 'green' ? 'A' : 'B'
-          }));
-          
-          setNodes(initialNodes);
-          setGhostNodes(initialNodes);
-          setOriginalNodes(initialNodes);
-          setEntropy(firstFrame.metrics?.entropy || 0.42);
-        }
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error("Failed to load tactical data", err);
-        setLoading(false);
+    if (timeline && timeline.length > 0) {
+      // Pick a mid-match frame for interesting sandbox topology
+      const midFrameIndex = Math.floor(timeline.length / 2);
+      const targetFrame = timeline[midFrameIndex] || timeline[0];
+      
+      // Deduplicate based on ID
+      const uniqueDetections = new Map();
+      targetFrame.detections.forEach((d: any) => {
+        if (!uniqueDetections.has(d.id)) uniqueDetections.set(d.id, d);
       });
-  }, []);
+      
+      const initialNodes = Array.from(uniqueDetections.values()).map((d: any) => ({
+        id: d.id,
+        x: (d.center[0] / 1920) * 800,
+        y: (d.center[1] / 1080) * 400,
+        team: d.team === 'green' ? 'A' : 'B'
+      }));
+      
+      setNodes(initialNodes);
+      setGhostNodes(initialNodes);
+      setOriginalNodes(initialNodes);
+      setEntropy(targetFrame.metrics?.entropy || 0.42);
+      setLoading(false);
+    }
+  }, [timeline]);
 
   const handleDrag = (id: number, info: any) => {
     setNodes(prev => prev.map(n => n.id === id ? { ...n, x: n.x + info.delta.x, y: n.y + info.delta.y } : n));
@@ -67,7 +64,7 @@ export default function SimulationsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-charcoal text-white font-sans flex flex-col overflow-hidden">
+    <div className="min-h-screen bg-[#07080f] text-white font-sans flex flex-col overflow-hidden">
       <Navbar />
 
       <main className="flex-1 pt-24 px-8 pb-8 grid grid-cols-12 gap-8 overflow-hidden">
