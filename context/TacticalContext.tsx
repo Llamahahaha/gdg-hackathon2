@@ -41,7 +41,7 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
     let socket: WebSocket;
     const connect = () => {
       try {
-        socket = new WebSocket('ws://127.0.0.1:8000/ws');
+        socket = new WebSocket(`ws://${window.location.hostname}:8000/ws`);
         
         socket.onopen = () => {
           setConnectionStatus("CONNECTED");
@@ -134,7 +134,7 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
     setIsPlaying(true);
     setStatus("SIGNAL_INITIALIZED");
     try {
-      const response = await fetch('http://127.0.0.1:8000/start', { method: 'POST' });
+      const response = await fetch(`http://${window.location.hostname}:8000/start`, { method: 'POST' });
       if (!response.ok) throw new Error("Failed to start pipeline");
     } catch (e) {
       setStatus("SIGNAL_ERROR");
@@ -146,7 +146,7 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
     setIsPlaying(false);
     setStatus("SIGNAL_ABORTED");
     try {
-      await fetch('http://127.0.0.1:8000/stop', { method: 'POST' });
+      await fetch(`http://${window.location.hostname}:8000/stop`, { method: 'POST' });
     } catch (e) {
       console.error("Failed to stop pipeline:", e);
     }
