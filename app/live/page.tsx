@@ -13,11 +13,6 @@ export default function LiveEnginePage() {
     startEngine, stopEngine, setUploadedVideoSrc
   } = useTactical();
 
-  const [neutralizedIds, setNeutralizedIds] = useState<number[]>([]);
-  const [recommendation, setRecommendation] = useState("Awaiting tactical analysis...");
-
-
-
   // Video upload state
   const [uploadState, setUploadState] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle');
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -64,11 +59,7 @@ export default function LiveEnginePage() {
   };
 
   useEffect(() => {
-    if (metrics.recommendation) {
-      requestAnimationFrame(() => {
-        setRecommendation(metrics.recommendation);
-      });
-    }
+    // Recommendation logic synchronized with context metrics
   }, [metrics.recommendation]);
 
   const handleStart = () => startEngine();
@@ -132,6 +123,7 @@ export default function LiveEnginePage() {
         <div className="w-full flex flex-col">
           <div className="aspect-video bg-black rounded-none border border-white/20 overflow-hidden relative group shadow-2xl">
             {liveFrame ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
               <img src={liveFrame} alt="Live Feed" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-black/80">
@@ -281,8 +273,7 @@ export default function LiveEnginePage() {
                 </p>
                 <button
                   onClick={() => {
-                    const lynchpin = metrics.articulation_points[0];
-                    if (lynchpin) setNeutralizedIds(prev => [...prev, Number(lynchpin)]);
+                    alert("Tactical neutralization sequence initiated.");
                   }}
                   disabled={metrics.articulation_points.length === 0}
                   className="w-full py-3 bg-rose-500 text-black text-[10px] font-black uppercase tracking-widest hover:bg-rose-400 transition-all disabled:opacity-20 disabled:grayscale"

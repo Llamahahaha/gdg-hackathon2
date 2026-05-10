@@ -35,7 +35,6 @@ export default function DashboardPage() {
 
   const [tacticalData, setTacticalData] = useState<TacticalData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [liveIndex, setLiveIndex] = useState(0);
   const [nodeHistory, setNodeHistory] = useState<{t1: number, t2: number}[]>([]);
 
   useEffect(() => {
@@ -61,11 +60,6 @@ export default function DashboardPage() {
       });
     }
   }, [liveFrameIndex, engineIsRunning, livePlayers]);
-
-  // Removed auto-playing interval to ensure values stay static when aborted
-  useEffect(() => {
-    // We no longer auto-increment liveIndex to avoid "ghost" data updates
-  }, [tacticalData, engineIsRunning]);
 
   const totalFrames = engineIsRunning ? liveFrameIndex : (tacticalData?.timeline?.length || 0);
   const matchTime = (totalFrames / 30).toFixed(1); 
@@ -166,12 +160,6 @@ export default function DashboardPage() {
                    }));
                  })()}
                  margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
-                 onClick={(state) => {
-                   if (state && state.activePayload) {
-                     const idx = state.activePayload[0].payload.frame;
-                     alert(`Navigating to Replay Lab -> Frame #${idx} to inspect collapse.`);
-                   }
-                 }}
                  className="cursor-crosshair"
                >
                  <defs>
@@ -218,9 +206,7 @@ export default function DashboardPage() {
                 Articulation Point failures concentrated in Left Midfield/Half-Space.
               </p>
               
-              {/* Heatmap visual */}
               <div className="w-full h-32 relative border border-white/10 bg-white/5 overflow-hidden">
-                {/* Pitch grid lines */}
                 <div className="absolute inset-0 flex flex-col justify-between opacity-10 pointer-events-none">
                   {[...Array(5)].map((_, i) => <div key={`h-${i}`} className="w-full h-px bg-white" />)}
                 </div>
@@ -228,7 +214,6 @@ export default function DashboardPage() {
                   {[...Array(8)].map((_, i) => <div key={`v-${i}`} className="h-full w-px bg-white" />)}
                 </div>
                 
-                {/* Heatmap Blobs */}
                 <div className="absolute top-1/2 left-[20%] w-24 h-24 bg-rose-500/40 rounded-full blur-xl -translate-y-1/2 animate-pulse" />
                 <div className="absolute top-[30%] left-[30%] w-16 h-16 bg-rose-500/60 rounded-full blur-lg" />
                 <div className="absolute top-[60%] left-[25%] w-20 h-20 bg-rose-500/50 rounded-full blur-xl" />
@@ -273,20 +258,17 @@ export default function DashboardPage() {
               </h3>
               <div className="flex items-center justify-center h-40 relative mt-4">
                 <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
-                   {/* Background grids */}
                    <polygon points="50,10 90,50 50,90 10,50" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
                    <polygon points="50,30 70,50 50,70 30,50" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
                    
-                   {/* Axes */}
                    <line x1="50" y1="10" x2="50" y2="90" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
                    <line x1="10" y1="50" x2="90" y2="50" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
 
-                   {/* Data Polygon - Dynamic based on entropy */}
                    <motion.polygon 
                      animate={{ 
                        points: engineIsRunning && liveEntropy > 0.7 
-                         ? "50,20 85,50 50,85 20,50" // Fractured (spread out)
-                         : "50,35 65,50 50,60 30,50"  // Compact
+                         ? "50,20 85,50 50,85 20,50"
+                         : "50,35 65,50 50,60 30,50"
                      }}
                      transition={{ type: "spring", stiffness: 60 }}
                      fill="rgba(52, 211, 153, 0.2)" 
@@ -295,7 +277,6 @@ export default function DashboardPage() {
                      className="drop-shadow-[0_0_8px_#34d399]"
                    />
                    
-                   {/* Labels */}
                    <text x="50" y="5" textAnchor="middle" fill="white" fontSize="4" className="font-mono opacity-50">DIAMETER</text>
                    <text x="50" y="98" textAnchor="middle" fill="white" fontSize="4" className="font-mono opacity-50">COMPACTNESS</text>
                    <text x="2" y="51" textAnchor="start" fill="white" fontSize="4" className="font-mono opacity-50">OVERLOAD</text>
@@ -345,13 +326,12 @@ export default function DashboardPage() {
                         );
                       }
 
-                      // Determine which dataset to use
                       let playersToDisplay = [];
                       if (engineIsRunning) {
                         playersToDisplay = livePlayers;
                       } else {
                         const uniquePlayers = new Map();
-                        const currentFrame = tacticalData.timeline[liveIndex];
+                        const currentFrame = tacticalData.timeline[0];
                         if (currentFrame && currentFrame.detections) {
                           currentFrame.detections.forEach((d: { id: string | number }) => {
                              if (!uniquePlayers.has(d.id)) uniquePlayers.set(d.id, d);
@@ -362,13 +342,11 @@ export default function DashboardPage() {
 
                       const sortedPlayers = playersToDisplay.sort((a, b) => Number(a.id) - Number(b.id));
 
-                      return sortedPlayers.slice(0, 10).map((p, _i) => {
-                         // Procedurally generate stats with real-time variation
+                      return sortedPlayers.slice(0, 10).map((p) => {
                          const seed = Number(p.id);
-                         const animIndex = engineIsRunning ? (liveFrameIndex % 100) : liveIndex;
+                         const animIndex = engineIsRunning ? (liveFrameIndex % 100) : 0;
                          const speedVar = Math.sin(animIndex * 0.5 + seed) * 1.5;
                          const speed = (24 + (seed % 9) + speedVar).toFixed(1);
-                         const _fatigue = (20 + (seed * 3) % 40 + (Math.floor(animIndex / 20) % 5)).toFixed(0);
                          const centrality = (0.7 + (seed % 3) * 0.1 + Math.cos(animIndex * 0.2) * 0.05).toFixed(2);
                          
                          let role = "Rotational Pivot";

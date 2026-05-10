@@ -11,12 +11,6 @@ import { useTactical, FrameData } from '@/context/TacticalContext';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-interface PlayerOverlay {
-  id: string;
-  rawX: number;
-  rawY: number;
-  team: 'A' | 'B';
-}
 
 interface ReportData {
   matchId: string;
@@ -31,7 +25,7 @@ interface ReportData {
 }
 
 export default function ReplayLabPage() {
-  const { timelineData: liveTimeline, uploadedVideoSrc, currentStats: _currentStats } = useTactical();
+  const { timelineData: liveTimeline, uploadedVideoSrc } = useTactical();
   const [frozenTimeline, setFrozenTimeline] = useState<FrameData[]>([]);
   
   useEffect(() => {

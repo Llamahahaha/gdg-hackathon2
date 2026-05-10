@@ -5,7 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { Activity, Mail, Lock, Shield } from 'lucide-react';
+import { Mail, Lock, Shield } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 
 export default function LoginPage() {

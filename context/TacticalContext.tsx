@@ -141,8 +141,8 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
                 setTimelineData(prev => [...prev, fullRecord].slice(-300));
               }
             }
-          } catch (e) {
-            console.error("Context: Failed to parse websocket message", e);
+          } catch {
+            console.error("Context: Failed to parse websocket message");
           }
         };
 
@@ -156,7 +156,7 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
           setConnectionStatus("ERROR");
         };
 
-      } catch (_e) {
+      } catch {
         setConnectionStatus("ERROR");
       }
     };
@@ -174,7 +174,7 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await fetch(`http://${window.location.hostname}:8000/start`, { method: 'POST' });
       if (!response.ok) throw new Error("Failed to start pipeline");
-    } catch (_e) {
+    } catch {
       setStatus("SIGNAL_ERROR");
       setIsPlaying(false);
       isPlayingRef.current = false;
@@ -187,8 +187,8 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
     setStatus("SIGNAL_ABORTED");
     try {
       await fetch(`http://${window.location.hostname}:8000/stop`, { method: 'POST' });
-    } catch (_e) {
-      console.error("Failed to stop pipeline:", _e);
+    } catch {
+      console.error("Failed to stop pipeline");
     }
   }, []);
 
