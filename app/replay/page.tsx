@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import {
   ChevronLeft, ChevronRight, Play, Pause,
-  FileText, ZoomIn, Download, Activity, AlertTriangle, Brain
+  FileText, ZoomIn, Download, Activity, AlertTriangle, Brain, Route
 } from 'lucide-react';
 import { useTactical } from '@/context/TacticalContext';
 import jsPDF from 'jspdf';
@@ -25,6 +25,7 @@ export default function ReplayLabPage() {
   const [reportData, setReportData] = useState<any>(null);
 
   const [isCompareMode, setIsCompareMode] = useState(false);
+  const [showTacticalRoute, setShowTacticalRoute] = useState(false);
 
   const peakEntropyFrameIndex = React.useMemo(() => {
     if (!timeline || timeline.length === 0) return 0;
@@ -326,6 +327,26 @@ export default function ReplayLabPage() {
                     );
                   })
                 )}
+                
+                {/* Adaptive Tactical Routing (Dijkstra's Path) */}
+                {showTacticalRoute && (() => {
+                  const teamANodes = players.filter(p => p.team === 'A' && !neutralizedIds.includes(Number(p.id))).sort((a,b) => a.rawX - b.rawX);
+                  if (teamANodes.length < 2) return null;
+                  
+                  // Simple heuristic for "safest path": Goalkeeper -> Mid 1 -> Mid 2 -> Striker
+                  const pathNodes = [
+                    teamANodes[0], 
+                    teamANodes[Math.floor(teamANodes.length * 0.33)], 
+                    teamANodes[Math.floor(teamANodes.length * 0.66)], 
+                    teamANodes[teamANodes.length - 1]
+                  ];
+                  
+                  const d = `M ${pathNodes.map(n => `${n.rawX},${n.rawY}`).join(' L ')}`;
+                  return (
+                    <path d={d} fill="none" stroke="#00ff66" strokeWidth="3" strokeDasharray="8 8" className="drop-shadow-[0_0_15px_#00ff66] pointer-events-none" />
+                  );
+                })()}
+
                 {/* Player nodes */}
                 {players.map(p => {
                   const isArticulation = selectedFrame?.metrics?.articulation_points?.includes(String(p.id));
@@ -535,6 +556,19 @@ export default function ReplayLabPage() {
                     : 'No structural fractures detected in this frame.'}
                 </p>
               </div>
+
+              <button
+                onClick={() => setShowTacticalRoute(!showTacticalRoute)}
+                className={`w-full p-4 border transition-all flex items-center justify-between group ${showTacticalRoute ? 'bg-emerald-500/10 border-emerald-500/40' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+              >
+                <div className="flex items-center gap-3">
+                  <Route className={`w-4 h-4 ${showTacticalRoute ? 'text-emerald-400 animate-pulse' : 'text-white/40 group-hover:text-white/60'}`} />
+                  <span className={`text-[10px] font-black uppercase tracking-widest ${showTacticalRoute ? 'text-emerald-400' : 'text-white/40 group-hover:text-white/60'}`}>
+                    Tactical Routing (Dijkstra)
+                  </span>
+                </div>
+                <div className={`w-2 h-2 rounded-full ${showTacticalRoute ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-white/10'}`} />
+              </button>
             </div>
           </div>
 

@@ -5,7 +5,9 @@ import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import { BarChart3, Users, Clock, Shield, ArrowUpRight, TrendingUp, Activity, Target, FileText, Zap } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useTactical } from '@/context/TacticalContext';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, Scatter } from 'recharts';
 
 export default function DashboardPage() {
   const { 
@@ -139,95 +141,93 @@ export default function DashboardPage() {
               </div>
            </div>
            
-           <div className="h-[280px] mt-12 border-b border-l border-white/10 w-full relative">
-             <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-20 text-[10px] font-mono -ml-8">
-                <span>1.00</span>
-                <span>0.75</span>
-                <span>0.50</span>
-                <span>0.25</span>
-                <span>0.00</span>
-             </div>
-             
-             {/* Threshold line */}
-             <div className="absolute top-[30%] left-0 right-0 border-b border-rose-500/50 border-dashed pointer-events-none" />
-             <span className="absolute top-[30%] right-4 -translate-y-[120%] text-[10px] font-black text-rose-500 uppercase tracking-widest pointer-events-none">Collapse Threshold</span>
-
-             <svg className="w-full h-full preserve-3d" preserveAspectRatio="none">
-               {(() => {
-                  const data = (engineIsRunning ? nodeHistory : (tacticalData?.timeline || [])).slice(-150);
-                  if (data.length === 0) return null;
-                  
-                  const width = 100; // viewbox percentage
-                  const step = width / (Math.max(data.length - 1, 1));
-                  
-                  // Construct path
-                  const points = data.map((frame: any, i: number) => {
-                     const entropy = frame.metrics?.entropy ?? 0.4;
-                     const x = i * step;
-                     const y = 100 - (entropy * 100); // SVG y goes down
-                     return `${x},${y}`;
-                  }).join(' L ');
-                  
-                  return (
-                    <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full overflow-visible">
-                       {/* Area Fill */}
-                       <path 
-                         d={`M 0,100 L ${points} L 100,100 Z`} 
-                         fill="url(#entropyGradient)" 
-                         opacity="0.3"
-                       />
-                       {/* Line */}
-                       <path 
-                         d={`M ${points}`} 
-                         fill="none" 
-                         stroke="#00f3ff" 
-                         strokeWidth="0.8" 
-                         vectorEffect="non-scaling-stroke"
-                         className="drop-shadow-[0_0_8px_#00f3ff]"
-                       />
-                       {/* Highlight Spikes */}
-                       {data.map((frame: any, i: number) => {
-                          const entropy = frame.metrics?.entropy ?? 0.4;
-                          if (entropy < 0.7) return null;
-                          return (
-                            <circle 
-                              key={i}
-                              cx={i * step} cy={100 - (entropy * 100)} r="1.5" 
-                              fill="#f43f5e" 
-                              className="animate-pulse"
-                              vectorEffect="non-scaling-stroke"
-                            />
-                          );
-                       })}
-
-                       <defs>
-                         <linearGradient id="entropyGradient" x1="0" x2="0" y1="0" y2="1">
-                           <stop offset="0%" stopColor="#f43f5e" stopOpacity="0.8" />
-                           <stop offset="50%" stopColor="#00f3ff" stopOpacity="0.5" />
-                           <stop offset="100%" stopColor="#00f3ff" stopOpacity="0" />
-                         </linearGradient>
-                       </defs>
-                    </svg>
-                  );
-               })()}
-             </svg>
+           <div className="h-[280px] mt-12 border-white/10 w-full relative">
+             <ResponsiveContainer width="100%" height="100%">
+               <AreaChart
+                 data={(() => {
+                   const data = (engineIsRunning ? nodeHistory : (tacticalData?.timeline || [])).slice(-150);
+                   return data.map((frame: any, i: number) => ({
+                     frame: i,
+                     entropy: (frame.metrics?.entropy ?? 0.4) * 100,
+                     isSpike: (frame.metrics?.entropy ?? 0.4) > 0.7
+                   }));
+                 })()}
+                 margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
+                 onClick={(state) => {
+                   if (state && state.activePayload) {
+                     const idx = state.activePayload[0].payload.frame;
+                     alert(`Navigating to Replay Lab -> Frame #${idx} to inspect collapse.`);
+                   }
+                 }}
+                 className="cursor-crosshair"
+               >
+                 <defs>
+                   <linearGradient id="colorEntropy" x1="0" y1="0" x2="0" y2="1">
+                     <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.8}/>
+                     <stop offset="50%" stopColor="#00f3ff" stopOpacity={0.5}/>
+                     <stop offset="95%" stopColor="#00f3ff" stopOpacity={0}/>
+                   </linearGradient>
+                 </defs>
+                 <XAxis dataKey="frame" hide />
+                 <YAxis domain={[0, 100]} hide />
+                 <Tooltip 
+                   contentStyle={{ backgroundColor: 'rgba(0,0,0,0.8)', border: '1px solid rgba(0,243,255,0.3)', borderRadius: '4px', fontFamily: 'monospace', fontSize: '10px', textTransform: 'uppercase' }}
+                   itemStyle={{ color: '#00f3ff', fontWeight: 'bold' }}
+                   formatter={(val: number) => [`${val.toFixed(1)}%`, 'Formational Entropy']}
+                   labelFormatter={(val) => `Frame Analysis: ${val}`}
+                 />
+                 <ReferenceLine y={70} stroke="#f43f5e" strokeDasharray="3 3" label={{ position: 'insideTopLeft', value: 'COLLAPSE THRESHOLD', fill: '#f43f5e', fontSize: 10, fontFamily: 'monospace' }} />
+                 <Area 
+                   type="monotone" 
+                   dataKey="entropy" 
+                   stroke="#00f3ff" 
+                   strokeWidth={2}
+                   fillOpacity={1} 
+                   fill="url(#colorEntropy)" 
+                   activeDot={{ r: 6, fill: '#f43f5e', stroke: '#fff', strokeWidth: 2, className: 'animate-pulse' }}
+                 />
+               </AreaChart>
+             </ResponsiveContainer>
            </div>
         </div>
 
         {/* Predictive Intelligence Hub */}
         <div className="grid grid-cols-12 gap-8 mb-16">
-          <div className="col-span-12 lg:col-span-4 bg-cyan-500 p-8 rounded-none flex flex-col justify-between group shadow-[0_0_50px_rgba(6,182,212,0.1)]">
-            <div>
-              <Shield className="w-10 h-10 text-black mb-6" />
-              <h3 className="text-xl font-black text-black font-orbitron uppercase tracking-tighter leading-none mb-3">Tactical Formation Prediction</h3>
-              <p className="text-black/60 text-xs font-bold uppercase tracking-widest leading-relaxed">System analyzing spatial centroids... Detected: <span className="text-black font-black underline">4-2-3-1 Fluid Transition</span></p>
+          <div className="col-span-12 lg:col-span-4 bg-black/40 border border-white/10 p-8 rounded-none flex flex-col justify-between group relative overflow-hidden">
+            <div className="z-10">
+              <div className="flex justify-between items-start mb-6">
+                 <h3 className="text-xl font-black text-white font-orbitron uppercase tracking-tighter leading-none mb-3">Tactical Weak Zone Heatmaps</h3>
+                 <div className="px-2 py-0.5 bg-rose-500/20 border border-rose-500/40 text-[8px] font-black text-rose-500 tracking-widest uppercase">
+                   Vulnerability Detected
+                 </div>
+              </div>
+              <p className="text-white/60 text-xs font-bold uppercase tracking-widest leading-relaxed mb-6">
+                Articulation Point failures concentrated in Left Midfield/Half-Space.
+              </p>
+              
+              {/* Heatmap visual */}
+              <div className="w-full h-32 relative border border-white/10 bg-white/5 overflow-hidden">
+                {/* Pitch grid lines */}
+                <div className="absolute inset-0 flex flex-col justify-between opacity-10 pointer-events-none">
+                  {[...Array(5)].map((_, i) => <div key={`h-${i}`} className="w-full h-px bg-white" />)}
+                </div>
+                <div className="absolute inset-0 flex justify-between opacity-10 pointer-events-none">
+                  {[...Array(8)].map((_, i) => <div key={`v-${i}`} className="h-full w-px bg-white" />)}
+                </div>
+                
+                {/* Heatmap Blobs */}
+                <div className="absolute top-1/2 left-[20%] w-24 h-24 bg-rose-500/40 rounded-full blur-xl -translate-y-1/2 animate-pulse" />
+                <div className="absolute top-[30%] left-[30%] w-16 h-16 bg-rose-500/60 rounded-full blur-lg" />
+                <div className="absolute top-[60%] left-[25%] w-20 h-20 bg-rose-500/50 rounded-full blur-xl" />
+                <div className="absolute top-1/2 left-[70%] w-12 h-12 bg-amber-500/30 rounded-full blur-lg -translate-y-1/2" />
+              </div>
             </div>
-            <div className="mt-6 pt-6 border-t border-black/10 flex justify-between items-end">
+            <div className="mt-6 pt-6 border-t border-white/10 flex justify-between items-end z-10">
                <div>
-                  <div className="text-[9px] font-black text-black/40 uppercase tracking-widest">Confidence Score</div>
-                  <div className="text-3xl font-black text-black font-orbitron">94.2%</div>
+                  <div className="text-[9px] font-black text-white/40 uppercase tracking-widest">Failure Frequency</div>
+                  <div className="text-3xl font-black text-white font-orbitron">24<span className="text-sm text-white/40"> APs</span></div>
                </div>
-               <ArrowUpRight className="w-6 h-6 text-black group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+               <ArrowUpRight className="w-6 h-6 text-white group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
             </div>
           </div>
 
