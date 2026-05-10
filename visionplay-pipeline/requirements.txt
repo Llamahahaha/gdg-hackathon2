@@ -1,0 +1,11 @@
+ultralytics
+opencv-python
+numpy
+tqdm
+fastapi
+uvicorn[standard]
+python-multipart
+websockets
+networkx
+google-generativeai
+python-dotenv
