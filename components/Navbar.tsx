@@ -28,9 +28,9 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* Center: HUD Links */}
+        {/* Center: HUD Links - Only accessible if authenticated */}
         <div className="hidden lg:flex items-center gap-8">
-          {[
+          {user ? [
             { name: "Dashboard", path: "/dashboard" },
             { name: "Live Engine", path: "/live" },
             { name: "Replay Lab", path: "/replay" },
@@ -45,7 +45,12 @@ export default function Navbar() {
               <div className="w-1 h-1 bg-cyan-500/20 rounded-full group-hover/link:bg-cyan-400 group-hover/link:scale-150 transition-all" />
               {link.name}
             </Link>
-          ))}
+          )) : (
+            <div className="flex items-center gap-3 px-4 py-1.5 bg-white/5 border border-white/10 rounded-full">
+              <Shield className="w-3 h-3 text-white/20" />
+              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/20 italic">Authentication Required for HUD Access</span>
+            </div>
+          )}
         </div>
 
         {/* Right: Action */}

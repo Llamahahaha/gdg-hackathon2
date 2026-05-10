@@ -12,6 +12,7 @@ export const metadata: Metadata = {
 };
 
 import { TacticalProvider } from "@/context/TacticalContext";
+import AuthGuard from "@/components/AuthGuard";
 
 export default function RootLayout({
   children,
@@ -22,9 +23,11 @@ export default function RootLayout({
     <html lang="en" className={`dark ${inter.variable} ${orbitron.variable}`}>
       <body className="min-h-screen bg-charcoal text-white font-sans antialiased">
         <AuthProvider>
-          <TacticalProvider>
-            {children}
-          </TacticalProvider>
+          <AuthGuard>
+            <TacticalProvider>
+              {children}
+            </TacticalProvider>
+          </AuthGuard>
         </AuthProvider>
       </body>
     </html>
