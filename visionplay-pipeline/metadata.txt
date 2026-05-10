@@ -1,0 +1,4 @@
+VisionPlay Intelligence Pipeline - Tactical Operating System
+Sync Time: 2026-05-10
+Status: ACTIVE
+Components: YOLOv8 Inference, Graph Topology Engine, WebSocket Telemetry Server.
