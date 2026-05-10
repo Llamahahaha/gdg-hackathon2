@@ -45,8 +45,8 @@ export default function LiveEnginePage() {
           else reject(new Error(`Upload failed: ${xhr.status}`));
         };
         xhr.onerror = () => reject(new Error('Network error: Could not reach the VisionPlay backend on port 8000.'));
-        const apiHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '127.0.0.1' : window.location.hostname;
-        xhr.open('POST', `http://${apiHost}:8000/upload-video`);
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || `http://${window.location.hostname}:8000`;
+        xhr.open('POST', `${backendUrl}/upload-video`);
         xhr.send(formData);
       });
 
@@ -126,7 +126,7 @@ export default function LiveEnginePage() {
                 {uploadState === 'uploading' ? `Uploading ${uploadProgress}%...` : uploadState === 'done' ? `✓ ${uploadedFilename}` : uploadState === 'error' ? '✗ Upload Failed' : 'Sync Dataset'}
               </span>
             </label>
-            <span className="text-[9px] font-mono text-white/30 tracking-tighter uppercase">{connectionStatus} {" // "} PORT:8000</span>
+            <span className="text-[9px] font-mono text-white/30 tracking-tighter uppercase">{connectionStatus} {" // "} SIGNAL_BUS</span>
           </div>
 
           <div className="flex items-center gap-2">

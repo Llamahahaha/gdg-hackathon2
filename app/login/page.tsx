@@ -3,8 +3,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+
 import { Mail, Lock, Shield } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 

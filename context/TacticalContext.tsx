@@ -88,7 +88,9 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
     let socket: WebSocket;
     const connect = () => {
       try {
-        socket = new WebSocket(`ws://${window.location.hostname}:8000/ws`);
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || `http://${window.location.hostname}:8000`;
+        const wsUrl = backendUrl.replace(/^http/, 'ws') + '/ws';
+        socket = new WebSocket(wsUrl);
         
         socket.onopen = () => {
           setConnectionStatus("CONNECTED");
@@ -187,7 +189,8 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
     isPlayingRef.current = true;
     setStatus("SIGNAL_INITIALIZED");
     try {
-      const response = await fetch(`http://${window.location.hostname}:8000/start`, { method: 'POST' });
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || `http://${window.location.hostname}:8000`;
+      const response = await fetch(`${backendUrl}/start`, { method: 'POST' });
       if (!response.ok) throw new Error("Failed to start pipeline");
     } catch {
       setStatus("SIGNAL_ERROR");
@@ -201,7 +204,8 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
     isPlayingRef.current = false;
     setStatus("SIGNAL_ABORTED");
     try {
-      await fetch(`http://${window.location.hostname}:8000/stop`, { method: 'POST' });
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || `http://${window.location.hostname}:8000`;
+      await fetch(`${backendUrl}/stop`, { method: 'POST' });
       
       if (timelineDataRef.current.length > 0) {
         console.log("Checking Supabase connection...");
