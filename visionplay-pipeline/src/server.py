@@ -1,4 +1,5 @@
 import os
+import sys
 import cv2
 import base64
 import json
@@ -6,6 +7,12 @@ import asyncio
 import logging
 import shutil
 from pathlib import Path
+
+# Add the current directory and 'src' to the path to ensure imports work correctly on Windows
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.append(current_dir)
+
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
@@ -46,17 +53,26 @@ class ConnectionManager:
             logger.info(f"Client disconnected. Total: {len(self.active_connections)}")
 
     async def broadcast(self, message: dict):
-        for connection in self.active_connections:
+        for connection in list(self.active_connections):
             try:
                 await connection.send_json(message)
             except Exception as e:
-                logger.error(f"Error broadcasting: {e}")
+                logger.error(f"Error broadcasting to client: {str(e)}")
+                # If the connection is broken, remove it
+                if "closed" in str(e).lower() or "disconnected" in str(e).lower():
+                    self.disconnect(connection)
 
 manager = ConnectionManager()
 
 # ─── Pipeline Integration ─────────────────────────────────────────────────────
 def frame_to_base64(frame):
-    _, buffer = cv2.imencode('.jpg', frame)
+    # Downscale for live preview to prevent WebSocket congestion
+    height, width = frame.shape[:2]
+    new_width = 854 # 480p width
+    new_height = int(height * (new_width / width))
+    small_frame = cv2.resize(frame, (new_width, new_height))
+    
+    _, buffer = cv2.imencode('.jpg', small_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
     return base64.b64encode(buffer).decode('utf-8')
 
 async def stream_frame(frame, stats):

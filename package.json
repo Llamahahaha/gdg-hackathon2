@@ -3,12 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"bun next dev --turbopack\" \"cd visionplay-pipeline && venv\\Scripts\\python src/server.py\"",
+    "dev": "concurrently \"bun next dev --turbopack\" \"cd visionplay-pipeline && .\\.venv\\Scripts\\python.exe src\\server.py\"",
     "build": "bun next build",
     "start": "bun next start",
     "lint": "eslint"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.105.4",
     "clsx": "^2.1.1",
     "firebase": "^12.13.0",
     "framer-motion": "^12.38.0",

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { supabase } from '../lib/supabase';
 
 export interface Player {
   id: string;
@@ -70,9 +71,15 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
   const [currentStats, setCurrentStats] = useState<FrameData | null>(null);
   
   const isPlayingRef = useRef(isPlaying);
+  const timelineDataRef = useRef<FrameData[]>([]);
+
   useEffect(() => {
     isPlayingRef.current = isPlaying;
   }, [isPlaying]);
+
+  useEffect(() => {
+    timelineDataRef.current = timelineData;
+  }, [timelineData]);
 
   useEffect(() => {
     let socket: WebSocket;
@@ -187,8 +194,28 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
     setStatus("SIGNAL_ABORTED");
     try {
       await fetch(`http://${window.location.hostname}:8000/stop`, { method: 'POST' });
-    } catch {
-      console.error("Failed to stop pipeline");
+      
+      if (timelineDataRef.current.length > 0) {
+        console.log("Saving telemetry to Supabase...");
+        const { error } = await supabase.from('match_telemetry').insert([{
+          match_id: 'live_match_' + Date.now(),
+          total_frames: timelineDataRef.current.length,
+          timeline_data: timelineDataRef.current
+        }]);
+        
+        if (error) {
+          console.error("Supabase Error:", error);
+          alert("❌ Failed to save to Supabase: " + error.message);
+        } else {
+          console.log("Saved to Supabase.");
+          alert("✅ Match data successfully saved to Supabase!");
+        }
+      } else {
+        console.warn("No telemetry data to save.");
+      }
+    } catch (e) {
+      console.error("Failed to stop pipeline or save telemetry", e);
+      alert("⚠️ Error during stop: " + (e instanceof Error ? e.message : String(e)));
     }
   }, []);
 

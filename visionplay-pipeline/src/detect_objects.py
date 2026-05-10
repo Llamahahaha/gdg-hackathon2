@@ -6,6 +6,7 @@ import numpy as np
 from ultralytics import YOLO
 from tqdm import tqdm
 import logging
+from shared_state import is_stopped
 
 logger = logging.getLogger("visionplay")
 
@@ -188,11 +189,9 @@ def detect_objects(input_dir: str, output_dir: str,
 
     for idx, frame_file in enumerate(frame_files):
         # ── Check for stop request ───────────────────────────────────────────
-        from shared_state import is_stopped
         if is_stopped():
-            logger.info("Object detection aborted by user request.")
-            pbar.close()
-            return {}
+            logger.info("Object detection aborted by user request. Returning partial results.")
+            break
 
         frame = cv2.imread(os.path.join(input_dir, frame_file))
         if frame is None:
