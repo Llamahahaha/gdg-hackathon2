@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
-import { BarChart3, Users, Clock, Shield, ArrowUpRight, TrendingUp, Activity, Target, FileText } from 'lucide-react';
+import { BarChart3, Users, Clock, Shield, ArrowUpRight, TrendingUp, Activity, Target, FileText, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useTactical } from '@/context/TacticalContext';
 
@@ -20,6 +20,7 @@ export default function DashboardPage() {
   const [tacticalData, setTacticalData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [liveIndex, setLiveIndex] = useState(0);
+  const [nodeHistory, setNodeHistory] = useState<{t1: number, t2: number}[]>([]);
 
   useEffect(() => {
     fetch('/data/tactical_data.json')
@@ -33,6 +34,15 @@ export default function DashboardPage() {
         setLoading(false);
       });
   }, []);
+
+  // Sync node history for real-time chart
+  useEffect(() => {
+    if (engineIsRunning) {
+      const t1 = livePlayers.filter(p => p.team === 'A').length;
+      const t2 = livePlayers.filter(p => p.team === 'B').length;
+      setNodeHistory(prev => [...prev, { t1, t2 }].slice(-60));
+    }
+  }, [liveFrameIndex, engineIsRunning, livePlayers]);
 
   useEffect(() => {
     if (!tacticalData || !tacticalData.timeline || engineIsRunning) return;
@@ -52,9 +62,9 @@ export default function DashboardPage() {
 
   const stats = [
     { label: 'Total Frames Analyzed', value: totalFrames || '--', icon: Activity, color: 'text-cyan-400' },
-    { label: 'Live Formation Stability', value: avgStability, icon: Shield, color: 'text-emerald-400' },
-    { label: 'Active Node Count', value: engineIsRunning ? livePlayers.length : (team1Total + team2Total), icon: Target, color: 'text-blue-400' },
-    { label: 'Match Analysis Clock', value: `${matchTime}s`, icon: Clock, color: 'text-rose-400' },
+    { label: 'Formation Stability Index', value: avgStability, icon: Shield, color: 'text-emerald-400' },
+    { label: 'Active Personnel Count', value: engineIsRunning ? livePlayers.length : (team1Total + team2Total), icon: Target, color: 'text-blue-400' },
+    { label: 'Match Intelligence Clock', value: `${matchTime}s`, icon: Clock, color: 'text-rose-400' },
   ];
 
   return (
@@ -107,97 +117,110 @@ export default function DashboardPage() {
           ))}
         </div>
 
-        {/* Content Sections */}
-        <div className="grid grid-cols-12 gap-8">
-          {/* Main Chart Area */}
-          <div className="col-span-12 lg:col-span-8 bg-black/40 border border-white/10 p-8 rounded-none relative overflow-hidden">
-            <div className="flex justify-between items-center mb-8">
-              <h3 className="text-sm font-black uppercase tracking-widest">Global Graph Nodes Over Time</h3>
-              <div className="flex gap-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-cyan-500 rounded-none" />
-                  <span className="text-[10px] text-white/40 uppercase">Home Team (Green)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-rose-500 rounded-none" />
-                  <span className="text-[10px] text-white/40 uppercase">Away Team (White)</span>
+        {/* Tactical Overview - Full Width Chart */}
+        <div className="bg-black/40 border border-white/10 p-12 rounded-none relative overflow-hidden h-[500px] mb-16 shadow-2xl">
+           <div className="flex justify-between items-center mb-10">
+              <div className="flex items-center gap-6">
+                <Activity className="w-10 h-10 text-cyan-400 animate-pulse" />
+                <div>
+                  <h3 className="text-3xl font-black font-orbitron uppercase tracking-widest">Global Graph Nodes Over Time</h3>
+                  <p className="text-xs text-white/40 uppercase tracking-[0.4em] mt-2">Real-time personnel distribution across the topological plane</p>
                 </div>
               </div>
-            </div>
-            
-            <div className="h-64 flex items-end gap-[1px] px-2 w-full overflow-hidden">
-              {!loading && tacticalData?.timeline ? tacticalData.timeline.slice(0, 100).map((frame: any, i: number) => {
-                // Visualize the number of players detected per frame
-                const t1 = frame.t1 || 0;
-                const t2 = frame.t2 || 0;
-                const maxPlayers = 22; // max possible
-                return (
-                  <div key={i} className="flex-1 flex flex-col justify-end gap-[1px]">
-                    <motion.div
-                      initial={{ height: 0 }}
-                      animate={{ height: `${(t2 / maxPlayers) * 100}%` }}
-                      transition={{ duration: 0.5, delay: i * 0.01 }}
-                      className="w-full bg-rose-500/80"
-                    />
-                    <motion.div
-                      initial={{ height: 0 }}
-                      animate={{ height: `${(t1 / maxPlayers) * 100}%` }}
-                      transition={{ duration: 0.5, delay: i * 0.01 }}
-                      className="w-full bg-cyan-500/80"
-                    />
-                  </div>
-                );
-              }) : (
-                 Array.from({ length: 40 }).map((_, i) => (
-                  <motion.div
-                    key={i}
+              <div className="flex gap-10">
+                <div className="flex items-center gap-4">
+                  <div className="w-4 h-4 bg-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.5)]" />
+                  <span className="text-sm font-black uppercase tracking-widest text-white/50">Home Cluster</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="w-4 h-4 bg-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.5)]" />
+                  <span className="text-sm font-black uppercase tracking-widest text-white/50">Away Cluster</span>
+                </div>
+              </div>
+           </div>
+           
+           <div className="flex items-end gap-[2px] h-[280px] mt-12 px-4 border-b border-white/10 w-full overflow-hidden">
+            {(engineIsRunning ? nodeHistory : (tacticalData?.timeline || [])).slice(-100).map((frame: any, i: number) => {
+              const t1 = frame.t1 || 0;
+              const t2 = frame.t2 || 0;
+              const maxNodes = 22;
+              return (
+                <div key={i} className="flex-1 flex flex-col justify-end gap-[1px]">
+                  <motion.div 
                     initial={{ height: 0 }}
-                    animate={{ height: `${20 + Math.random() * 80}%` }}
-                    transition={{ duration: 1.5, repeat: Infinity, repeatType: 'reverse', delay: i * 0.05 }}
-                    className="flex-1 bg-cyan-500/20 border-t border-cyan-500/40"
+                    animate={{ height: `${(t2 / maxNodes) * 100}%` }}
+                    className="w-full bg-rose-500/30 border-t border-rose-500/50" 
                   />
-                ))
-              )}
+                  <motion.div 
+                    initial={{ height: 0 }}
+                    animate={{ height: `${(t1 / maxNodes) * 100}%` }}
+                    className="w-full bg-cyan-400/30 border-t border-cyan-400/50" 
+                  />
+                </div>
+              );
+            })}
+           </div>
+        </div>
+
+        {/* Predictive Intelligence Hub */}
+        <div className="grid grid-cols-12 gap-8 mb-16">
+          <div className="col-span-12 lg:col-span-4 bg-cyan-500 p-12 rounded-none flex flex-col justify-between group shadow-[0_0_50px_rgba(6,182,212,0.2)]">
+            <div>
+              <Shield className="w-16 h-16 text-black mb-8" />
+              <h3 className="text-4xl font-black text-black font-orbitron uppercase tracking-tighter leading-none mb-4">Tactical Formation Prediction</h3>
+              <p className="text-black/60 text-sm font-bold uppercase tracking-widest leading-relaxed">System analyzing spatial centroids... Detected: <span className="text-black font-black underline">4-2-3-1 Fluid Transition</span></p>
             </div>
-            
-            <div className="mt-8 grid grid-cols-3 gap-6 pt-8 border-t border-white/5">
-              <div>
-                <div className="text-[9px] font-bold text-white/30 uppercase mb-1">Peak Node Density</div>
-                <div className="text-xl font-bold font-orbitron text-emerald-400">
-                  {tacticalData ? Math.max(...tacticalData.timeline.map((t: any) => (t.t1 || 0) + (t.t2 || 0))) : '--'} Nodes
-                </div>
+            <div className="mt-8 pt-8 border-t border-black/10 flex justify-between items-end">
+               <div>
+                  <div className="text-[10px] font-black text-black/40 uppercase tracking-widest">Confidence Score</div>
+                  <div className="text-4xl font-black text-black font-orbitron">94.2%</div>
+               </div>
+               <ArrowUpRight className="w-8 h-8 text-black group-hover:translate-x-2 group-hover:-translate-y-2 transition-transform" />
+            </div>
+          </div>
+
+          <div className="col-span-12 lg:col-span-4 bg-black/40 border border-white/10 p-12 rounded-none flex flex-col justify-between relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4">
+              <div className="flex gap-1">
+                {[1, 2, 3].map(i => <div key={i} className="w-1 h-8 bg-cyan-500/20" />)}
               </div>
-              <div>
-                <div className="text-[9px] font-bold text-white/30 uppercase mb-1">Home Team Average</div>
-                <div className="text-xl font-bold font-orbitron text-white">
-                  {tacticalData ? (tacticalData.timeline.reduce((acc: number, t: any) => acc + (t.t1 || 0), 0) / tacticalData.timeline.length).toFixed(1) : '--'}
+            </div>
+            <div>
+              <h3 className="text-2xl font-black font-orbitron uppercase tracking-widest mb-8 flex items-center gap-4">
+                <Target className="w-6 h-6 text-rose-500" /> Defensive Line Height
+              </h3>
+              <div className="space-y-10">
+                <div className="flex justify-between items-end border-b border-white/5 pb-4">
+                  <span className="text-xs font-black text-white/30 uppercase tracking-widest">Average Height</span>
+                  <span className="text-3xl font-black font-orbitron text-white">48.2m</span>
                 </div>
-              </div>
-              <div>
-                <div className="text-[9px] font-bold text-white/30 uppercase mb-1">Engine Latency</div>
-                <div className="text-xl font-bold font-orbitron text-cyan-400">14ms</div>
+                <div className="flex justify-between items-end border-b border-white/5 pb-4">
+                  <span className="text-xs font-black text-white/30 uppercase tracking-widest">Vertical Compactness</span>
+                  <span className="text-3xl font-black font-orbitron text-emerald-400">HIGH</span>
+                </div>
+                <div className="flex justify-between items-end border-b border-white/5 pb-4">
+                  <span className="text-xs font-black text-white/30 uppercase tracking-widest">Offside Trap Efficiency</span>
+                  <span className="text-3xl font-black font-orbitron text-cyan-400">82%</span>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Activity Feed */}
-          <div className="col-span-12 lg:col-span-4 bg-black/40 border border-white/10 p-8 rounded-none flex flex-col">
-            <h3 className="text-sm font-black uppercase tracking-widest mb-6">Recent Tactical Events</h3>
-            <div className="space-y-6 flex-1 overflow-y-auto pr-2 custom-scrollbar">
-              {[
-                { time: '12:04:22', msg: 'Graph Laplacian eigenvalue dropped. Defensive cohesion compromised.', type: 'warn' },
-                { time: '11:58:10', msg: 'Lynchpin player identified: Node #8 (Articulation Point).', type: 'info' },
-                { time: '11:45:04', msg: 'System stable. Global diameter within optimal range.', type: 'success' },
-                { time: '11:32:18', msg: 'New match footage uploaded and processed successfully.', type: 'success' },
-              ].map((event, i) => (
-                <div key={i} className="flex gap-4 border-l border-white/10 pl-4 relative">
-                  <div className={`absolute left-[-4px] top-0 w-2 h-2 rounded-none ${event.type === 'warn' ? 'bg-rose-500' : event.type === 'info' ? 'bg-blue-500' : 'bg-emerald-500'}`} />
-                  <div>
-                    <div className="text-[9px] font-mono text-white/30 mb-1">{event.time}</div>
-                    <div className="text-[10px] leading-relaxed text-white/80">{event.msg}</div>
-                  </div>
+          <div className="col-span-12 lg:col-span-4 bg-black/40 border border-white/10 p-12 rounded-none flex flex-col justify-between">
+            <div>
+              <h3 className="text-2xl font-black font-orbitron uppercase tracking-widest mb-8 flex items-center gap-4">
+                <Zap className="w-6 h-6 text-amber-400" /> Pressing Intensity
+              </h3>
+              <div className="flex items-center justify-center h-40 relative">
+                <div className="absolute inset-0 flex items-center justify-center">
+                   <div className="w-32 h-32 rounded-full border-4 border-dashed border-white/10 animate-pulse" />
                 </div>
-              ))}
+                <div className="text-6xl font-black font-orbitron text-white z-10">0.84</div>
+                <div className="absolute bottom-0 text-[10px] font-black text-amber-400 uppercase tracking-[0.4em]">PPDA Engine Active</div>
+              </div>
+              <p className="text-[10px] text-white/30 uppercase tracking-widest mt-8 leading-relaxed text-center">
+                High-intensity transition detected in the final third. Opponent buildup time reduced by 2.4s.
+              </p>
             </div>
           </div>
         </div>
@@ -299,40 +322,49 @@ export default function DashboardPage() {
                                  </div>
                                </div>
                              </td>
-                             <td className="py-8 px-6">
-                               <div className="font-black text-white uppercase tracking-widest text-sm">{role}</div>
-                               <div className="text-white/30 text-[10px] mt-1 tracking-widest uppercase">Zone Control: {60 + (seed % 15)}%</div>
+                             <td className="py-12 px-8">
+                               <div className="font-black text-white uppercase tracking-widest text-2xl mb-1">{role}</div>
+                               <div className="text-white/40 text-sm tracking-[0.3em] uppercase">Zone Control: {60 + (seed % 15)}%</div>
                              </td>
-                             <td className="py-8 px-6">
-                               <div className="flex items-baseline gap-2">
-                                 <span className="text-xl font-black text-white">{speed}</span>
-                                 <span className="text-[10px] text-white/30 uppercase tracking-widest">km/h</span>
-                                 <span className="mx-2 text-white/10">|</span>
-                                 <span className="text-xl font-black text-white">{fatigue}%</span>
-                               </div>
-                             </td>
-                             <td className="py-8 px-6">
-                               <div className="flex items-center gap-6">
-                                 <div>
-                                    <div className="text-[9px] text-white/30 uppercase tracking-widest">Centrality</div>
-                                    <div className="text-lg font-black text-cyan-400">{centrality}</div>
+                             <td className="py-12 px-8 text-center">
+                               <div className="flex flex-col gap-4">
+                                 <div className="flex items-baseline justify-center gap-2">
+                                   <span className="text-4xl font-black text-white">{speed}</span>
+                                   <span className="text-xs text-white/30 uppercase tracking-widest">km/h</span>
                                  </div>
-                                 <div>
-                                    <div className="text-[9px] text-white/30 uppercase tracking-widest">Synergy</div>
-                                    <div className="text-lg font-black text-emerald-400">{synergy}</div>
+                                 <div className="flex items-baseline justify-center gap-2">
+                                   <span className="text-3xl font-black text-rose-400">{fatigue}%</span>
+                                   <span className="text-[10px] text-white/20 uppercase tracking-widest">Fatigue</span>
                                  </div>
                                </div>
                              </td>
-                             <td className="py-8 px-6">
-                               <div className="flex flex-col gap-2">
-                                  <div className="text-[9px] text-white/30 uppercase tracking-widest">Decision Quality: {decisionQuality}%</div>
-                                  <div className={`px-3 py-1 ${bg} ${statusColor} text-[10px] font-black uppercase tracking-widest text-center w-fit`}>
+                             <td className="py-12 px-8">
+                               <div className="flex flex-col gap-6">
+                                 <div>
+                                    <div className="text-[10px] text-white/30 uppercase tracking-[0.4em] mb-1">Centrality</div>
+                                    <div className="text-3xl font-black text-cyan-400 font-orbitron">{centrality}</div>
+                                 </div>
+                                 <div>
+                                    <div className="text-[10px] text-white/30 uppercase tracking-[0.4em] mb-1">Synergy</div>
+                                    <div className="text-3xl font-black text-emerald-400 font-orbitron">{synergy}</div>
+                                 </div>
+                               </div>
+                             </td>
+                             <td className="py-12 px-8">
+                               <div className="flex flex-col gap-4">
+                                  <div>
+                                    <div className="text-[10px] text-white/30 uppercase tracking-widest mb-1">Decision Quality</div>
+                                    <div className="text-3xl font-black text-white">{decisionQuality}%</div>
+                                  </div>
+                                  <div className={`px-4 py-1.5 ${bg} ${statusColor} text-xs font-black uppercase tracking-widest text-center w-full shadow-lg`}>
                                     {status}
                                   </div>
                                </div>
                              </td>
-                             <td className="py-8 px-6 text-right">
-                                <span className="text-xs text-white/40 uppercase leading-relaxed tracking-wider max-w-xs block ml-auto">{pred}</span>
+                             <td className="py-12 px-8 text-right">
+                                <span className="text-sm text-white/50 uppercase leading-relaxed tracking-wider max-w-[200px] block ml-auto italic">
+                                  {pred}
+                                </span>
                              </td>
                            </tr>
                          );
