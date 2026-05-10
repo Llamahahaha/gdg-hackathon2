@@ -12,7 +12,10 @@ interface TacticalContextType {
   possession: string;
   isPlaying: boolean;
   frameIndex: number;
-  timelineData: any[];
+  timelineData: any[];       // full frame records for Replay Lab
+  uploadedVideoSrc: string | null; // blob URL of the video uploaded in Live Engine
+  setUploadedVideoSrc: (src: string | null) => void;
+  currentStats: any | null;  // stats of the most-recent frame (for pause snapshot)
   startEngine: () => Promise<void>;
   stopEngine: () => Promise<void>;
 }
@@ -30,6 +33,8 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [frameIndex, setFrameIndex] = useState(0);
   const [timelineData, setTimelineData] = useState<any[]>([]);
+  const [uploadedVideoSrc, setUploadedVideoSrc] = useState<string | null>(null);
+  const [currentStats, setCurrentStats] = useState<any | null>(null);
   const [ws, setWs] = useState<WebSocket | null>(null);
 
   useEffect(() => {
@@ -84,8 +89,18 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
                 if (data.stats.metrics) {
                   setMetrics(data.stats.metrics);
                   setEntropy(data.stats.metrics.entropy);
-                  setTimelineData(prev => [...prev, { frame: data.stats.frame_id, entropy: data.stats.metrics.entropy }].slice(-100));
                 }
+                // Keep last 300 full frames for Replay Lab
+                const fullRecord = {
+                  frame_id: data.stats.frame_id,
+                  detections: data.stats.detections || [],
+                  metrics: data.stats.metrics || {},
+                  possession: data.stats.possession || 'UNKNOWN',
+                  t1: data.stats.team1_count || 0,
+                  t2: data.stats.team2_count || 0
+                };
+                setCurrentStats(fullRecord);
+                setTimelineData(prev => [...prev, fullRecord].slice(-300));
               }
             }
           } catch (e) {
@@ -141,6 +156,8 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
     <TacticalContext.Provider value={{
       players, liveFrame, connectionStatus, status, entropy, metrics, 
       possession, isPlaying, frameIndex, timelineData,
+      uploadedVideoSrc, setUploadedVideoSrc,
+      currentStats,
       startEngine, stopEngine
     }}>
       {children}

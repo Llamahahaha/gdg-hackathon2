@@ -10,7 +10,7 @@ export default function LiveEnginePage() {
   const {
     players, liveFrame, connectionStatus, status, entropy, metrics, 
     possession, isPlaying, frameIndex, timelineData,
-    startEngine, stopEngine
+    startEngine, stopEngine, setUploadedVideoSrc
   } = useTactical();
 
   const [neutralizedIds, setNeutralizedIds] = useState<number[]>([]);
@@ -33,6 +33,9 @@ export default function LiveEnginePage() {
     formData.append('file', file);
 
     try {
+      // Create a local object URL so Replay Lab can reference the same video
+      const localVideoURL = URL.createObjectURL(file);
+
       // Use XMLHttpRequest for real upload progress tracking
       await new Promise<void>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
@@ -48,6 +51,8 @@ export default function LiveEnginePage() {
         xhr.send(formData);
       });
 
+      // Persist the blob URL in shared context for Replay Lab
+      setUploadedVideoSrc(localVideoURL);
       setUploadState('done');
       setUploadProgress(100);
     } catch (err) {
@@ -65,7 +70,7 @@ export default function LiveEnginePage() {
   const handleStop = () => stopEngine();
 
   return (
-    <div className="min-h-screen bg-charcoal text-white font-sans overflow-hidden flex flex-col">
+    <div className="min-h-screen bg-[#07080f] text-white font-sans overflow-hidden flex flex-col">
       <Navbar />
 
       <main className="flex-1 pt-24 pb-6 px-6 flex flex-col gap-6 overflow-y-auto custom-scrollbar">

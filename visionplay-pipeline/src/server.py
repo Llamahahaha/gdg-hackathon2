@@ -10,7 +10,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from main import run_pipeline
-from graph_engine import compute_tactical_metrics, get_ai_recommendation
+from graph_engine import compute_tactical_metrics, get_ai_recommendation, generate_full_audit_report
 
 # ─── Configuration ────────────────────────────────────────────────────────────
 logging.basicConfig(level=logging.INFO)
@@ -29,6 +29,7 @@ app.add_middleware(
 # ─── Global State ─────────────────────────────────────────────────────────────
 background_task: asyncio.Task = None
 selected_video_path: str = None  # Updated by /upload-video endpoint
+last_frame_stats: dict = {}       # Updated on every frame broadcast
 
 class ConnectionManager:
     def __init__(self):
@@ -60,6 +61,7 @@ def frame_to_base64(frame):
 
 async def stream_frame(frame, stats):
     """Callback from detect_objects inside the pipeline"""
+    global last_frame_stats
     from graph_engine import compute_tactical_metrics
     
     # 1. Resize for streaming performance (1280x720)
@@ -81,7 +83,13 @@ async def stream_frame(frame, stats):
         "frame": b64_frame,
         "stats": stats
     }
+    last_frame_stats = stats  # cache for /pause-snapshot
     await manager.broadcast(message)
+
+@app.get("/pause-snapshot")
+async def pause_snapshot():
+    """Return the most recently broadcast frame stats for Replay Lab snapshot."""
+    return last_frame_stats or {"error": "No data yet"}
 
 async def stream_status(status_msg):
     """Callback for pipeline status updates"""
@@ -132,6 +140,38 @@ async def upload_video(file: UploadFile = File(...)):
     selected_video_path = dest
     logger.info(f"Video uploaded: {file.filename} ({Path(dest).stat().st_size // 1024}KB)")
     return {"status": "uploaded", "filename": file.filename, "path": dest}
+
+@app.post("/generate-audit")
+async def generate_audit_endpoint(data: dict):
+    """
+    Accepts timeline metrics and returns an AI-generated tactical audit.
+    """
+    timeline = data.get("timeline", [])
+    if not timeline:
+        return {"error": "No timeline data provided"}
+    
+    # Compute summary metrics for the AI
+    avg_entropy = sum(f.get("metrics", {}).get("entropy", 0) for f in timeline) / len(timeline)
+    peak_diameter = max(f.get("metrics", {}).get("diameter", 0) for f in timeline)
+    
+    lynchpins = set()
+    total_fractures = 0
+    for f in timeline:
+        aps = f.get("metrics", {}).get("articulation_points", [])
+        if aps:
+            total_fractures += 1
+            for ap in aps:
+                lynchpins.add(ap)
+    
+    summary = {
+        "avg_entropy": avg_entropy,
+        "peak_diameter": peak_diameter,
+        "total_fractures": total_fractures,
+        "lynchpins": list(lynchpins)
+    }
+    
+    report = await generate_full_audit_report(summary)
+    return report
 
 @app.post("/start")
 async def start_session():
