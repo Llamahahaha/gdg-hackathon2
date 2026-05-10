@@ -109,7 +109,7 @@ async def get_ai_recommendation(metrics):
     """
     
     try:
-        async with httpx.AsyncClient(timeout=15.0) as client:
+        async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.post(
                 f"{OLLAMA_BASE_URL}/api/generate",
                 json={
@@ -129,24 +129,25 @@ async def generate_full_audit_report(summary_metrics):
     Generates a comprehensive tactical audit report using local Ollama.
     """
     prompt = f"""
-    Analyze the following match summary metrics from VisionPlay AI:
+    Analyze these match metrics from VisionPlay AI:
     - Avg Formation Entropy: {summary_metrics['avg_entropy']:.2f}
     - Peak Team Diameter: {summary_metrics['peak_diameter']:.1f}
     - Total Structural Fractures: {summary_metrics['total_fractures']}
     - Lynchpin Nodes: {summary_metrics['lynchpins']}
     
-    Provide a HIGHLY DETAILED, professional tactical forensic report in JSON format. Do not use markdown backticks, just raw JSON. Use these keys:
-    1. "summary": A comprehensive 5-sentence strategic summary breaking down the overall match flow and structural integrity.
-    2. "defensive_stability": A deep-dive 4-sentence analysis on the team's diameter, compactness, and spatial vulnerabilities.
-    3. "offensive_transition": A detailed 4-sentence analysis on how to exploit the identified lynchpin nodes and bypass the pressing lines.
-    4. "key_takeaways": A list of 4 highly specific, advanced technical observations.
-    5. "strategic_advice": A detailed 3-sentence recommendation for training drills and tactical adjustments.
+    Provide a professional tactical forensic report in RAW JSON format. 
+    Use exactly these keys:
+    1. "summary": 5-sentence strategic summary.
+    2. "defensive_stability": 4-sentence analysis on spatial vulnerabilities.
+    3. "offensive_transition": 4-sentence analysis on lynchpin exploitation.
+    4. "key_takeaways": array of 4 specific technical observations.
+    5. "strategic_advice": 3-sentence recommendation for drills.
     
-    RESPOND ONLY WITH RAW VALID JSON.
+    RESPOND ONLY WITH VALID JSON.
     """
     
     try:
-        async with httpx.AsyncClient(timeout=90.0) as client:
+        async with httpx.AsyncClient(timeout=120.0) as client:
             response = await client.post(
                 f"{OLLAMA_BASE_URL}/api/generate",
                 json={
@@ -156,18 +157,14 @@ async def generate_full_audit_report(summary_metrics):
                     "format": "json"
                 }
             )
+            
+            if response.status_code != 200:
+                logger.error(f"Ollama returned status {response.status_code}: {response.text}")
+                raise Exception(f"Ollama server error {response.status_code}")
+
             result = response.json()
             raw_text = result.get("response", "{}").strip()
-            
-            # Clean potential markdown wrapping
-            if raw_text.startswith("```json"):
-                raw_text = raw_text[7:]
-            elif raw_text.startswith("```"):
-                raw_text = raw_text[3:]
-            if raw_text.endswith("```"):
-                raw_text = raw_text[:-3]
-                
-            return json.loads(raw_text.strip())
+            return json.loads(raw_text)
             
     except Exception as e:
         logger.error(f"Ollama Audit generation failed: {e}")

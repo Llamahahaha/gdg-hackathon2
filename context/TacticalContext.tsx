@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 
-interface Player {
+export interface Player {
   id: string;
   rawX: number;
   rawY: number;
@@ -12,21 +12,21 @@ interface Player {
   team: 'A' | 'B';
 }
 
-interface Metrics {
+export interface Metrics {
   entropy: number;
   articulation_points: string[];
   diameter: number;
   diameter_nodes: string[];
 }
 
-interface Detection {
+export interface Detection {
   id: number | string;
   bbox?: [number, number, number, number];
   center?: [number, number];
   team: string;
 }
 
-interface FrameData {
+export interface FrameData {
   frame_id: number;
   detections: Detection[];
   metrics: Metrics;

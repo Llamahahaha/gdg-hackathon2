@@ -7,7 +7,7 @@ import {
   ChevronLeft, ChevronRight, Play, Pause,
   FileText, ZoomIn, Download, Activity, AlertTriangle, Brain, Route
 } from 'lucide-react';
-import { useTactical } from '@/context/TacticalContext';
+import { useTactical, FrameData } from '@/context/TacticalContext';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -31,7 +31,18 @@ interface ReportData {
 }
 
 export default function ReplayLabPage() {
-  const { timelineData: timeline, uploadedVideoSrc, currentStats: _currentStats } = useTactical();
+  const { timelineData: liveTimeline, uploadedVideoSrc, currentStats: _currentStats } = useTactical();
+  const [frozenTimeline, setFrozenTimeline] = useState<FrameData[]>([]);
+  
+  useEffect(() => {
+    if (isPlaying || (liveTimeline && liveTimeline.length > 0 && frozenTimeline.length === 0)) {
+      requestAnimationFrame(() => {
+        setFrozenTimeline(liveTimeline);
+      });
+    }
+  }, [liveTimeline, isPlaying, frozenTimeline.length]);
+
+  const timeline = frozenTimeline;
 
   const [frameIndex, setFrameIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -106,7 +117,8 @@ export default function ReplayLabPage() {
 
   // ── STEP 1: Analyze — call backend Ollama endpoint ────────────────────────
   const analyzeReport = async () => {
-    if (!timeline || timeline.length === 0) return;
+    const dataToAnalyze = timeline;
+    if (!dataToAnalyze || dataToAnalyze.length === 0) return;
     setIsAnalyzing(true);
     setReportData(null);
 
@@ -114,7 +126,7 @@ export default function ReplayLabPage() {
       const res = await fetch(`http://${window.location.hostname}:8000/generate-audit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ timeline }),
+        body: JSON.stringify({ timeline: dataToAnalyze }),
       });
       const aiReport = await res.json();
 
