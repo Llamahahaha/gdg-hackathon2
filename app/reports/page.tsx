@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { TrendingUp, Users, ShieldAlert, Target, FileText, Download } from 'lucide-react';
+import { TrendingUp, Users, ShieldAlert, Target, FileText, Download, Bot, Activity } from 'lucide-react';
 import jsPDF from 'jspdf';
 import { toPng } from 'html-to-image';
 
@@ -26,6 +26,8 @@ interface ReportData {
 export default function IntelligenceReportPage() {
   const [tacticalData, setTacticalData] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [aiAudit, setAiAudit] = useState<any>(null);
+  const [isGeneratingAudit, setIsGeneratingAudit] = useState(false);
 
   useEffect(() => {
     fetch('/data/tactical_data.json')
@@ -71,6 +73,24 @@ export default function IntelligenceReportPage() {
     { zone: 'Defensive', val: tacticalData ? 94 : 94 },
     { zone: 'Transition', val: tacticalData ? 72 + (timeline.length % 15) : 72 },
   ];
+
+  const generateAiAudit = async () => {
+    if (!timeline.length) return;
+    setIsGeneratingAudit(true);
+    try {
+      const res = await fetch('http://localhost:8000/generate-audit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ timeline: timeline.slice(-100) }) // Send last 100 frames for context
+      });
+      const data = await res.json();
+      setAiAudit(data);
+    } catch (err) {
+      console.error("Failed to generate AI audit", err);
+    } finally {
+      setIsGeneratingAudit(false);
+    }
+  };
 
   const handleDownloadPDF = async () => {
     const element = document.getElementById("report-content");

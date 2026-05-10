@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 logger = logging.getLogger("ai-service")
-OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
 
 class AIService:
     @staticmethod
@@ -16,6 +16,7 @@ class AIService:
         Generates a text response using Ollama.
         """
         try:
+            logger.info(f"Querying Ollama with model {model}...")
             async with httpx.AsyncClient(timeout=60.0) as client:
                 response = await client.post(
                     f"{OLLAMA_BASE_URL}/api/generate",
@@ -25,8 +26,11 @@ class AIService:
                         "stream": False
                     }
                 )
+                response.raise_for_status()
                 result = response.json()
-                return result.get("response", "").strip()
+                text = result.get("response", "").strip()
+                logger.info(f"Ollama response received: {text[:50]}...")
+                return text
         except Exception as e:
             logger.error(f"Ollama generation failed: {e}")
             return None

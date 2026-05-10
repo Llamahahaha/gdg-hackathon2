@@ -204,19 +204,25 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
       await fetch(`http://${window.location.hostname}:8000/stop`, { method: 'POST' });
       
       if (timelineDataRef.current.length > 0) {
-        console.log("Saving telemetry to Supabase...");
-        const { error } = await supabase.from('match_telemetry').insert([{
-          match_id: 'live_match_' + Date.now(),
-          total_frames: timelineDataRef.current.length,
-          timeline_data: timelineDataRef.current
-        }]);
-        
-        if (error) {
-          console.error("Supabase Error:", error);
-          alert("❌ Failed to save to Supabase: " + error.message);
+        console.log("Checking Supabase connection...");
+        if (!supabase) {
+          console.warn("Supabase not configured. Skipping cloud save.");
+          alert("Match halted. Note: Match data was NOT saved to the cloud because Supabase is not configured.");
         } else {
-          console.log("Saved to Supabase.");
-          alert("✅ Match data successfully saved to Supabase!");
+          console.log("Saving telemetry to Supabase...");
+          const { error } = await supabase.from('match_telemetry').insert([{
+            match_id: 'live_match_' + Date.now(),
+            total_frames: timelineDataRef.current.length,
+            timeline_data: timelineDataRef.current
+          }]);
+          
+          if (error) {
+            console.error("Supabase Error:", error);
+            alert("❌ Failed to save to Supabase: " + error.message);
+          } else {
+            console.log("Saved to Supabase.");
+            alert("✅ Match data successfully saved to Supabase!");
+          }
         }
       } else {
         console.warn("No telemetry data to save.");

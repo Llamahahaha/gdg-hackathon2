@@ -45,7 +45,7 @@ export default function LiveEnginePage() {
           else reject(new Error(`Upload failed: ${xhr.status}`));
         };
         xhr.onerror = () => reject(new Error('Network error: Could not reach the VisionPlay backend on port 8000.'));
-        const apiHost = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
+        const apiHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '127.0.0.1' : window.location.hostname;
         xhr.open('POST', `http://${apiHost}:8000/upload-video`);
         xhr.send(formData);
       });
@@ -99,21 +99,21 @@ export default function LiveEnginePage() {
           </div>
 
           <div className="ml-auto flex items-center gap-4 border-l border-white/10 pl-6">
-             <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">Target Team</span>
-             <div className="flex bg-white/5 p-1 rounded-sm border border-white/10">
-                <button 
-                  onClick={() => setAnalysisTeam('green')}
-                  className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all ${analysisTeam === 'green' ? 'bg-emerald-500 text-black' : 'text-white/40 hover:text-white'}`}
-                >
-                  Green
-                </button>
-                <button 
-                  onClick={() => setAnalysisTeam('white')}
-                  className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all ${analysisTeam === 'white' ? 'bg-slate-200 text-black' : 'text-white/40 hover:text-white'}`}
-                >
-                  White
-                </button>
-             </div>
+            <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">Target Team</span>
+            <div className="flex bg-white/5 p-1 rounded-sm border border-white/10">
+              <button
+                onClick={() => setAnalysisTeam('green')}
+                className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all ${analysisTeam === 'green' ? 'bg-emerald-500 text-black' : 'text-white/40 hover:text-white'}`}
+              >
+                Green
+              </button>
+              <button
+                onClick={() => setAnalysisTeam('white')}
+                className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all ${analysisTeam === 'white' ? 'bg-slate-200 text-black' : 'text-white/40 hover:text-white'}`}
+              >
+                White
+              </button>
+            </div>
           </div>
         </div>
 
@@ -216,10 +216,10 @@ export default function LiveEnginePage() {
                     const isArticulation = metrics.articulation_points.includes(String(p.id));
                     return (
                       <motion.g key={p.id} animate={{ x: p.x, y: p.y }}>
-                        <circle 
-                          r={isArticulation ? 8 : 6} 
-                          fill={isArticulation ? "#ff0055" : (analysisTeam === 'green' ? "#00f3ff" : "#ffffff")} 
-                          className={isArticulation ? "drop-shadow-[0_0_12px_#ff0055]" : ""} 
+                        <circle
+                          r={isArticulation ? 8 : 6}
+                          fill={isArticulation ? "#ff0055" : (analysisTeam === 'green' ? "#00f3ff" : "#ffffff")}
+                          className={isArticulation ? "drop-shadow-[0_0_12px_#ff0055]" : ""}
                         />
                         {isArticulation && <circle r={14} fill="transparent" stroke="#ff0055" strokeWidth={1} className="animate-pulse" />}
                         <text y={-15} textAnchor="middle" fill="white" fontSize="9" className="font-bold uppercase tracking-widest">{p.name}</text>

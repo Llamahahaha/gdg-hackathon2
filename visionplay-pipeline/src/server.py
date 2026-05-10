@@ -74,7 +74,7 @@ def frame_to_base64(frame):
     new_height = int(height * (new_width / width))
     small_frame = cv2.resize(frame, (new_width, new_height))
     
-    _, buffer = cv2.imencode('.jpg', small_frame, [int(cv2.IMWRITE_QUALITY), 70])
+    _, buffer = cv2.imencode('.jpg', small_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
     return base64.b64encode(buffer).decode('utf-8')
 
 async def stream_frame(frame, stats):
@@ -156,10 +156,17 @@ async def upload_video(file: UploadFile = File(...)):
                 except Exception as e:
                     logger.warning(f"Could not remove old video {f}: {e}")
 
-        # Save new video
+        # Save new video using chunked writing for efficiency
         dest = os.path.join(input_dir, file.filename)
-        with open(dest, "wb") as out:
-            shutil.copyfileobj(file.file, out)
+        
+        # Open file in binary write mode
+        with open(dest, "wb") as buffer:
+            # Read in 1MB chunks to avoid memory spikes and improve speed
+            while True:
+                chunk = await file.read(1024 * 1024) # 1MB chunk
+                if not chunk:
+                    break
+                buffer.write(chunk)
 
         selected_video_path = dest
         logger.info(f"Video saved successfully to {dest}")
