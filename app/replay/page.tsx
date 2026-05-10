@@ -106,6 +106,8 @@ export default function ReplayLabPage() {
         overallStability: `${(100 - parseFloat(avgEntropy) * 100).toFixed(1)}%`,
         recommendation: aiReport.strategic_advice || 'Maintain formation compactness.',
         aiSummary: aiReport.summary || 'Analysis complete.',
+        defensiveStability: aiReport.defensive_stability || 'Defensive structure was generally compact with acceptable diameter.',
+        offensiveTransition: aiReport.offensive_transition || 'Transitions relied heavily on isolated lynchpin movements.',
         keyTakeaways: aiReport.key_takeaways || [],
       });
     } catch (err) {
@@ -145,7 +147,27 @@ export default function ReplayLabPage() {
     const splitSummary = doc.splitTextToSize(reportData.aiSummary, 182);
     doc.text(splitSummary, 14, 47);
 
-    let y = 47 + splitSummary.length * 5 + 8;
+    let y = 47 + splitSummary.length * 5 + 6;
+
+    // Defensive Stability
+    doc.setTextColor(0, 243, 255);
+    doc.setFontSize(10);
+    doc.text('DEFENSIVE STABILITY', 14, y);
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(9);
+    const splitDef = doc.splitTextToSize(reportData.defensiveStability, 182);
+    doc.text(splitDef, 14, y + 6);
+    y += splitDef.length * 5 + 8;
+
+    // Offensive Transition
+    doc.setTextColor(0, 243, 255);
+    doc.setFontSize(10);
+    doc.text('OFFENSIVE TRANSITION', 14, y);
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(9);
+    const splitOff = doc.splitTextToSize(reportData.offensiveTransition, 182);
+    doc.text(splitOff, 14, y + 6);
+    y += splitOff.length * 5 + 10;
 
     // Critical moments table
     doc.setTextColor(0, 243, 255);
@@ -215,23 +237,26 @@ export default function ReplayLabPage() {
             </div>
             <div className="flex items-center gap-3">
               {/* Step 1 – Analyze */}
-              <button
-                onClick={analyzeReport}
-                disabled={!hasData || isAnalyzing}
-                className="px-4 py-2 bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                {isAnalyzing ? <Activity className="w-3 h-3 animate-spin" /> : <Brain className="w-3 h-3" />}
-                {isAnalyzing ? 'Llama Thinking...' : 'Analyze'}
-              </button>
+              {!isPlaying && hasData && (
+                <button
+                  onClick={analyzeReport}
+                  disabled={isAnalyzing}
+                  className="px-4 py-2 bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {isAnalyzing ? <Activity className="w-3 h-3 animate-spin" /> : <Brain className="w-3 h-3" />}
+                  {isAnalyzing ? 'Llama Thinking...' : 'Analyze Frame Data'}
+                </button>
+              )}
               {/* Step 2 – Download */}
-              <button
-                onClick={downloadPDF}
-                disabled={!reportData}
-                className="px-4 py-2 bg-cyan-500/10 border border-cyan-500/40 text-cyan-400 text-[10px] font-black uppercase tracking-widest hover:bg-cyan-500/20 transition-all flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <Download className="w-3 h-3" />
-                Download Audit
-              </button>
+              {!isPlaying && hasData && reportData && (
+                <button
+                  onClick={downloadPDF}
+                  className="px-4 py-2 bg-cyan-500/10 border border-cyan-500/40 text-cyan-400 text-[10px] font-black uppercase tracking-widest hover:bg-cyan-500/20 transition-all flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <Download className="w-3 h-3" />
+                  Download Audit
+                </button>
+              )}
             </div>
           </div>
 
@@ -476,6 +501,16 @@ export default function ReplayLabPage() {
 
                   <div className="text-[9px] text-white/70 leading-relaxed border-b border-white/10 pb-3">
                     {reportData.aiSummary}
+                  </div>
+
+                  <div className="space-y-1 border-b border-white/10 pb-3">
+                    <div className="text-[8px] font-black uppercase tracking-widest text-cyan-400/60">Defensive Stability</div>
+                    <div className="text-[9px] text-white/60 leading-snug">{reportData.defensiveStability}</div>
+                  </div>
+
+                  <div className="space-y-1 border-b border-white/10 pb-3">
+                    <div className="text-[8px] font-black uppercase tracking-widest text-cyan-400/60">Offensive Transition</div>
+                    <div className="text-[9px] text-white/60 leading-snug">{reportData.offensiveTransition}</div>
                   </div>
 
                   <div className="space-y-2">

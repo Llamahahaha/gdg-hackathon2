@@ -135,10 +135,12 @@ async def generate_full_audit_report(summary_metrics):
     - Total Structural Fractures: {summary_metrics['total_fractures']}
     - Lynchpin Nodes: {summary_metrics['lynchpins']}
     
-    Provide a professional tactical report in JSON format with these keys:
+    Provide a detailed, professional tactical report in JSON format with these keys:
     1. "summary": A 3-sentence strategic summary.
-    2. "key_takeaways": A list of 3 specific technical observations.
-    3. "strategic_advice": A 2-sentence recommendation for training.
+    2. "defensive_stability": A 2-sentence analysis on the team's diameter and structural compactness.
+    3. "offensive_transition": A 2-sentence analysis on exploiting identified lynchpin nodes.
+    4. "key_takeaways": A list of 3 specific technical observations.
+    5. "strategic_advice": A 2-sentence recommendation for training.
     
     RESPOND ONLY WITH THE JSON OBJECT.
     """
