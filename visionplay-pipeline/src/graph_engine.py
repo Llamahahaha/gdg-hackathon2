@@ -135,18 +135,18 @@ async def generate_full_audit_report(summary_metrics):
     - Total Structural Fractures: {summary_metrics['total_fractures']}
     - Lynchpin Nodes: {summary_metrics['lynchpins']}
     
-    Provide a detailed, professional tactical report in JSON format with these keys:
-    1. "summary": A 3-sentence strategic summary.
-    2. "defensive_stability": A 2-sentence analysis on the team's diameter and structural compactness.
-    3. "offensive_transition": A 2-sentence analysis on exploiting identified lynchpin nodes.
-    4. "key_takeaways": A list of 3 specific technical observations.
-    5. "strategic_advice": A 2-sentence recommendation for training.
+    Provide a HIGHLY DETAILED, professional tactical forensic report in JSON format. Do not use markdown backticks, just raw JSON. Use these keys:
+    1. "summary": A comprehensive 5-sentence strategic summary breaking down the overall match flow and structural integrity.
+    2. "defensive_stability": A deep-dive 4-sentence analysis on the team's diameter, compactness, and spatial vulnerabilities.
+    3. "offensive_transition": A detailed 4-sentence analysis on how to exploit the identified lynchpin nodes and bypass the pressing lines.
+    4. "key_takeaways": A list of 4 highly specific, advanced technical observations.
+    5. "strategic_advice": A detailed 3-sentence recommendation for training drills and tactical adjustments.
     
-    RESPOND ONLY WITH THE JSON OBJECT.
+    RESPOND ONLY WITH RAW VALID JSON.
     """
     
     try:
-        async with httpx.AsyncClient(timeout=60.0) as client:
+        async with httpx.AsyncClient(timeout=90.0) as client:
             response = await client.post(
                 f"{OLLAMA_BASE_URL}/api/generate",
                 json={
@@ -157,11 +157,24 @@ async def generate_full_audit_report(summary_metrics):
                 }
             )
             result = response.json()
-            return json.loads(result.get("response", "{}"))
+            raw_text = result.get("response", "{}").strip()
+            
+            # Clean potential markdown wrapping
+            if raw_text.startswith("```json"):
+                raw_text = raw_text[7:]
+            elif raw_text.startswith("```"):
+                raw_text = raw_text[3:]
+            if raw_text.endswith("```"):
+                raw_text = raw_text[:-3]
+                
+            return json.loads(raw_text.strip())
+            
     except Exception as e:
         logger.error(f"Ollama Audit generation failed: {e}")
         return {
-            "summary": "Structural instability detected during transitions.",
+            "summary": "Error: Ollama failed to generate a response. Structural instability detected during transitions.",
+            "defensive_stability": "Defensive structure was generally compact but failed to generate data.",
+            "offensive_transition": "Transitions relied heavily on isolated movements.",
             "key_takeaways": ["High entropy at peak phases", "Lynchpin vulnerability noted"],
             "strategic_advice": "Focus on horizontal compactness drills."
         }
