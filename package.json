@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"next dev --turbopack\" \"cd visionplay-pipeline && source .venv/bin/activate && python src/server.py\"",
-    "build": "next build",
-    "start": "next start",
+    "dev": "concurrently \"bun next dev --turbopack\" \"fuser -k 8000/tcp || true; cd visionplay-pipeline && source .venv/bin/activate && python src/server.py\"",
+    "build": "bun next build",
+    "start": "bun next start",
     "lint": "eslint"
   },
   "dependencies": {

@@ -42,11 +42,24 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-# Video & Media
+# Media & Large Files
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.webp
+*.ico
 
 # AI Models (Very Large)
 vision/models/*.pt
 vision/models/*.onnx
+models/*.pt
 
 # Local Data & Logs
 public/data/match_telemetry.json
@@ -55,13 +68,4 @@ lint_output*.txt
 __pycache__/
 .pytest_cache/
 .ipynb_checkpoints/
-
-# Catch-all for large media
-*.mp4
-*.mov
-*.avi
-*.mkv
-*.weights
-*.h5
-*.onnx
 

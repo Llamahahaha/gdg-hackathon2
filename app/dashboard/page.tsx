@@ -255,6 +255,9 @@ export default function DashboardPage() {
                            ? "42% risk of structural fracture if removed." 
                            : "Synergy Index: High passing corridor retention.";
 
+                         const decisionQuality = (85 + (seed % 15)).toFixed(0);
+                         const synergy = (0.65 + (seed % 35) / 100).toFixed(2);
+
                          return (
                            <tr key={p.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                              <td className="py-6 px-4">
@@ -277,12 +280,15 @@ export default function DashboardPage() {
                              <td className="py-6 px-4">
                                <div className="flex flex-col gap-1">
                                  <div className="flex justify-between w-32 text-[9px]"><span className="text-white/40">Centrality:</span> <span className="font-bold text-cyan-400">{centrality}</span></div>
-                                 <div className="flex justify-between w-32 text-[9px]"><span className="text-white/40">Connectivity:</span> <span className="font-bold">{92 - (seed % 10)}</span></div>
+                                 <div className="flex justify-between w-32 text-[9px]"><span className="text-white/40">Synergy Index:</span> <span className="font-bold text-emerald-400">{synergy}</span></div>
                                </div>
                              </td>
                              <td className="py-6 px-4">
-                               <div className={`inline-flex px-2 py-1 border text-[8px] font-black uppercase tracking-widest ${bg} ${statusColor}`}>
-                                 {status}
+                               <div className="flex flex-col gap-1">
+                                 <div className="text-[9px]"><span className="text-white/40">Decision Quality:</span> <span className="font-bold">{decisionQuality}%</span></div>
+                                 <div className={`inline-flex px-2 py-0.5 border text-[7px] font-black uppercase tracking-widest mt-1 w-fit ${bg} ${statusColor}`}>
+                                   {status}
+                                 </div>
                                </div>
                              </td>
                              <td className="py-6 px-4 text-right text-[9px] text-white/50 max-w-xs whitespace-normal">
@@ -296,3 +302,7 @@ export default function DashboardPage() {
               </table>
            </div>
         </div>
+      </main>
+    </div>
+  );
+}
