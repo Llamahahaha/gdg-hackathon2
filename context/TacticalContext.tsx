@@ -89,7 +89,7 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
             const data = JSON.parse(event.data);
             
             if (data.type === 'status') {
-              setStatus(data.message);
+              if (isPlayingRef.current) setStatus(data.message);
             }
 
             if (data.type === 'frame') {
@@ -167,8 +167,9 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const startEngine = useCallback(async () => {
+   const startEngine = useCallback(async () => {
     setIsPlaying(true);
+    isPlayingRef.current = true;
     setStatus("SIGNAL_INITIALIZED");
     try {
       const response = await fetch(`http://${window.location.hostname}:8000/start`, { method: 'POST' });
@@ -176,11 +177,13 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
     } catch (_e) {
       setStatus("SIGNAL_ERROR");
       setIsPlaying(false);
+      isPlayingRef.current = false;
     }
   }, []);
 
-  const stopEngine = useCallback(async () => {
+   const stopEngine = useCallback(async () => {
     setIsPlaying(false);
+    isPlayingRef.current = false;
     setStatus("SIGNAL_ABORTED");
     try {
       await fetch(`http://${window.location.hostname}:8000/stop`, { method: 'POST' });
