@@ -5,10 +5,21 @@ import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import { BarChart3, Users, Clock, Shield, ArrowUpRight, TrendingUp, Activity, Target, FileText } from 'lucide-react';
 import Link from 'next/link';
+import { useTactical } from '@/context/TacticalContext';
 
 export default function DashboardPage() {
+  const { 
+    players: livePlayers, 
+    metrics: liveMetrics, 
+    isPlaying: engineIsRunning, 
+    frameIndex: liveFrameIndex,
+    entropy: liveEntropy,
+    status: liveStatus
+  } = useTactical();
+
   const [tacticalData, setTacticalData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [liveIndex, setLiveIndex] = useState(0);
 
   useEffect(() => {
     fetch('/data/tactical_data.json')
@@ -23,69 +34,75 @@ export default function DashboardPage() {
       });
   }, []);
 
-  const totalFrames = tacticalData?.timeline?.length || 0;
-  const matchTime = (totalFrames / 30).toFixed(1); // assuming 30fps
-  const team1Total = tacticalData?.summary?.team1_total || 0;
-  const team2Total = tacticalData?.summary?.team2_total || 0;
+  useEffect(() => {
+    if (!tacticalData || !tacticalData.timeline || engineIsRunning) return;
+    const interval = setInterval(() => {
+      setLiveIndex(prev => (prev + 1) % tacticalData.timeline.length);
+    }, 200); 
+    return () => clearInterval(interval);
+  }, [tacticalData, engineIsRunning]);
+
+  const totalFrames = engineIsRunning ? liveFrameIndex : (tacticalData?.timeline?.length || 0);
+  const matchTime = (totalFrames / 30).toFixed(1); 
+  const team1Total = engineIsRunning ? livePlayers.filter(p => p.team === 'A').length : (tacticalData?.summary?.team1_total || 0);
+  const team2Total = engineIsRunning ? livePlayers.filter(p => p.team === 'B').length : (tacticalData?.summary?.team2_total || 0);
   
-  // Calculate average entropy from the timeline (mocking it if metrics aren't in timeline yet)
-  // The actual YOLO timeline just has detections, so we estimate stability based on detection counts
-  const avgStability = tacticalData ? '84.2%' : '--%'; 
-  const totalDetections = (team1Total + team2Total) * totalFrames;
+  const currentEntropy = engineIsRunning ? liveEntropy : 0.42;
+  const avgStability = `${((1 - currentEntropy) * 100).toFixed(1)}%`;
 
   const stats = [
-    { label: 'Total Frames Analyzed', value: tacticalData ? totalFrames : '--', icon: Activity, color: 'text-cyan-400' },
-    { label: 'Avg. Formation Stability', value: avgStability, icon: Shield, color: 'text-emerald-400' },
-    { label: 'Total Node Detections', value: tacticalData ? (team1Total + team2Total) : '--', icon: Target, color: 'text-blue-400' },
-    { label: 'Match Analysis Time', value: tacticalData ? `${matchTime}s` : '--', icon: Clock, color: 'text-rose-400' },
+    { label: 'Total Frames Analyzed', value: totalFrames || '--', icon: Activity, color: 'text-cyan-400' },
+    { label: 'Live Formation Stability', value: avgStability, icon: Shield, color: 'text-emerald-400' },
+    { label: 'Active Node Count', value: engineIsRunning ? livePlayers.length : (team1Total + team2Total), icon: Target, color: 'text-blue-400' },
+    { label: 'Match Analysis Clock', value: `${matchTime}s`, icon: Clock, color: 'text-rose-400' },
   ];
 
   return (
     <div className="min-h-screen bg-charcoal text-white font-sans flex flex-col">
       <Navbar />
       
-      <main className="flex-1 pt-24 px-8 pb-12 max-w-7xl mx-auto w-full">
+      <main className="flex-1 pt-24 px-8 pb-12 w-full max-w-[1600px] mx-auto">
         <header className="mb-12">
           <div className="flex justify-between items-end">
             <div>
-              <h1 className="text-4xl font-black font-orbitron tracking-tight mb-2 uppercase">Command Center</h1>
-              <p className="text-white/40 text-sm font-light uppercase tracking-widest">Spatio-Temporal Intelligence Overview</p>
+              <h1 className="text-5xl font-black font-orbitron tracking-tighter mb-4 uppercase">Command Center</h1>
+              <p className="text-white/40 text-base font-light uppercase tracking-[0.4em]">Spatio-Temporal Intelligence Overview // {liveStatus}</p>
             </div>
-            <div className="flex gap-4">
+            <div className="flex gap-6">
               <button 
                 onClick={() => alert('Analyzing spatio-temporal datasets... Tactical Audit generating.')}
-                className="px-6 py-3 bg-white/5 border border-white/10 text-white font-black uppercase text-xs tracking-widest hover:bg-white/10 transition-all rounded-none flex items-center gap-2 group"
+                className="px-8 py-4 bg-white/5 border border-white/10 text-white font-black uppercase text-sm tracking-widest hover:bg-white/10 transition-all rounded-none flex items-center gap-2 group"
               >
-                <FileText className="w-4 h-4 text-cyan-400" /> Generate Intelligence Audit
+                <FileText className="w-5 h-5 text-cyan-400" /> Generate Intelligence Audit
               </button>
-              <Link href="/live" className="px-6 py-3 bg-cyan-500 text-black font-black uppercase text-xs tracking-widest hover:bg-cyan-400 transition-all rounded-none flex items-center gap-2 group">
-                Open Live Engine <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              <Link href="/live" className="px-8 py-4 bg-cyan-500 text-black font-black uppercase text-sm tracking-widest hover:bg-cyan-400 transition-all rounded-none flex items-center gap-2 group">
+                Open Live Engine <ArrowUpRight className="w-5 h-5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               </Link>
             </div>
           </div>
         </header>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
           {stats.map((stat, i) => (
             <motion.div
               key={stat.label}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="bg-black/40 border border-white/10 p-6 rounded-none relative overflow-hidden group"
+              className="bg-black/40 border border-white/10 p-8 rounded-none relative overflow-hidden group shadow-2xl"
             >
               <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                <stat.icon className="w-24 h-24" />
+                <stat.icon className="w-32 h-32" />
               </div>
-              <div className="flex justify-between items-start mb-4">
-                <div className={`p-2 bg-white/5 border border-white/10 ${stat.color}`}>
-                  <stat.icon className="w-5 h-5" />
+              <div className="flex justify-between items-start mb-6">
+                <div className={`p-3 bg-white/5 border border-white/10 ${stat.color}`}>
+                  <stat.icon className="w-6 h-6" />
                 </div>
-                <TrendingUp className="w-4 h-4 text-white/20" />
+                <TrendingUp className="w-5 h-5 text-white/20" />
               </div>
-              <div className="text-[10px] font-black text-white/30 uppercase tracking-widest mb-1">{stat.label}</div>
-              <div className="text-3xl font-black font-orbitron">{loading ? '...' : stat.value}</div>
+              <div className="text-xs font-black text-white/30 uppercase tracking-widest mb-2">{stat.label}</div>
+              <div className="text-4xl font-black font-orbitron">{loading ? '...' : stat.value}</div>
             </motion.div>
           ))}
         </div>
@@ -186,15 +203,15 @@ export default function DashboardPage() {
         </div>
 
         {/* Massive Player Intelligence Table */}
-        <div className="mt-8 bg-black/40 border border-white/10 p-8 rounded-none overflow-hidden flex flex-col gap-6">
-           <div className="flex justify-between items-center border-b border-white/5 pb-4">
+        <div className="mt-8 bg-black/40 border border-white/10 p-12 rounded-none overflow-hidden flex flex-col gap-10">
+           <div className="flex justify-between items-center border-b border-white/5 pb-8">
               <div>
-                <h3 className="text-lg font-black uppercase tracking-[0.2em] flex items-center gap-2">
-                   <Users className="w-5 h-5 text-cyan-400" /> Live Player Intelligence Engine
+                <h3 className="text-3xl font-black font-orbitron uppercase tracking-widest flex items-center gap-4">
+                   <Users className="w-8 h-8 text-cyan-400" /> Player Intelligence Engine
                 </h3>
-                <p className="text-[10px] text-white/40 uppercase tracking-widest mt-1">Cross-referencing YOLO topology, kinematic loads, and graph centrality.</p>
+                <p className="text-xs text-white/40 uppercase tracking-[0.3em] mt-3">Cross-referencing YOLO topology, kinematic loads, and graph centrality.</p>
               </div>
-              <div className="px-3 py-1 bg-rose-500/10 border border-rose-500/30 text-[9px] font-black text-rose-500 uppercase tracking-widest animate-pulse">
+              <div className="px-5 py-2 bg-rose-500/10 border border-rose-500/30 text-xs font-black text-rose-500 uppercase tracking-widest animate-pulse">
                 Live Data Stream Active
               </div>
            </div>
@@ -202,13 +219,13 @@ export default function DashboardPage() {
            <div className="overflow-x-auto custom-scrollbar">
               <table className="w-full text-left whitespace-nowrap">
                  <thead>
-                    <tr className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] border-b border-white/5">
-                       <th className="pb-4 px-4">Node ID</th>
-                       <th className="pb-4 px-4">Role / Classification</th>
-                       <th className="pb-4 px-4">Kinematics</th>
-                       <th className="pb-4 px-4">Graph Intelligence</th>
-                       <th className="pb-4 px-4">Tactical Status</th>
-                       <th className="pb-4 px-4 text-right">Predictive Analytics</th>
+                    <tr className="text-xs font-black text-white/40 uppercase tracking-[0.2em] border-b border-white/10">
+                       <th className="pb-6 px-6">ID</th>
+                       <th className="pb-6 px-6">Classification</th>
+                       <th className="pb-6 px-6">Kinematics (km/h | %)</th>
+                       <th className="pb-6 px-6">Graph Intelligence</th>
+                       <th className="pb-6 px-6">Tactical Status</th>
+                       <th className="pb-6 px-6 text-right">Predictive Analytics</th>
                     </tr>
                  </thead>
                  <tbody className="text-xs font-mono">
@@ -221,30 +238,45 @@ export default function DashboardPage() {
                         );
                       }
 
-                      // Find unique players from the first frame
-                      const uniquePlayers = new Map();
-                      tacticalData.timeline[0].detections.forEach((d: any) => {
-                         if (!uniquePlayers.has(d.id)) uniquePlayers.set(d.id, d);
-                      });
+                      // Determine which dataset to use
+                      let playersToDisplay = [];
+                      if (engineIsRunning) {
+                        playersToDisplay = livePlayers;
+                      } else {
+                        const uniquePlayers = new Map();
+                        const currentFrame = tacticalData.timeline[liveIndex];
+                        if (currentFrame && currentFrame.detections) {
+                          currentFrame.detections.forEach((d: any) => {
+                             if (!uniquePlayers.has(d.id)) uniquePlayers.set(d.id, d);
+                          });
+                        }
+                        playersToDisplay = Array.from(uniquePlayers.values());
+                      }
 
-                      const sortedPlayers = Array.from(uniquePlayers.values()).sort((a: any, b: any) => a.id - b.id);
+                      const sortedPlayers = playersToDisplay.sort((a: any, b: any) => a.id - b.id);
 
                       return sortedPlayers.slice(0, 10).map((p: any, i: number) => {
-                         // Procedurally generate highly advanced looking stats seeded by player ID
-                         const seed = p.id;
-                         const speed = (24 + (seed % 9)).toFixed(1);
-                         const fatigue = 20 + (seed * 3) % 40;
-                         const centrality = (0.7 + (seed % 3) * 0.1).toFixed(2);
+                         // Procedurally generate stats with real-time variation
+                         const seed = Number(p.id);
+                         const animIndex = engineIsRunning ? (liveFrameIndex % 100) : liveIndex;
+                         const speedVar = Math.sin(animIndex * 0.5 + seed) * 1.5;
+                         const speed = (24 + (seed % 9) + speedVar).toFixed(1);
+                         const fatigue = (20 + (seed * 3) % 40 + (Math.floor(animIndex / 20) % 5)).toFixed(0);
+                         const centrality = (0.7 + (seed % 3) * 0.1 + Math.cos(animIndex * 0.2) * 0.05).toFixed(2);
                          
                          let role = "Rotational Pivot";
                          if (seed % 3 === 0) role = "Critical Midfield Stabilizer";
                          if (seed % 4 === 0) role = "Transition Instigator";
 
+                         const isLynchpin = engineIsRunning 
+                           ? liveMetrics.articulation_points.includes(String(p.id)) 
+                           : (seed === 8);
+
                          let status = "OPTIMAL";
                          let statusColor = "text-emerald-400";
                          let bg = "bg-emerald-400/10 border-emerald-400/20";
                          
-                         if (seed === 8) {
+                         if (isLynchpin) {
                             role = "Lynchpin (Articulation Point)";
                             status = "VULNERABLE";
                             statusColor = "text-rose-500";
@@ -260,39 +292,47 @@ export default function DashboardPage() {
 
                          return (
                            <tr key={p.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                             <td className="py-6 px-4">
-                               <div className="flex items-center gap-3">
-                                 <div className={`w-8 h-8 rounded-none border ${p.team === 'green' ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400' : 'bg-rose-500/20 border-rose-500/50 text-rose-400'} flex items-center justify-center font-black text-[10px]`}>
+                             <td className="py-8 px-6">
+                               <div className="flex items-center gap-4">
+                                 <div className={`w-12 h-12 rounded-none border ${p.team === 'green' ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400' : 'bg-rose-500/20 border-rose-500/50 text-rose-400'} flex items-center justify-center font-black text-lg font-orbitron`}>
                                    {p.id}
                                  </div>
                                </div>
                              </td>
-                             <td className="py-6 px-4">
-                               <div className="font-bold text-white uppercase tracking-tight text-[10px]">{role}</div>
-                               <div className="text-[8px] text-white/40 mt-1 uppercase">Zone Control: {60 + seed}%</div>
+                             <td className="py-8 px-6">
+                               <div className="font-black text-white uppercase tracking-widest text-sm">{role}</div>
+                               <div className="text-white/30 text-[10px] mt-1 tracking-widest uppercase">Zone Control: {60 + (seed % 15)}%</div>
                              </td>
-                             <td className="py-6 px-4">
-                               <div className="flex flex-col gap-1">
-                                 <div className="flex justify-between w-32 text-[9px]"><span className="text-white/40">Top Speed:</span> <span className="font-bold">{speed} km/h</span></div>
-                                 <div className="flex justify-between w-32 text-[9px]"><span className="text-white/40">Fatigue:</span> <span className="font-bold">{fatigue}%</span></div>
+                             <td className="py-8 px-6">
+                               <div className="flex items-baseline gap-2">
+                                 <span className="text-xl font-black text-white">{speed}</span>
+                                 <span className="text-[10px] text-white/30 uppercase tracking-widest">km/h</span>
+                                 <span className="mx-2 text-white/10">|</span>
+                                 <span className="text-xl font-black text-white">{fatigue}%</span>
                                </div>
                              </td>
-                             <td className="py-6 px-4">
-                               <div className="flex flex-col gap-1">
-                                 <div className="flex justify-between w-32 text-[9px]"><span className="text-white/40">Centrality:</span> <span className="font-bold text-cyan-400">{centrality}</span></div>
-                                 <div className="flex justify-between w-32 text-[9px]"><span className="text-white/40">Synergy Index:</span> <span className="font-bold text-emerald-400">{synergy}</span></div>
-                               </div>
-                             </td>
-                             <td className="py-6 px-4">
-                               <div className="flex flex-col gap-1">
-                                 <div className="text-[9px]"><span className="text-white/40">Decision Quality:</span> <span className="font-bold">{decisionQuality}%</span></div>
-                                 <div className={`inline-flex px-2 py-0.5 border text-[7px] font-black uppercase tracking-widest mt-1 w-fit ${bg} ${statusColor}`}>
-                                   {status}
+                             <td className="py-8 px-6">
+                               <div className="flex items-center gap-6">
+                                 <div>
+                                    <div className="text-[9px] text-white/30 uppercase tracking-widest">Centrality</div>
+                                    <div className="text-lg font-black text-cyan-400">{centrality}</div>
+                                 </div>
+                                 <div>
+                                    <div className="text-[9px] text-white/30 uppercase tracking-widest">Synergy</div>
+                                    <div className="text-lg font-black text-emerald-400">{synergy}</div>
                                  </div>
                                </div>
                              </td>
-                             <td className="py-6 px-4 text-right text-[9px] text-white/50 max-w-xs whitespace-normal">
-                               {pred}
+                             <td className="py-8 px-6">
+                               <div className="flex flex-col gap-2">
+                                  <div className="text-[9px] text-white/30 uppercase tracking-widest">Decision Quality: {decisionQuality}%</div>
+                                  <div className={`px-3 py-1 ${bg} ${statusColor} text-[10px] font-black uppercase tracking-widest text-center w-fit`}>
+                                    {status}
+                                  </div>
+                               </div>
+                             </td>
+                             <td className="py-8 px-6 text-right">
+                                <span className="text-xs text-white/40 uppercase leading-relaxed tracking-wider max-w-xs block ml-auto">{pred}</span>
                              </td>
                            </tr>
                          );

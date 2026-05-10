@@ -74,20 +74,21 @@ def compute_tactical_metrics(players):
     if len(subG.nodes) > 2:
         articulation_points = list(nx.articulation_points(subG))
 
-    # 4. Team Diameter (Floyd-Warshall)
+    # 4. Team Diameter (Compactness in Pixels)
     diameter = 0
     diameter_nodes = []
-    if len(subG.nodes) > 1:
+    if len(team_a_nodes) > 1:
         try:
-            # Floyd-Warshall for all pairs shortest paths
-            path_lengths = dict(nx.all_pairs_dijkstra_path_length(subG, weight='weight'))
-            
+            # Find the max distance between any two nodes in Team A
             max_d = 0
-            for u, targets in path_lengths.items():
-                for v, d in targets.items():
-                    if d > max_d and d != float('inf'):
-                        max_d = d
-                        diameter_nodes = [u, v]
+            for i, n1 in enumerate(team_a_nodes):
+                for n2 in team_a_nodes[i+1:]:
+                    p1 = G.nodes[n1]['pos']
+                    p2 = G.nodes[n2]['pos']
+                    dist = np.linalg.norm(np.array(p1) - np.array(p2))
+                    if dist > max_d:
+                        max_d = dist
+                        diameter_nodes = [n1, n2]
             diameter = max_d
         except Exception as e:
             logger.error(f"Diameter calculation failed: {e}")

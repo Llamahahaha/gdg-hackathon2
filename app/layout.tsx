@@ -10,6 +10,8 @@ export const metadata: Metadata = {
   description: "Advanced topological sports analytics and real-time team connectivity mapping.",
 };
 
+import { TacticalProvider } from "@/context/TacticalContext";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -18,7 +20,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`dark ${inter.variable} ${orbitron.variable}`}>
       <body className="min-h-screen bg-charcoal text-white font-sans antialiased">
-        {children}
+        <TacticalProvider>
+          {children}
+        </TacticalProvider>
       </body>
     </html>
   );

@@ -64,7 +64,7 @@ export default function Testimonial() {
             >
               <Quote className="w-8 h-8 opacity-50" style={{ color: t.color }} />
               <p className="text-sm md:text-base text-gray-300 leading-relaxed font-light">
-                "{t.quote}"
+                &ldquo;{t.quote}&rdquo;
               </p>
               <div className="flex items-center gap-4 pt-4 border-t border-white/5">
                 <div 

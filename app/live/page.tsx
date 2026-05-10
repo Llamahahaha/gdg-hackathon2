@@ -4,112 +4,25 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import { Activity, Zap, Target, Hexagon, Play, Pause, SkipBack, SkipForward, AlertTriangle, ChevronRight } from 'lucide-react';
+import { useTactical } from '@/context/TacticalContext';
 
 export default function LiveEnginePage() {
-  // --- Core State ---
-  const [players, setPlayers] = useState<any[]>([]);
+  const {
+    players, liveFrame, connectionStatus, status, entropy, metrics, 
+    possession, isPlaying, frameIndex, timelineData,
+    startEngine, stopEngine
+  } = useTactical();
+
   const [neutralizedIds, setNeutralizedIds] = useState<number[]>([]);
-  const [frameIndex, setFrameIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [entropy, setEntropy] = useState(0.42);
-  const [ws, setWs] = useState<WebSocket | null>(null);
-  const [liveFrame, setLiveFrame] = useState<string | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState("DISCONNECTED");
-  const [possession, setPossession] = useState("UNKNOWN");
-
-  // --- Tactical Intelligence State ---
   const [recommendation, setRecommendation] = useState("Awaiting tactical analysis...");
-  const [metrics, setMetrics] = useState<any>({ entropy: 0, articulation_points: [], diameter: 0, diameter_nodes: [] });
-  const [timelineData, setTimelineData] = useState<{frame: number, entropy: number}[]>([]);
 
-  // WebSocket Connection
+  // Recommendation sync
   useEffect(() => {
-    const socket = new WebSocket('ws://127.0.0.1:8000/ws');
-    
-    socket.onopen = () => {
-      setConnectionStatus("CONNECTED");
-      setWs(socket);
-    };
+    if (metrics.recommendation) setRecommendation(metrics.recommendation);
+  }, [metrics.recommendation]);
 
-    socket.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === 'frame') {
-          setLiveFrame(`data:image/jpeg;base64,${data.frame}`);
-          setFrameIndex(data.stats?.frame_id || 0);
-          
-          if (data.stats) {
-            const detections = data.stats.detections || [];
-            const uniqueDetections = new Map();
-            
-            detections.forEach((d: any) => {
-              const bbox = d.bbox || [0, 0, 0, 0];
-              const center = d.center || [(bbox[0] + bbox[2])/2, (bbox[1] + bbox[3])/2];
-              const id = d.id !== undefined ? String(d.id) : String(Math.random());
-              
-              if (!uniqueDetections.has(id)) {
-                uniqueDetections.set(id, {
-                  id: id,
-                  rawX: center[0],
-                  rawY: center[1],
-                  x: (center[0] / 1920) * 800,
-                  y: (center[1] / 1080) * 400,
-                  name: `P${id}`,
-                  team: d.team === 'green' ? 'A' : 'B'
-                });
-              }
-            });
-
-            // Re-filter players here instead of relying on state to trigger effect
-            setPlayers(Array.from(uniqueDetections.values()));
-            setPossession(data.stats.possession || "UNKNOWN");
-            
-            if (data.stats.metrics) {
-              setMetrics(data.stats.metrics);
-              setEntropy(data.stats.metrics.entropy);
-              
-              setTimelineData(prev => {
-                const newData = [...prev, { frame: data.stats.frame_id, entropy: data.stats.metrics.entropy }].slice(-100);
-                return newData;
-              });
-            }
-
-            if (data.stats.recommendation) {
-              setRecommendation(data.stats.recommendation);
-            }
-          }
-        }
-      } catch (e) {
-        console.error("Failed to parse websocket message", e);
-      }
-    };
-
-    socket.onclose = () => {
-      setConnectionStatus("DISCONNECTED");
-      setWs(null);
-    };
-
-    return () => socket.close();
-  }, []); // Empty dependency array to prevent constant reconnects
-
-  const handleStart = async () => {
-    setIsPlaying(true);
-    try {
-      await fetch('http://localhost:8000/start', { method: 'POST' });
-    } catch (e) {
-      console.error("Failed to start pipeline:", e);
-    }
-  };
-
-  const handleStop = async () => {
-    setIsPlaying(false);
-    setLiveFrame(null);
-    try {
-      await fetch('http://localhost:8000/stop', { method: 'POST' });
-    } catch (e) {
-      console.error("Failed to stop pipeline:", e);
-    }
-  };
+  const handleStart = () => startEngine();
+  const handleStop = () => stopEngine();
 
   return (
     <div className="min-h-screen bg-charcoal text-white font-sans overflow-hidden flex flex-col">
@@ -120,7 +33,7 @@ export default function LiveEnginePage() {
         {/* Match Status Header */}
         <div className="flex items-center gap-6 bg-black/80 border border-white/20 p-4 rounded-none">
           <div className="flex items-center gap-3 pr-6 border-r border-white/10">
-            <div className="w-2 h-2 rounded-none bg-rose-500 animate-pulse" />
+            <div className={`w-2 h-2 rounded-none ${connectionStatus === 'CONNECTED' ? 'bg-emerald-500 shadow-[0_0_8px_#10b981]' : 'bg-rose-500 animate-pulse'}`} />
             <span className="text-xs font-black tracking-[0.2em]">LIVE_SIGNAL_01</span>
           </div>
           <div className="flex items-center gap-8">
@@ -136,6 +49,10 @@ export default function LiveEnginePage() {
               <span className="text-[8px] font-black text-white/30 uppercase tracking-widest">Possession</span>
               <span className="text-sm font-bold text-emerald-500 tracking-tighter uppercase">{possession}</span>
             </div>
+            <div className="flex flex-col border-l border-white/10 pl-6">
+              <span className="text-[8px] font-black text-white/30 uppercase tracking-widest">Neural Status</span>
+              <span className="text-[10px] font-bold text-cyan-400 tracking-widest uppercase">{status.replace(/_/g, ' ')}</span>
+            </div>
           </div>
         </div>
 
@@ -146,7 +63,7 @@ export default function LiveEnginePage() {
               <input type="file" className="hidden" accept="video/*" />
               <span className="text-[10px] font-black uppercase tracking-widest">Sync Dataset</span>
             </label>
-            <span className="text-[9px] font-mono text-white/30 tracking-tighter uppercase">{connectionStatus}</span>
+            <span className="text-[9px] font-mono text-white/30 tracking-tighter uppercase">{connectionStatus} // PORT:8000</span>
           </div>
           
           <div className="flex items-center gap-2">
@@ -166,7 +83,16 @@ export default function LiveEnginePage() {
               <img src={liveFrame} alt="Live Feed" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-black/80">
-                <span className="text-cyan-400 text-sm font-mono animate-pulse uppercase">Awaiting Neural Signal...</span>
+                 <div className="flex flex-col items-center gap-4">
+                    <span className="text-cyan-400 text-sm font-mono animate-pulse uppercase">{status.replace(/_/g, ' ')}...</span>
+                    <div className="w-48 h-0.5 bg-white/5 relative overflow-hidden">
+                       <motion.div 
+                          animate={{ x: [-200, 200] }} 
+                          transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                          className="absolute inset-0 bg-cyan-500/50 w-1/2" 
+                       />
+                    </div>
+                 </div>
               </div>
             )}
             <div className="absolute inset-0 bg-black/20 pointer-events-none" />
