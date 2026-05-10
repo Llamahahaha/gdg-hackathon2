@@ -62,12 +62,9 @@ export default function DashboardPage() {
     }
   }, [liveFrameIndex, engineIsRunning, livePlayers]);
 
+  // Removed auto-playing interval to ensure values stay static when aborted
   useEffect(() => {
-    if (!tacticalData || !tacticalData.timeline || engineIsRunning) return;
-    const interval = setInterval(() => {
-      setLiveIndex(prev => (prev + 1) % tacticalData.timeline.length);
-    }, 200); 
-    return () => clearInterval(interval);
+    // We no longer auto-increment liveIndex to avoid "ghost" data updates
   }, [tacticalData, engineIsRunning]);
 
   const totalFrames = engineIsRunning ? liveFrameIndex : (tacticalData?.timeline?.length || 0);
