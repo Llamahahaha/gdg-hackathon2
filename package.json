@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"bun next dev --turbopack\" \"fuser -k 8000/tcp || true; cd visionplay-pipeline && .venv/bin/python src/server.py\"",
+    "dev": "concurrently \"bun next dev --turbopack\" \"cd visionplay-pipeline && venv\\Scripts\\python src/server.py\"",
     "build": "bun next build",
     "start": "bun next start",
     "lint": "eslint"
