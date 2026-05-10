@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 
 interface Player {
   id: string;
@@ -68,6 +68,11 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
   const [timelineData, setTimelineData] = useState<FrameData[]>([]);
   const [uploadedVideoSrc, setUploadedVideoSrc] = useState<string | null>(null);
   const [currentStats, setCurrentStats] = useState<FrameData | null>(null);
+  
+  const isPlayingRef = useRef(isPlaying);
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
 
   useEffect(() => {
     let socket: WebSocket;
@@ -88,6 +93,8 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
             }
 
             if (data.type === 'frame') {
+              if (!isPlayingRef.current) return; // Prevent updates when aborted
+              
               setLiveFrame(`data:image/jpeg;base64,${data.frame}`);
               setFrameIndex(data.stats?.frame_id || 0);
               setStatus("STREAMING_ACTIVE");
