@@ -1,61 +1,69 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import { Move, RefreshCw, Save, Zap, AlertTriangle, Hexagon } from 'lucide-react';
 
 export default function SimulationsPage() {
-  const [nodes, setNodes] = useState([
-    { id: 1, x: 200, y: 150, team: 'A' },
-    { id: 2, x: 300, y: 100, team: 'A' },
-    { id: 3, x: 300, y: 200, team: 'A' },
-    { id: 4, x: 450, y: 150, team: 'A' },
-    { id: 5, x: 100, y: 150, team: 'A' },
-    { id: 6, x: 550, y: 150, team: 'B' },
-    { id: 7, x: 650, y: 100, team: 'B' },
-    { id: 8, x: 650, y: 200, team: 'B' },
-  ]);
-
-  const [ghostNodes] = useState([
-    { id: 1, x: 200, y: 150, team: 'A' },
-    { id: 2, x: 300, y: 100, team: 'A' },
-    { id: 3, x: 300, y: 200, team: 'A' },
-    { id: 4, x: 450, y: 150, team: 'A' },
-    { id: 5, x: 100, y: 150, team: 'A' },
-    { id: 6, x: 550, y: 150, team: 'B' },
-    { id: 7, x: 650, y: 100, team: 'B' },
-    { id: 8, x: 650, y: 200, team: 'B' },
-  ]);
-
-  const [entropy, setEntropy] = useState(0.42);
+  const [nodes, setNodes] = useState<any[]>([]);
+  const [ghostNodes, setGhostNodes] = useState<any[]>([]);
+  const [originalNodes, setOriginalNodes] = useState<any[]>([]);
+  
+  const [entropy, setEntropy] = useState(0.0);
   const [showGhost, setShowGhost] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/data/tactical_data.json')
+      .then(res => res.json())
+      .then(data => {
+        if (data.timeline && data.timeline.length > 0) {
+          const firstFrame = data.timeline[0];
+          
+          // Deduplicate based on ID
+          const uniqueDetections = new Map();
+          firstFrame.detections.forEach((d: any) => {
+            if (!uniqueDetections.has(d.id)) uniqueDetections.set(d.id, d);
+          });
+          
+          const initialNodes = Array.from(uniqueDetections.values()).map((d: any) => ({
+            id: d.id,
+            x: (d.center[0] / 1920) * 800,
+            y: (d.center[1] / 1080) * 400,
+            team: d.team === 'green' ? 'A' : 'B'
+          }));
+          
+          setNodes(initialNodes);
+          setGhostNodes(initialNodes);
+          setOriginalNodes(initialNodes);
+          setEntropy(firstFrame.metrics?.entropy || 0.42);
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Failed to load tactical data", err);
+        setLoading(false);
+      });
+  }, []);
 
   const handleDrag = (id: number, info: any) => {
     setNodes(prev => prev.map(n => n.id === id ? { ...n, x: n.x + info.delta.x, y: n.y + info.delta.y } : n));
     const center = nodes.reduce((acc, n) => ({ x: acc.x + n.x, y: acc.y + n.y }), { x: 0, y: 0 });
-    const avgCenter = { x: center.x / nodes.length, y: center.y / nodes.length };
+    const avgCenter = { x: center.x / (nodes.length || 1), y: center.y / (nodes.length || 1) };
     const dispersion = nodes.reduce((acc, n) => acc + Math.hypot(n.x - avgCenter.x, n.y - avgCenter.y), 0);
-    setEntropy(Math.min(0.99, dispersion / 2000));
+    setEntropy(Math.min(0.99, dispersion / 3000));
   };
 
   const resetSimulation = () => {
-    setNodes([
-      { id: 1, x: 200, y: 150, team: 'A' },
-      { id: 2, x: 300, y: 100, team: 'A' },
-      { id: 3, x: 300, y: 200, team: 'A' },
-      { id: 4, x: 450, y: 150, team: 'A' },
-      { id: 5, x: 100, y: 150, team: 'A' },
-      { id: 6, x: 550, y: 150, team: 'B' },
-      { id: 7, x: 650, y: 100, team: 'B' },
-      { id: 8, x: 650, y: 200, team: 'B' },
-    ]);
-    setEntropy(0.42);
+    setNodes(originalNodes);
+    setEntropy(0.42); // Revert to some base level
   };
 
   const simulateCollapse = () => {
-    setNodes(prev => prev.map(n => n.id === 4 ? { ...n, x: n.x + 100, y: n.y + 50 } : n));
-    setEntropy(0.82);
+    // Arbitrarily move team A nodes outward
+    setNodes(prev => prev.map(n => n.team === 'A' ? { ...n, x: n.x + (Math.random() * 100 - 50), y: n.y + 50 } : n));
+    setEntropy(0.85);
   };
 
   return (
@@ -74,7 +82,8 @@ export default function SimulationsPage() {
             <div className="flex items-center gap-4">
               <button 
                 onClick={simulateCollapse}
-                className="px-4 py-1.5 bg-rose-500/20 border border-rose-500/40 text-rose-500 text-[9px] font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all flex items-center gap-2"
+                disabled={loading}
+                className="px-4 py-1.5 bg-rose-500/20 border border-rose-500/40 text-rose-500 text-[9px] font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all flex items-center gap-2 disabled:opacity-50"
               >
                 <Zap className="w-3 h-3" /> Simulate Predictive Collapse
               </button>
@@ -84,14 +93,14 @@ export default function SimulationsPage() {
               >
                 Ghost Formation: {showGhost ? 'ON' : 'OFF'}
               </button>
-              <button onClick={resetSimulation} className="p-2 bg-white/5 border border-white/10 hover:bg-white/10 text-white"><RefreshCw className="w-4 h-4" /></button>
+              <button onClick={resetSimulation} disabled={loading} className="p-2 bg-white/5 border border-white/10 hover:bg-white/10 text-white disabled:opacity-50"><RefreshCw className="w-4 h-4" /></button>
               <button className="px-4 py-2 bg-cyan-500 text-black text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
                 <Save className="w-3 h-3" /> Save Scenario
               </button>
             </div>
           </div>
 
-          <div className="flex-1 bg-black rounded-none border border-white/20 relative overflow-hidden group select-none">
+          <div className="flex-1 bg-black rounded-none border border-white/20 relative overflow-hidden group select-none min-h-[400px]">
             {/* Pitch Markings */}
             <div className="absolute inset-0 opacity-10 pointer-events-none"
               style={{
@@ -99,66 +108,70 @@ export default function SimulationsPage() {
                 backgroundSize: '10% 10%'
               }} />
 
-            <div className="absolute inset-0 p-12">
-               <svg className="w-full h-full" viewBox="0 0 800 400">
-                  {/* Ghost Formation (Static Reference) */}
-                  {showGhost && ghostNodes.map(p => (
-                    <g key={`ghost-${p.id}`} opacity="0.1">
-                      <circle cx={p.x} cy={p.y} r={10} fill="white" />
-                      <circle cx={p.x} cy={p.y} r={16} fill="transparent" stroke="white" strokeWidth="1" />
-                    </g>
-                  ))}
+            {loading ? (
+              <div className="absolute inset-0 flex items-center justify-center text-cyan-400/50 text-sm font-mono animate-pulse">AWAITING YOLO TELEMETRY INITIALIZATION...</div>
+            ) : (
+              <div className="absolute inset-0 p-12">
+                 <svg className="w-full h-full" viewBox="0 0 800 400">
+                    {/* Ghost Formation (Static Reference) */}
+                    {showGhost && ghostNodes.map(p => (
+                      <g key={`ghost-${p.id}`} opacity="0.1">
+                        <circle cx={p.x} cy={p.y} r={10} fill="white" />
+                        <circle cx={p.x} cy={p.y} r={16} fill="transparent" stroke="white" strokeWidth="1" />
+                      </g>
+                    ))}
 
-                  {/* Edges with Stress Visualization */}
-                  {nodes.map((p, i) => (
-                    nodes.slice(i + 1).map((other) => {
-                      const dist = Math.hypot(p.x - other.x, p.y - other.y);
-                      if (dist > 200) return null;
-                      const isSameTeam = p.team === other.team;
-                      const isStressed = dist > 140;
-                      
-                      return (
-                        <motion.line
-                          key={`${p.id}-${other.id}`}
-                          x1={p.x} y1={p.y} x2={other.x} y2={other.y}
-                          stroke={isStressed ? "#ff0033" : (isSameTeam ? "#00f3ff" : "#ffffff")}
-                          strokeWidth={isSameTeam ? (200 - dist) / 40 : 0.5}
-                          strokeOpacity={isSameTeam ? (isStressed ? 0.8 : 0.3) : 0.1}
-                          initial={false}
-                          animate={{ strokeDasharray: isStressed ? "4,4" : "0" }}
+                    {/* Edges with Stress Visualization */}
+                    {nodes.map((p, i) => (
+                      nodes.slice(i + 1).map((other) => {
+                        const dist = Math.hypot(p.x - other.x, p.y - other.y);
+                        if (dist > 200) return null;
+                        const isSameTeam = p.team === other.team;
+                        const isStressed = dist > 140;
+                        
+                        return (
+                          <motion.line
+                            key={`${p.id}-${other.id}`}
+                            x1={p.x} y1={p.y} x2={other.x} y2={other.y}
+                            stroke={isStressed ? "#ff0033" : (isSameTeam ? "#00f3ff" : "#ffffff")}
+                            strokeWidth={isSameTeam ? (200 - dist) / 40 : 0.5}
+                            strokeOpacity={isSameTeam ? (isStressed ? 0.8 : 0.3) : 0.1}
+                            initial={false}
+                            animate={{ strokeDasharray: isStressed ? "4,4" : "0" }}
+                          />
+                        );
+                      })
+                    ))}
+
+                    {/* Drag-and-Drop Nodes */}
+                    {nodes.map((p) => (
+                      <motion.g 
+                        key={p.id} 
+                        drag 
+                        dragMomentum={false}
+                        onDrag={(e, info) => handleDrag(p.id, info)}
+                        style={{ cursor: 'grab' }}
+                        whileDrag={{ scale: 1.2, cursor: 'grabbing' }}
+                      >
+                        <motion.circle 
+                          cx={p.x} cy={p.y} r={10} 
+                          fill={p.team === 'A' ? "#00f3ff" : "#ff0033"} 
+                          className="drop-shadow-[0_0_10px_currentColor]"
+                          animate={{ r: 10 }}
                         />
-                      );
-                    })
-                  ))}
-
-                  {/* Drag-and-Drop Nodes */}
-                  {nodes.map((p) => (
-                    <motion.g 
-                      key={p.id} 
-                      drag 
-                      dragMomentum={false}
-                      onDrag={(e, info) => handleDrag(p.id, info)}
-                      style={{ cursor: 'grab' }}
-                      whileDrag={{ scale: 1.2, cursor: 'grabbing' }}
-                    >
-                      <motion.circle 
-                        cx={p.x} cy={p.y} r={10} 
-                        fill={p.team === 'A' ? "#00f3ff" : "#ff0033"} 
-                        className="drop-shadow-[0_0_10px_currentColor]"
-                        animate={{ r: 10 }}
-                      />
-                      <motion.circle 
-                        cx={p.x} cy={p.y} r={16} 
-                        fill="transparent" 
-                        stroke={p.team === 'A' ? "#00f3ff" : "#ff0033"} 
-                        strokeWidth="1" 
-                        className="opacity-20"
-                      />
-                      <text x={p.x} y={p.y - 20} textAnchor="middle" fill="white" fontSize="10" className="font-mono font-bold uppercase tracking-widest">P{p.id}</text>
-                    </motion.g>
-                  ))}
-               </svg>
-            </div>
+                        <motion.circle 
+                          cx={p.x} cy={p.y} r={16} 
+                          fill="transparent" 
+                          stroke={p.team === 'A' ? "#00f3ff" : "#ff0033"} 
+                          strokeWidth="1" 
+                          className="opacity-20"
+                        />
+                        <text x={p.x} y={p.y - 20} textAnchor="middle" fill="white" fontSize="10" className="font-mono font-bold uppercase tracking-widest">P{p.id}</text>
+                      </motion.g>
+                    ))}
+                 </svg>
+              </div>
+            )}
 
             {/* Instruction Overlay */}
             <div className="absolute bottom-8 left-8 p-4 bg-cyan-500/10 border border-cyan-500/30 backdrop-blur-xl flex items-center gap-3">
@@ -202,11 +215,11 @@ export default function SimulationsPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 bg-white/5 border border-white/10">
                     <div className="text-[8px] font-bold text-white/40 uppercase mb-1">Max Path</div>
-                    <div className="text-lg font-black font-orbitron">32.4m</div>
+                    <div className="text-lg font-black font-orbitron">{loading ? '--' : (32.4 + (entropy * 10)).toFixed(1)}m</div>
                   </div>
                   <div className="p-4 bg-white/5 border border-white/10">
                     <div className="text-[8px] font-bold text-white/40 uppercase mb-1">Centrality</div>
-                    <div className="text-lg font-black font-orbitron">0.89</div>
+                    <div className="text-lg font-black font-orbitron">{loading ? '--' : Math.max(0.2, 0.89 - (entropy * 0.5)).toFixed(2)}</div>
                   </div>
                 </div>
               </div>
@@ -219,7 +232,7 @@ export default function SimulationsPage() {
             <div className="text-[10px] font-black uppercase tracking-[0.2em] mb-2">Simulation Intelligence</div>
             <div className="text-2xl font-black font-orbitron uppercase leading-tight">Recommended Structure Adjustment</div>
             <p className="text-sm font-medium leading-relaxed mt-4">
-              Current dispersion indicates a {entropy > 0.5 ? 'weakening' : 'stable'} midfield core. Shift Player #2 4m inwards to restore articulation point connectivity.
+              Current dispersion indicates a {entropy > 0.5 ? 'weakening' : 'stable'} core. {entropy > 0.6 ? 'Compress lines to regain central stability and avoid through-ball vulnerability.' : 'Maintain spatial distribution; connectivity is optimal.'}
             </p>
             <button className="mt-auto w-full py-4 bg-black text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-black/80 transition-all">
               Apply AI Optimization

@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from 'next/link'
-import { Shield, Activity, Share2, Menu } from "lucide-react"
+import { Shield, Activity, Share2, Menu, Hexagon } from "lucide-react"
 
 export default function Navbar() {
   const [mounted, setMounted] = React.useState(false)
@@ -18,12 +18,8 @@ export default function Navbar() {
       <div className="liquid-glass rounded-xl px-6 py-3 flex items-center justify-between border border-white/5 bg-black/40 backdrop-blur-xl pointer-events-auto">
         {/* Left: Logo */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="relative w-10 h-10 overflow-hidden rounded-lg border border-cyan-500/30 group-hover:border-cyan-400 transition-colors">
-            <img 
-              src="/logo.png" 
-              alt="FieldTheory AI Logo" 
-              className="w-full h-full object-cover transform scale-150"
-            />
+          <div className="relative w-10 h-10 overflow-hidden rounded-lg border border-cyan-500/30 group-hover:border-cyan-400 transition-colors flex items-center justify-center bg-black/50">
+            <Hexagon className="w-6 h-6 text-cyan-400" />
           </div>
           <span className="text-xl font-black tracking-tighter uppercase text-white font-orbitron">
             Field<span className="text-cyan-400">Theory</span><span className="text-xs ml-1 px-1.5 py-0.5 bg-cyan-500/20 text-cyan-400 rounded">AI</span>
