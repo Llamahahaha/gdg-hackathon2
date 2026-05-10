@@ -168,7 +168,8 @@ export default function DashboardPage() {
                 <Tooltip
                   contentStyle={{ backgroundColor: 'rgba(0,0,0,0.8)', border: '1px solid rgba(0,243,255,0.3)', borderRadius: '4px', fontFamily: 'monospace', fontSize: '10px', textTransform: 'uppercase' }}
                   itemStyle={{ color: '#00f3ff', fontWeight: 'bold' }}
-                  formatter={(val: string | number | Array<string | number>) => [`${Number(val).toFixed(1)}%`, 'Formational Entropy']}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  formatter={(val: any) => [`${Number(val).toFixed(1)}%`, 'Formational Entropy']}
                   labelFormatter={(val) => `Frame Analysis: ${val}`}
                 />
                 <ReferenceLine y={70} stroke="#f43f5e" strokeDasharray="3 3" label={{ position: 'insideTopLeft', value: 'COLLAPSE THRESHOLD', fill: '#f43f5e', fontSize: 10, fontFamily: 'monospace' }} />

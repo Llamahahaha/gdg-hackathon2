@@ -7,7 +7,7 @@ import {
   ChevronLeft, ChevronRight, Play, Pause,
   FileText, ZoomIn, Download, Activity, AlertTriangle, Brain, Route
 } from 'lucide-react';
-import { useTactical, FrameData } from '@/context/TacticalContext';
+import { useTactical, FrameData, Detection } from '@/context/TacticalContext';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -69,7 +69,6 @@ export default function ReplayLabPage() {
 
   const players = React.useMemo(() => {
     if (!selectedFrame) return [];
-    interface Detection { id: string | number; center: [number, number]; team: string; }
     const uniqueDetections = new Map<string, Detection>();
 
     (selectedFrame.detections || []).forEach((d: Detection) => {
@@ -79,8 +78,8 @@ export default function ReplayLabPage() {
 
     return Array.from(uniqueDetections.values()).map((d) => ({
       id: String(d.id),
-      rawX: d.center[0],
-      rawY: d.center[1],
+      rawX: d.center?.[0] || 0,
+      rawY: d.center?.[1] || 0,
       team: d.team === 'green' ? 'A' : 'B',
     }));
   }, [selectedFrame]);

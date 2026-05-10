@@ -6,7 +6,7 @@ import Navbar from '@/components/Navbar';
 import { Move, RefreshCw, Save, Zap, AlertTriangle } from 'lucide-react';
 import jsPDF from 'jspdf';
 import { toPng } from 'html-to-image';
-import { useTactical } from '@/context/TacticalContext';
+import { useTactical, Detection } from '@/context/TacticalContext';
 
 interface SimulationNode {
   id: string | number;
@@ -46,13 +46,13 @@ export default function SimulationsPage() {
         const midFrameIndex = Math.floor(dataToUse.length / 2);
         const targetFrame = dataToUse[midFrameIndex] || dataToUse[0];
 
-        const uniqueDetections = new Map<string | number, { id: string | number; center: [number, number]; team: string }>();
-        targetFrame.detections.forEach((d: { id: string | number; center: [number, number]; team: string }) => {
+        const uniqueDetections = new Map<string | number, Detection>();
+        targetFrame.detections.forEach((d: Detection) => {
           if (!uniqueDetections.has(d.id)) uniqueDetections.set(d.id, d);
         });
 
-        const teamA: { id: string | number; center: [number, number]; team: string }[] = [];
-        const teamB: { id: string | number; center: [number, number]; team: string }[] = [];
+        const teamA: Detection[] = [];
+        const teamB: Detection[] = [];
         Array.from(uniqueDetections.values()).forEach((d) => {
           if (d.team === 'green' && teamA.length < 11) teamA.push(d);
           else if (d.team === 'white' && teamB.length < 11) teamB.push(d);
@@ -60,8 +60,8 @@ export default function SimulationsPage() {
 
         const initialNodes: SimulationNode[] = [...teamA, ...teamB].map((d) => ({
           id: d.id,
-          x: (d.center[0] / 1920) * 800,
-          y: (d.center[1] / 1080) * 400,
+          x: ((d.center?.[0] || 0) / 1920) * 800,
+          y: ((d.center?.[1] || 0) / 1080) * 400,
           team: d.team === 'green' ? 'A' : 'B'
         }));
 
