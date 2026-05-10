@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import FadeIn from './FadeIn';
 import TacticalBackground from './TacticalBackground';
 import { Activity, Zap, Target, Hexagon } from 'lucide-react';
+import Link from 'next/link';
 
 export default function Hero() {
   const isMounted = useSyncExternalStore(
@@ -42,9 +43,9 @@ export default function Hero() {
               <button className="bg-cyan-500 text-black px-8 py-4 rounded-lg font-black uppercase tracking-widest text-xs transition-all hover:scale-105 hover:bg-cyan-400 shadow-[0_0_20px_rgba(0,243,255,0.3)]">
                 Launch Intelligence Suite
               </button>
-              <button className="liquid-glass border border-white/10 text-white px-8 py-4 rounded-lg font-black uppercase tracking-widest text-xs transition-all hover:bg-white/10">
+              <Link href="/docs" className="liquid-glass border border-white/10 text-white px-8 py-4 rounded-lg font-black uppercase tracking-widest text-xs transition-all hover:bg-white/10 text-center flex items-center justify-center">
                 Documentation
-              </button>
+              </Link>
             </div>
           </div>
 

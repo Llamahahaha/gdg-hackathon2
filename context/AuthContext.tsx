@@ -31,41 +31,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!auth) {
-      setLoading(false);
-      return;
-    }
+    // Hackathon Bypass: Firebase API key was suspended by Google Cloud.
+    // We mock the user session so the demo works flawlessly.
+    const mockUser = {
+      uid: "demo-coach-001",
+      email: "analyst@fieldtheory.ai",
+      displayName: "Head Analyst",
+      photoURL: "https://ui-avatars.com/api/?name=Head+Analyst&background=00f3ff&color=000"
+    } as User;
     
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
+    // Auto-login for the demo
+    setUser(mockUser);
+    setLoading(false);
   }, []);
 
   const signInWithGoogle = async () => {
-    if (!auth) {
-      console.error("Firebase not initialized. Check your API keys.");
-      return;
-    }
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error("Error signing in with Google", error);
-      throw error;
-    }
+    const mockUser = {
+      uid: "demo-coach-001",
+      email: "analyst@fieldtheory.ai",
+      displayName: "Head Analyst",
+      photoURL: "https://ui-avatars.com/api/?name=Head+Analyst&background=00f3ff&color=000"
+    } as User;
+    setUser(mockUser);
   };
 
   const logout = async () => {
-    if (!auth) return;
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.error("Error signing out", error);
-      throw error;
-    }
+    setUser(null);
   };
 
   return (

@@ -88,12 +88,6 @@ export default function DashboardPage() {
               <p className="text-white/40 text-base font-light uppercase tracking-[0.4em]">Spatio-Temporal Intelligence Overview // {liveStatus}</p>
             </div>
             <div className="flex gap-6">
-              <button 
-                onClick={() => alert('Analyzing spatio-temporal datasets... Tactical Audit generating.')}
-                className="px-8 py-4 bg-white/5 border border-white/10 text-white font-black uppercase text-sm tracking-widest hover:bg-white/10 transition-all rounded-none flex items-center gap-2 group"
-              >
-                <FileText className="w-5 h-5 text-cyan-400" /> Generate Intelligence Audit
-              </button>
               <Link href="/live" className="px-8 py-4 bg-cyan-500 text-black font-black uppercase text-sm tracking-widest hover:bg-cyan-400 transition-all rounded-none flex items-center gap-2 group">
                 Open Live Engine <ArrowUpRight className="w-5 h-5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               </Link>
@@ -174,7 +168,7 @@ export default function DashboardPage() {
                  <Tooltip 
                    contentStyle={{ backgroundColor: 'rgba(0,0,0,0.8)', border: '1px solid rgba(0,243,255,0.3)', borderRadius: '4px', fontFamily: 'monospace', fontSize: '10px', textTransform: 'uppercase' }}
                    itemStyle={{ color: '#00f3ff', fontWeight: 'bold' }}
-                   formatter={(val: number) => [`${val.toFixed(1)}%`, 'Formational Entropy']}
+                   formatter={(val: any) => [`${Number(val).toFixed(1)}%`, 'Formational Entropy']}
                    labelFormatter={(val) => `Frame Analysis: ${val}`}
                  />
                  <ReferenceLine y={70} stroke="#f43f5e" strokeDasharray="3 3" label={{ position: 'insideTopLeft', value: 'COLLAPSE THRESHOLD', fill: '#f43f5e', fontSize: 10, fontFamily: 'monospace' }} />

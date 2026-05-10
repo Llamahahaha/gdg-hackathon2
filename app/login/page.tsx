@@ -29,21 +29,12 @@ export default function LoginPage() {
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setIsLoading(true);
-    
-    try {
-      if (isLogin) {
-        await signInWithEmailAndPassword(auth, email, password);
-      } else {
-        await createUserWithEmailAndPassword(auth, email, password);
-      }
+    // Hackathon Mock: Bypass suspended Firebase API key
+    setTimeout(() => {
       router.push('/dashboard');
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Authentication failed');
-    } finally {
       setIsLoading(false);
-    }
+    }, 500);
   };
 
   const handleGoogleLogin = async () => {

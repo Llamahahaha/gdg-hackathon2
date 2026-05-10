@@ -3,7 +3,7 @@ import { FrameGenerator, MatchFrame } from './generator';
 export class SimulationEngine {
   private generator: FrameGenerator;
   private isPlaying: boolean = false;
-  private intervalId: Timer | null = null;
+  private intervalId: any = null;
   private frames: MatchFrame[] = [];
   private currentFrameIndex: number = -1;
   private onFrameUpdate: (frame: MatchFrame) => void;

@@ -5,7 +5,7 @@ import { PanInfo, motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import { Move, RefreshCw, Save, Zap, AlertTriangle, Hexagon } from 'lucide-react';
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import { toPng } from 'html-to-image';
 import { useTactical } from '@/context/TacticalContext';
 
 interface SimulationNode {
@@ -117,11 +117,10 @@ export default function SimulationsPage() {
     if (!element) return;
     
     try {
-      const canvas = await html2canvas(element, { backgroundColor: '#000000', scale: 2 });
-      const imgData = canvas.toDataURL('image/jpeg', 0.9);
+      const dataUrl = await toPng(element, { backgroundColor: '#000000', pixelRatio: 2 });
       
-      const pdf = new jsPDF('landscape', 'pt', [canvas.width, canvas.height]);
-      pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+      const pdf = new jsPDF('landscape', 'pt', [element.offsetWidth * 2, element.offsetHeight * 2]);
+      pdf.addImage(dataUrl, 'PNG', 0, 0, element.offsetWidth * 2, element.offsetHeight * 2);
       pdf.save('tactical_scenario_sandbox.pdf');
     } catch (err) {
       console.error("Failed to save scenario PDF:", err);

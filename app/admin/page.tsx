@@ -15,6 +15,8 @@ export default function AdminPage() {
     setStatus({ type: 'idle', message: '' });
 
     try {
+      if (!db) throw new Error("Firebase is not initialized (check API keys).");
+
       // 1. Seed Teams
       await setDoc(doc(db, "teams", "team_manblue"), {
         teamId: "team_manblue",
