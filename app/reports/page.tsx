@@ -6,8 +6,22 @@ import Navbar from '@/components/Navbar';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from 'recharts';
 import { TrendingUp, Users, ShieldAlert, Target, FileText, Download } from 'lucide-react';
 
+interface ReportData {
+  summary: {
+    team1_total: number;
+    team2_total: number;
+  };
+  timeline: {
+    metrics: {
+      entropy: number;
+      diameter: number;
+      articulation_points: string[];
+    };
+  }[];
+}
+
 export default function IntelligenceReportPage() {
-  const [tacticalData, setTacticalData] = useState<any>(null);
+  const [tacticalData, setTacticalData] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,20 +41,20 @@ export default function IntelligenceReportPage() {
   const timeline = tacticalData?.timeline || [];
   
   // Real Entropy Data mapped for the chart
-  const entropyData = timeline.slice(0, 100).map((frame: any, idx: number) => ({
+  const entropyData = timeline.slice(0, 100).map((frame, idx) => ({
     time: `${(idx / 30).toFixed(1)}s`,
     entropy: frame.metrics?.entropy || 0
   }));
 
   // Average Metrics
-  const avgEntropy = timeline.length > 0 ? (timeline.reduce((acc: number, f: any) => acc + (f.metrics?.entropy || 0), 0) / timeline.length).toFixed(2) : "0.00";
-  const avgDiameter = timeline.length > 0 ? (timeline.reduce((acc: number, f: any) => acc + (f.metrics?.diameter || 0), 0) / timeline.length).toFixed(1) : "0.0";
+  const avgEntropy = timeline.length > 0 ? (timeline.reduce((acc: number, f) => acc + (f.metrics?.entropy || 0), 0) / timeline.length).toFixed(2) : "0.00";
+  const avgDiameter = timeline.length > 0 ? (timeline.reduce((acc: number, f) => acc + (f.metrics?.diameter || 0), 0) / timeline.length).toFixed(1) : "0.0";
   
   // Find all unique articulation points (lynchpins) identified during the match
   const allLynchpins = new Set<string>();
   let fractureAlerts = 0;
   
-  timeline.forEach((frame: any) => {
+  timeline.forEach((frame) => {
     const aps = frame.metrics?.articulation_points || [];
     if (aps.length > 0) fractureAlerts++;
     aps.forEach((ap: string) => allLynchpins.add(ap));
@@ -49,10 +63,10 @@ export default function IntelligenceReportPage() {
   const uniqueLynchpins = Array.from(allLynchpins);
 
   const efficiencyData = [
-    { zone: 'Final Third', val: tacticalData ? 65 + Math.random()*10 : 65 },
-    { zone: 'Midfield', val: tacticalData ? 88 - Math.random()*5 : 88 },
+    { zone: 'Final Third', val: tacticalData ? 65 + (timeline.length % 10) : 65 },
+    { zone: 'Midfield', val: tacticalData ? 88 - (timeline.length % 5) : 88 },
     { zone: 'Defensive', val: tacticalData ? 94 : 94 },
-    { zone: 'Transition', val: tacticalData ? 72 + Math.random()*15 : 72 },
+    { zone: 'Transition', val: tacticalData ? 72 + (timeline.length % 15) : 72 },
   ];
 
   return (
@@ -197,7 +211,7 @@ export default function IntelligenceReportPage() {
                     {uniqueLynchpins.length > 0 ? uniqueLynchpins.map((nodeId, i) => {
                       // Count how many times this node was an articulation point
                       let count = 0;
-                      timeline.forEach((f: any) => {
+                      timeline.forEach((f) => {
                         if (f.metrics?.articulation_points?.includes(nodeId)) count++;
                       });
                       const crit = count > 10 ? "CRITICAL" : "MED";

@@ -11,18 +11,35 @@ import { useTactical } from '@/context/TacticalContext';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+interface PlayerOverlay {
+  id: string;
+  rawX: number;
+  rawY: number;
+  team: 'A' | 'B';
+}
+
+interface ReportData {
+  matchId: string;
+  date: string;
+  criticalMoments: { frame: number; reason: string; impact: string }[];
+  overallStability: string;
+  recommendation: string;
+  aiSummary: string;
+  defensiveStability: string;
+  offensiveTransition: string;
+  keyTakeaways: string[];
+}
+
 export default function ReplayLabPage() {
-  const { timelineData: timeline, uploadedVideoSrc, currentStats } = useTactical();
+  const { timelineData: timeline, uploadedVideoSrc, currentStats: _currentStats } = useTactical();
 
   const [frameIndex, setFrameIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [players, setPlayers] = useState<any[]>([]);
-  const [selectedFrame, setSelectedFrame] = useState<any>(null);
   const [neutralizedIds, setNeutralizedIds] = useState<number[]>([]);
 
   // Two-step audit state
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [reportData, setReportData] = useState<any>(null);
+  const [reportData, setReportData] = useState<ReportData | null>(null);
 
   const [isCompareMode, setIsCompareMode] = useState(false);
   const [showTacticalRoute, setShowTacticalRoute] = useState(false);
@@ -31,7 +48,7 @@ export default function ReplayLabPage() {
     if (!timeline || timeline.length === 0) return 0;
     let max = 0;
     let idx = 0;
-    timeline.forEach((f: any, i: number) => {
+    timeline.forEach((f, i) => {
       if ((f.metrics?.entropy || 0) > max) { max = f.metrics.entropy; idx = i; }
     });
     return idx;
@@ -41,29 +58,34 @@ export default function ReplayLabPage() {
 
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // ── Sync player overlay with the scrubbed frame ────────────────────────────
-  useEffect(() => {
-    if (!timeline || timeline.length === 0) return;
-    const frame = timeline[Math.min(frameIndex, timeline.length - 1)];
-    if (!frame) return;
+  const selectedFrame = React.useMemo(() => {
+    if (!timeline || timeline.length === 0) return null;
+    return timeline[Math.min(frameIndex, timeline.length - 1)] || null;
+  }, [frameIndex, timeline]);
 
-    const uniqueDetections = new Map<string, any>();
-    (frame.detections || []).forEach((d: any) => {
+  const players = React.useMemo(() => {
+    if (!selectedFrame) return [];
+    const uniqueDetections = new Map<string, SimulationNode>();
+    (selectedFrame.detections || []).forEach((d) => {
       const key = String(d.id);
       if (!uniqueDetections.has(key)) uniqueDetections.set(key, d);
     });
 
-    setPlayers(
-      Array.from(uniqueDetections.values()).map((d: any) => ({
-        id: d.id,
-        rawX: d.center[0],
-        rawY: d.center[1],
-        team: d.team === 'green' ? 'A' : 'B',
-      }))
-    );
-    setSelectedFrame(frame);
-    if (isPlaying) setNeutralizedIds([]); // reset destruction if playing resumes
-  }, [frameIndex, timeline, isPlaying]);
+    return Array.from(uniqueDetections.values()).map((d) => ({
+      id: String(d.id),
+      rawX: d.center[0],
+      rawY: d.center[1],
+      team: d.team === 'green' ? 'A' : 'B',
+    }));
+  }, [selectedFrame]);
+
+  useEffect(() => {
+    if (isPlaying) {
+      requestAnimationFrame(() => {
+        setNeutralizedIds([]);
+      });
+    }
+  }, [isPlaying]);
 
   // ── Auto-play scrubber ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -97,8 +119,8 @@ export default function ReplayLabPage() {
       const aiReport = await res.json();
 
       // Scan for critical events
-      const moments: any[] = [];
-      timeline.forEach((f: any, i: number) => {
+      const moments: { frame: number; reason: string; impact: string }[] = [];
+      timeline.forEach((f, i) => {
         if (f.metrics?.entropy > 0.8 && moments.length < 5) {
           moments.push({ frame: i, reason: `Entropy spike (${f.metrics.entropy.toFixed(2)})`, impact: 'Critical' });
         } else if (f.metrics?.articulation_points?.length > 0 && moments.length < 5) {
@@ -113,7 +135,7 @@ export default function ReplayLabPage() {
         moments.push({ frame: timeline.length - 1, reason: 'No structural fractures detected. System stable.', impact: 'Low' });
 
       const avgEntropy = (
-        timeline.reduce((a: number, f: any) => a + (f.metrics?.entropy || 0), 0) / timeline.length
+        timeline.reduce((a: number, f) => a + (f.metrics?.entropy || 0), 0) / timeline.length
       ).toFixed(2);
 
       setReportData({
@@ -127,8 +149,8 @@ export default function ReplayLabPage() {
         offensiveTransition: aiReport.offensive_transition || 'Transitions relied heavily on isolated lynchpin movements.',
         keyTakeaways: aiReport.key_takeaways || [],
       });
-    } catch (err) {
-      console.error('Ollama audit failed:', err);
+    } catch (_err) {
+      console.error('Ollama audit failed:', _err);
     } finally {
       setIsAnalyzing(false);
     }
@@ -193,14 +215,14 @@ export default function ReplayLabPage() {
     autoTable(doc, {
       startY: y + 4,
       head: [['Frame', 'Tactical Event', 'Impact']],
-      body: reportData.criticalMoments.map((m: any) => [`#${m.frame}`, m.reason, m.impact]),
+      body: reportData.criticalMoments.map((m) => [`#${m.frame}`, m.reason, m.impact]),
       theme: 'grid',
       headStyles: { fillColor: [0, 243, 255], textColor: [11, 15, 26], fontStyle: 'bold', fontSize: 8 },
       bodyStyles: { fillColor: [18, 18, 18], textColor: [255, 255, 255], fontSize: 8 },
       alternateRowStyles: { fillColor: [25, 25, 25] },
     });
 
-    y = (doc as any).lastAutoTable.finalY + 12;
+    y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 12;
 
     // Key takeaways
     if (reportData.keyTakeaways?.length) {
@@ -468,7 +490,7 @@ export default function ReplayLabPage() {
                 <div className="absolute right-[-2px] top-[-4px] bottom-[-4px] w-1 bg-white shadow-[0_0_8px_white]" />
               </motion.div>
               {/* Entropy spike markers */}
-              {timeline?.map((f: any, i: number) =>
+              {timeline?.map((f, i) =>
                 f.metrics?.entropy > 0.8 ? (
                   <div
                     key={i}
@@ -616,7 +638,7 @@ export default function ReplayLabPage() {
 
                   <div className="space-y-2">
                     <div className="text-[8px] font-black uppercase tracking-widest text-cyan-400/60">Critical Moments</div>
-                    {reportData.criticalMoments.slice(0, 3).map((m: any, i: number) => (
+                    {reportData.criticalMoments.slice(0, 3).map((m, i) => (
                       <div key={i} className="flex gap-3 items-start">
                         <span className="text-[8px] font-black text-cyan-400 font-mono">#{m.frame}</span>
                         <div>

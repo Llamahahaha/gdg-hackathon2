@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { Activity, AlertTriangle } from 'lucide-react';
 
 const initialPlayers = [
@@ -15,7 +15,7 @@ const initialPlayers = [
 export default function SimulationPreview() {
   const [players, setPlayers] = useState(initialPlayers);
 
-  const handleDrag = (id: number, info: any) => {
+  const handleDrag = (id: number, info: PanInfo) => {
     setPlayers(prev => prev.map(p => 
       p.id === id ? { ...p, x: p.x + info.delta.x, y: p.y + info.delta.y } : p
     ));
@@ -64,7 +64,7 @@ export default function SimulationPreview() {
             <h2 className="text-4xl md:text-5xl font-black font-orbitron tracking-tighter text-white uppercase">Predictive Collapse Engine</h2>
           </div>
           <p className="text-gray-400 font-light leading-relaxed text-sm">
-            Drag player nodes to stretch the graph. When spatial diameter breaches the threshold, the Laplacian eigenvalue drops, and you'll see the tactical passing lanes visually fracture.
+            Drag player nodes to stretch the graph. When spatial diameter breaches the threshold, the Laplacian eigenvalue drops, and you&apos;ll see the tactical passing lanes visually fracture.
           </p>
           
           <div className="space-y-4">

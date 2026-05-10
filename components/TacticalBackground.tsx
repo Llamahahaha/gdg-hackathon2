@@ -4,19 +4,31 @@ import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 
 export default function TacticalBackground() {
-  const [isMounted, setIsMounted] = React.useState(false);
-  const [nodes, setNodes] = React.useState<{id: number, x: number, y: number, type: string, team: string}[]>([]);
+  const isMounted = React.useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+  const [nodes, setNodes] = React.useState<{id: number, x: number, y: number, dx: number[], dy: number[], duration: number, type: string, team: string}[]>([]);
 
   React.useEffect(() => {
-    const generatedNodes = Array.from({ length: 11 }).map((_, i) => ({
-      id: i,
-      x: 20 + Math.random() * 60, // 20% to 80%
-      y: 20 + Math.random() * 60, // 20% to 80%
-      type: i === 0 ? 'ball' : 'player',
-      team: i < 6 ? 'A' : 'B'
-    }));
-    setNodes(generatedNodes);
-    setIsMounted(true);
+    const generatedNodes = Array.from({ length: 11 }).map((_, i) => {
+      const x = 20 + Math.random() * 60;
+      const y = 20 + Math.random() * 60;
+      return {
+        id: i,
+        x,
+        y,
+        dx: [x, x + (Math.random() - 0.5) * 5, x],
+        dy: [y, y + (Math.random() - 0.5) * 5, y],
+        duration: 5 + Math.random() * 5,
+        type: i === 0 ? 'ball' : 'player',
+        team: i < 6 ? 'A' : 'B'
+      };
+    });
+    requestAnimationFrame(() => {
+      setNodes(generatedNodes);
+    });
   }, []);
 
   if (!isMounted) return <div className="absolute inset-0 bg-charcoal" />;
@@ -71,10 +83,10 @@ export default function TacticalBackground() {
             key={node.id}
             initial={{ x: `${node.x}%`, y: `${node.y}%` }}
             animate={{ 
-              x: [`${node.x}%`, `${node.x + (Math.random() - 0.5) * 5}%`, `${node.x}%`],
-              y: [`${node.y}%`, `${node.y + (Math.random() - 0.5) * 5}%`, `${node.y}%`]
+              x: node.dx.map(val => `${val}%`),
+              y: node.dy.map(val => `${val}%`)
             }}
-            transition={{ duration: 5 + Math.random() * 5, repeat: Infinity, ease: "easeInOut" }}
+            transition={{ duration: node.duration, repeat: Infinity, ease: "easeInOut" }}
           >
             <circle 
               r={node.type === 'ball' ? 4 : 2} 

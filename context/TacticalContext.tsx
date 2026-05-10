@@ -2,20 +2,53 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
+interface Player {
+  id: string;
+  rawX: number;
+  rawY: number;
+  x: number;
+  y: number;
+  name: string;
+  team: 'A' | 'B';
+}
+
+interface Metrics {
+  entropy: number;
+  articulation_points: string[];
+  diameter: number;
+  diameter_nodes: string[];
+}
+
+interface Detection {
+  id: number | string;
+  bbox?: [number, number, number, number];
+  center?: [number, number];
+  team: string;
+}
+
+interface FrameData {
+  frame_id: number;
+  detections: Detection[];
+  metrics: Metrics;
+  possession: string;
+  t1: number;
+  t2: number;
+}
+
 interface TacticalContextType {
-  players: any[];
+  players: Player[];
   liveFrame: string | null;
   connectionStatus: string;
   status: string;
   entropy: number;
-  metrics: any;
+  metrics: Metrics;
   possession: string;
   isPlaying: boolean;
   frameIndex: number;
-  timelineData: any[];       // full frame records for Replay Lab
+  timelineData: FrameData[];       // full frame records for Replay Lab
   uploadedVideoSrc: string | null; // blob URL of the video uploaded in Live Engine
   setUploadedVideoSrc: (src: string | null) => void;
-  currentStats: any | null;  // stats of the most-recent frame (for pause snapshot)
+  currentStats: FrameData | null;  // stats of the most-recent frame (for pause snapshot)
   startEngine: () => Promise<void>;
   stopEngine: () => Promise<void>;
 }
@@ -23,19 +56,18 @@ interface TacticalContextType {
 const TacticalContext = createContext<TacticalContextType | undefined>(undefined);
 
 export function TacticalProvider({ children }: { children: React.ReactNode }) {
-  const [players, setPlayers] = useState<any[]>([]);
+  const [players, setPlayers] = useState<Player[]>([]);
   const [liveFrame, setLiveFrame] = useState<string | null>(null);
   const [connectionStatus, setConnectionStatus] = useState("DISCONNECTED");
   const [status, setStatus] = useState("SYSTEM_READY");
   const [entropy, setEntropy] = useState(0.42);
-  const [metrics, setMetrics] = useState<any>({ entropy: 0, articulation_points: [], diameter: 0, diameter_nodes: [] });
+  const [metrics, setMetrics] = useState<Metrics>({ entropy: 0, articulation_points: [], diameter: 0, diameter_nodes: [] });
   const [possession, setPossession] = useState("UNKNOWN");
   const [isPlaying, setIsPlaying] = useState(false);
   const [frameIndex, setFrameIndex] = useState(0);
-  const [timelineData, setTimelineData] = useState<any[]>([]);
+  const [timelineData, setTimelineData] = useState<FrameData[]>([]);
   const [uploadedVideoSrc, setUploadedVideoSrc] = useState<string | null>(null);
-  const [currentStats, setCurrentStats] = useState<any | null>(null);
-  const [ws, setWs] = useState<WebSocket | null>(null);
+  const [currentStats, setCurrentStats] = useState<FrameData | null>(null);
 
   useEffect(() => {
     let socket: WebSocket;
@@ -45,7 +77,6 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
         
         socket.onopen = () => {
           setConnectionStatus("CONNECTED");
-          setWs(socket);
         };
 
         socket.onmessage = (event) => {
@@ -62,10 +93,10 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
               setStatus("STREAMING_ACTIVE");
               
               if (data.stats) {
-                const detections = data.stats.detections || [];
-                const uniqueDetections = new Map();
+                const detections: Detection[] = data.stats.detections || [];
+                const uniqueDetections = new Map<string, Player>();
                 
-                detections.forEach((d: any) => {
+                detections.forEach((d) => {
                   const bbox = d.bbox || [0, 0, 0, 0];
                   const center = d.center || [(bbox[0] + bbox[2])/2, (bbox[1] + bbox[3])/2];
                   const id = d.id !== undefined ? String(d.id) : String(Math.random());
@@ -110,7 +141,6 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
 
         socket.onclose = () => {
           setConnectionStatus("DISCONNECTED");
-          setWs(null);
           // Try to reconnect after 3 seconds
           setTimeout(connect, 3000);
         };
@@ -119,7 +149,7 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
           setConnectionStatus("ERROR");
         };
 
-      } catch (e) {
+      } catch (_e) {
         setConnectionStatus("ERROR");
       }
     };
@@ -136,7 +166,7 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await fetch(`http://${window.location.hostname}:8000/start`, { method: 'POST' });
       if (!response.ok) throw new Error("Failed to start pipeline");
-    } catch (e) {
+    } catch (_e) {
       setStatus("SIGNAL_ERROR");
       setIsPlaying(false);
     }
@@ -147,8 +177,8 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
     setStatus("SIGNAL_ABORTED");
     try {
       await fetch(`http://${window.location.hostname}:8000/stop`, { method: 'POST' });
-    } catch (e) {
-      console.error("Failed to stop pipeline:", e);
+    } catch (_e) {
+      console.error("Failed to stop pipeline:", _e);
     }
   }, []);
 

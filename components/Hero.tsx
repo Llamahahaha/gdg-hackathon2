@@ -1,17 +1,19 @@
 "use client";
 
-import React from 'react';
+import React, { useSyncExternalStore } from 'react';
 import { motion } from 'framer-motion';
-import AnimatedHeading from './AnimatedHeading';
 import FadeIn from './FadeIn';
 import TacticalBackground from './TacticalBackground';
 import { Activity, Zap, Target, Hexagon } from 'lucide-react';
 
 export default function Hero() {
-  const [mounted, setMounted] = React.useState(false);
-  React.useEffect(() => setMounted(true), []);
+  const isMounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
 
-  if (!mounted) return <section className="relative h-screen w-full bg-charcoal" />;
+  if (!isMounted) return <section className="relative h-screen w-full bg-charcoal" />;
 
   return (
     <section className="relative h-screen w-full overflow-hidden bg-charcoal">
@@ -69,7 +71,7 @@ export default function Hero() {
                         <motion.div 
                           key={j}
                           animate={{ height: [10, 40, 15, 35, 20] }}
-                          transition={{ duration: 1.5 + Math.random(), repeat: Infinity, ease: "easeInOut", delay: j * 0.1 }}
+                          transition={{ duration: 1.5 + (j % 5) * 0.2, repeat: Infinity, ease: "easeInOut", delay: j * 0.1 }}
                           className={`w-full rounded-t-sm ${panel.color} opacity-40`}
                         />
                       ))}

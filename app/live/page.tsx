@@ -1,65 +1,22 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
-import { Activity, Zap, Target, Hexagon, Play, Pause, SkipBack, SkipForward, AlertTriangle, ChevronRight } from 'lucide-react';
+import { Activity, Play, Pause } from 'lucide-react';
 import { useTactical } from '@/context/TacticalContext';
 
 export default function LiveEnginePage() {
   const {
-    players, liveFrame, connectionStatus, status, entropy, metrics, 
+    players, liveFrame, connectionStatus, status, entropy, metrics,
     possession, isPlaying, frameIndex, timelineData,
     startEngine, stopEngine, setUploadedVideoSrc
   } = useTactical();
 
   const [neutralizedIds, setNeutralizedIds] = useState<number[]>([]);
   const [recommendation, setRecommendation] = useState("Awaiting tactical analysis...");
-  const [alertLogs, setAlertLogs] = useState<{ time: string, msg: string, type: 'info'|'warning'|'critical'|'success' }[]>([]);
-  
-  const lastLogState = React.useRef({ isHighEntropy: false, lastLynchpin: null as string | null, isSpread: false });
 
-  // Generate Cause -> Effect Predictive Logs
-  useEffect(() => {
-    if (!metrics) return;
-    const { articulation_points, diameter } = metrics;
-    
-    let added = false;
-    const newLogs: { time: string, msg: string, type: 'info'|'warning'|'critical'|'success' }[] = [];
-    const timeNow = `[${String(Math.floor((frameIndex || 0) / 30)).padStart(2, '0')}:${String((frameIndex || 0) % 30).padStart(2, '0')}]`;
 
-    // Entropy logs
-    if (entropy > 0.8 && !lastLogState.current.isHighEntropy) {
-      newLogs.push({ time: timeNow, msg: `Predictive Collapse: Defensive cohesion lost. Graph Laplacian threshold breached.`, type: 'critical' });
-      lastLogState.current.isHighEntropy = true;
-      added = true;
-    } else if (entropy < 0.5 && lastLogState.current.isHighEntropy) {
-      newLogs.push({ time: timeNow, msg: `Structure Restabilized: Connectivity restored to baseline.`, type: 'success' });
-      lastLogState.current.isHighEntropy = false;
-      added = true;
-    }
-
-    // Lynchpin displacement
-    const currentLynchpin = articulation_points.length > 0 ? String(articulation_points[0]) : null;
-    if (currentLynchpin && currentLynchpin !== lastLogState.current.lastLynchpin) {
-      newLogs.push({ time: timeNow, msg: `Player #${currentLynchpin} drifting. Critical tactical fracture probability increased.`, type: 'warning' });
-      lastLogState.current.lastLynchpin = currentLynchpin;
-      added = true;
-    }
-
-    // Diameter spread
-    if (diameter > 450 && !lastLogState.current.isSpread) {
-      newLogs.push({ time: timeNow, msg: `Team Diameter exceeded 450px. Flank overload risk increased by 37%.`, type: 'warning' });
-      lastLogState.current.isSpread = true;
-      added = true;
-    } else if (diameter < 350 && lastLogState.current.isSpread) {
-      lastLogState.current.isSpread = false;
-    }
-
-    if (added) {
-      setAlertLogs(prev => [...newLogs, ...prev].slice(0, 8)); // keep last 8
-    }
-  }, [entropy, metrics, frameIndex]);
 
   // Video upload state
   const [uploadState, setUploadState] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle');
@@ -106,9 +63,12 @@ export default function LiveEnginePage() {
     }
   };
 
-  // Recommendation sync
   useEffect(() => {
-    if (metrics.recommendation) setRecommendation(metrics.recommendation);
+    if (metrics.recommendation) {
+      requestAnimationFrame(() => {
+        setRecommendation(metrics.recommendation);
+      });
+    }
   }, [metrics.recommendation]);
 
   const handleStart = () => startEngine();
@@ -155,9 +115,9 @@ export default function LiveEnginePage() {
                 {uploadState === 'uploading' ? `Uploading ${uploadProgress}%...` : uploadState === 'done' ? `✓ ${uploadedFilename}` : uploadState === 'error' ? '✗ Upload Failed' : 'Sync Dataset'}
               </span>
             </label>
-            <span className="text-[9px] font-mono text-white/30 tracking-tighter uppercase">{connectionStatus} // PORT:8000</span>
+            <span className="text-[9px] font-mono text-white/30 tracking-tighter uppercase">{connectionStatus} {" // "} PORT:8000</span>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <button onClick={handleStart} className={`px-6 py-2 border flex items-center gap-2 transition-all ${isPlaying ? 'bg-cyan-500 text-black border-cyan-400' : 'bg-transparent border-white/10 text-white hover:bg-white/5'}`}>
               <Play className="w-3 h-3" /> <span className="text-[10px] font-black uppercase tracking-widest">Start Engine</span>
@@ -175,16 +135,16 @@ export default function LiveEnginePage() {
               <img src={liveFrame} alt="Live Feed" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-black/80">
-                 <div className="flex flex-col items-center gap-4">
-                    <span className="text-cyan-400 text-sm font-mono animate-pulse uppercase">{status.replace(/_/g, ' ')}...</span>
-                    <div className="w-48 h-0.5 bg-white/5 relative overflow-hidden">
-                       <motion.div 
-                          animate={{ x: [-200, 200] }} 
-                          transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
-                          className="absolute inset-0 bg-cyan-500/50 w-1/2" 
-                       />
-                    </div>
-                 </div>
+                <div className="flex flex-col items-center gap-4">
+                  <span className="text-cyan-400 text-sm font-mono animate-pulse uppercase">{status.replace(/_/g, ' ')}...</span>
+                  <div className="w-48 h-0.5 bg-white/5 relative overflow-hidden">
+                    <motion.div
+                      animate={{ x: [-200, 200] }}
+                      transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                      className="absolute inset-0 bg-cyan-500/50 w-1/2"
+                    />
+                  </div>
+                </div>
               </div>
             )}
             <div className="absolute inset-0 bg-black/20 pointer-events-none" />
@@ -274,8 +234,8 @@ export default function LiveEnginePage() {
             <div className="bg-black/60 p-8 border border-white/10 relative overflow-hidden group min-h-[160px] flex flex-col justify-between">
               <div className="flex justify-between items-start">
                 <div>
-                   <div className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-1">Formation Entropy</div>
-                   <div className="text-4xl font-black font-orbitron">{(entropy * 100).toFixed(1)}%</div>
+                  <div className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-1">Formation Entropy</div>
+                  <div className="text-4xl font-black font-orbitron">{(entropy * 100).toFixed(1)}%</div>
                 </div>
                 <div className="flex flex-col items-end">
                   <Activity className={`w-6 h-6 mb-2 ${entropy > 0.7 ? 'text-rose-500' : 'text-cyan-400'}`} />
@@ -303,7 +263,7 @@ export default function LiveEnginePage() {
             {/* Lynchpin Card */}
             <div className="bg-rose-500/5 border border-rose-500/20 p-8 relative overflow-hidden flex flex-col justify-between min-h-[180px]">
               <div className="absolute top-0 right-0 p-4">
-                 <div className="w-2 h-2 bg-rose-500 rounded-full animate-ping" />
+                <div className="w-2 h-2 bg-rose-500 rounded-full animate-ping" />
               </div>
               <div>
                 <div className="text-[10px] font-black text-rose-500/60 uppercase tracking-widest mb-2">Structural Vulnerability Audit</div>
@@ -317,7 +277,7 @@ export default function LiveEnginePage() {
               </div>
               <div className="mt-6 flex flex-col gap-4">
                 <p className="text-[9px] text-white/40 font-bold uppercase tracking-widest leading-tight">
-                  Tarjan's Articulation Point Analysis // Identifies high-risk nodes.
+                  Tarjan&apos;s Articulation Point Analysis {" // "} Identifies high-risk nodes.
                 </p>
                 <button
                   onClick={() => {
@@ -332,34 +292,6 @@ export default function LiveEnginePage() {
               </div>
             </div>
 
-            {/* Predictive Collapse Terminal */}
-            <div className="bg-black border border-white/10 p-4 h-full min-h-[160px] flex flex-col font-mono relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-3 opacity-50 group-hover:opacity-100 transition-opacity"><AlertTriangle className="w-3 h-3 text-cyan-400" /></div>
-              <span className="text-[10px] font-black text-cyan-400/60 uppercase tracking-[0.2em] border-b border-white/10 pb-3 mb-3 flex items-center gap-2">
-                <Activity className="w-3 h-3" /> Cause-Effect Alert Stream
-              </span>
-              <div className="flex-1 overflow-y-auto space-y-3 flex flex-col">
-                <AnimatePresence>
-                  {alertLogs.length === 0 && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[9px] text-white/30 uppercase tracking-widest mt-2 flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                      Awaiting tactical anomalies...
-                    </motion.div>
-                  )}
-                  {alertLogs.map((log, i) => (
-                    <motion.div 
-                      initial={{ opacity: 0, x: -10 }} 
-                      animate={{ opacity: 1, x: 0 }} 
-                      key={i + log.time} 
-                      className={`text-[9px] flex gap-3 uppercase tracking-wider leading-relaxed ${log.type === 'critical' ? 'text-rose-500' : log.type === 'warning' ? 'text-amber-400' : log.type === 'success' ? 'text-emerald-400' : 'text-cyan-400'}`}
-                    >
-                      <span className="opacity-50 flex-shrink-0">sys{log.time}</span>
-                      <span>{log.msg}</span>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
-            </div>
           </div>
         </div>
 

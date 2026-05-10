@@ -32,10 +32,13 @@ const techs = [
 ];
 
 export default function CoreTechnologies() {
-  const [mounted, setMounted] = React.useState(false);
-  React.useEffect(() => setMounted(true), []);
+  const isMounted = React.useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
 
-  if (!mounted) return <section className="py-32 px-6 md:px-12 lg:px-16 bg-[#07080f]" />;
+  if (!isMounted) return <section className="py-32 px-6 md:px-12 lg:px-16 bg-[#07080f]" />;
 
   return (
     <section className="py-32 px-6 md:px-12 lg:px-16 bg-[#07080f] border-t border-white/5 relative overflow-hidden">

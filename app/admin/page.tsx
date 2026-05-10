@@ -63,9 +63,9 @@ export default function AdminPage() {
       });
 
       setStatus({ type: 'success', message: 'Successfully seeded the database with sample data!' });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error seeding database:", error);
-      setStatus({ type: 'error', message: error.message || 'Failed to seed database' });
+      setStatus({ type: 'error', message: (error as Error).message || 'Failed to seed database' });
     } finally {
       setIsSeeding(false);
     }

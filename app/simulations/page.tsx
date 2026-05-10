@@ -1,66 +1,88 @@
 "use client";
-
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+
+import { PanInfo, motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import { Move, RefreshCw, Save, Zap, AlertTriangle, Hexagon } from 'lucide-react';
 import { useTactical } from '@/context/TacticalContext';
 
+interface SimulationNode {
+  id: string | number;
+  x: number;
+  y: number;
+  team: 'A' | 'B';
+}
+
 export default function SimulationsPage() {
   const { timelineData: timeline } = useTactical();
   
-  const [nodes, setNodes] = useState<any[]>([]);
-  const [ghostNodes, setGhostNodes] = useState<any[]>([]);
-  const [originalNodes, setOriginalNodes] = useState<any[]>([]);
+  const [sandboxState, setSandboxState] = useState({
+    nodes: [] as SimulationNode[],
+    ghostNodes: [] as SimulationNode[],
+    originalNodes: [] as SimulationNode[],
+    entropy: 0.0,
+    loading: true
+  });
   
-  const [entropy, setEntropy] = useState(0.0);
   const [showGhost, setShowGhost] = useState(true);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (timeline && timeline.length > 0) {
-      // Pick a mid-match frame for interesting sandbox topology
       const midFrameIndex = Math.floor(timeline.length / 2);
       const targetFrame = timeline[midFrameIndex] || timeline[0];
       
-      // Deduplicate based on ID
-      const uniqueDetections = new Map();
-      targetFrame.detections.forEach((d: any) => {
+      const uniqueDetections = new Map<string | number, { id: string | number, center: number[], team: string }>();
+      targetFrame.detections.forEach((d) => {
         if (!uniqueDetections.has(d.id)) uniqueDetections.set(d.id, d);
       });
       
-      const initialNodes = Array.from(uniqueDetections.values()).map((d: any) => ({
+      const initialNodes: SimulationNode[] = Array.from(uniqueDetections.values()).map((d) => ({
         id: d.id,
         x: (d.center[0] / 1920) * 800,
         y: (d.center[1] / 1080) * 400,
         team: d.team === 'green' ? 'A' : 'B'
       }));
       
-      setNodes(initialNodes);
-      setGhostNodes(initialNodes);
-      setOriginalNodes(initialNodes);
-      setEntropy(targetFrame.metrics?.entropy || 0.42);
-      setLoading(false);
+      requestAnimationFrame(() => {
+        setSandboxState({
+          nodes: initialNodes,
+          ghostNodes: initialNodes,
+          originalNodes: initialNodes,
+          entropy: targetFrame.metrics?.entropy || 0.42,
+          loading: false
+        });
+      });
     }
   }, [timeline]);
 
-  const handleDrag = (id: number, info: any) => {
-    setNodes(prev => prev.map(n => n.id === id ? { ...n, x: n.x + info.delta.x, y: n.y + info.delta.y } : n));
-    const center = nodes.reduce((acc, n) => ({ x: acc.x + n.x, y: acc.y + n.y }), { x: 0, y: 0 });
-    const avgCenter = { x: center.x / (nodes.length || 1), y: center.y / (nodes.length || 1) };
-    const dispersion = nodes.reduce((acc, n) => acc + Math.hypot(n.x - avgCenter.x, n.y - avgCenter.y), 0);
-    setEntropy(Math.min(0.99, dispersion / 3000));
+  const handleDrag = (id: string | number, info: PanInfo) => {
+    setSandboxState(prev => {
+      const newNodes = prev.nodes.map(n => n.id === id ? { ...n, x: n.x + info.delta.x, y: n.y + info.delta.y } : n);
+      const center = newNodes.reduce((acc, n) => ({ x: acc.x + n.x, y: acc.y + n.y }), { x: 0, y: 0 });
+      const avgCenter = { x: center.x / (newNodes.length || 1), y: center.y / (newNodes.length || 1) };
+      const dispersion = newNodes.reduce((acc, n) => acc + Math.hypot(n.x - avgCenter.x, n.y - avgCenter.y), 0);
+      return {
+        ...prev,
+        nodes: newNodes,
+        entropy: Math.min(0.99, dispersion / 3000)
+      };
+    });
   };
 
   const resetSimulation = () => {
-    setNodes(originalNodes);
-    setEntropy(0.42); // Revert to some base level
+    setSandboxState(prev => ({
+      ...prev,
+      nodes: prev.originalNodes,
+      entropy: 0.42
+    }));
   };
 
   const simulateCollapse = () => {
-    // Arbitrarily move team A nodes outward
-    setNodes(prev => prev.map(n => n.team === 'A' ? { ...n, x: n.x + (Math.random() * 100 - 50), y: n.y + 50 } : n));
-    setEntropy(0.85);
+    setSandboxState(prev => ({
+      ...prev,
+      nodes: prev.nodes.map(n => n.team === 'A' ? { ...n, x: n.x + (Math.random() * 100 - 50), y: n.y + 50 } : n),
+      entropy: 0.85
+    }));
   };
 
   return (
@@ -79,7 +101,7 @@ export default function SimulationsPage() {
             <div className="flex items-center gap-4">
               <button 
                 onClick={simulateCollapse}
-                disabled={loading}
+                disabled={sandboxState.loading}
                 className="px-4 py-1.5 bg-rose-500/20 border border-rose-500/40 text-rose-500 text-[9px] font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all flex items-center gap-2 disabled:opacity-50"
               >
                 <Zap className="w-3 h-3" /> Simulate Predictive Collapse
@@ -90,7 +112,7 @@ export default function SimulationsPage() {
               >
                 Ghost Formation: {showGhost ? 'ON' : 'OFF'}
               </button>
-              <button onClick={resetSimulation} disabled={loading} className="p-2 bg-white/5 border border-white/10 hover:bg-white/10 text-white disabled:opacity-50"><RefreshCw className="w-4 h-4" /></button>
+              <button onClick={resetSimulation} disabled={sandboxState.loading} className="p-2 bg-white/5 border border-white/10 hover:bg-white/10 text-white disabled:opacity-50"><RefreshCw className="w-4 h-4" /></button>
               <button className="px-4 py-2 bg-cyan-500 text-black text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
                 <Save className="w-3 h-3" /> Save Scenario
               </button>
@@ -105,13 +127,13 @@ export default function SimulationsPage() {
                 backgroundSize: '10% 10%'
               }} />
 
-            {loading ? (
+            {sandboxState.loading ? (
               <div className="absolute inset-0 flex items-center justify-center text-cyan-400/50 text-sm font-mono animate-pulse">AWAITING YOLO TELEMETRY INITIALIZATION...</div>
             ) : (
               <div className="absolute inset-0 p-12">
                  <svg className="w-full h-full" viewBox="0 0 800 400">
                     {/* Ghost Formation (Static Reference) */}
-                    {showGhost && ghostNodes.map(p => (
+                    {showGhost && sandboxState.ghostNodes.map(p => (
                       <g key={`ghost-${p.id}`} opacity="0.1">
                         <circle cx={p.x} cy={p.y} r={10} fill="white" />
                         <circle cx={p.x} cy={p.y} r={16} fill="transparent" stroke="white" strokeWidth="1" />
@@ -119,8 +141,8 @@ export default function SimulationsPage() {
                     ))}
 
                     {/* Edges with Stress Visualization */}
-                    {nodes.map((p, i) => (
-                      nodes.slice(i + 1).map((other) => {
+                    {sandboxState.nodes.map((p, i) => (
+                      sandboxState.nodes.slice(i + 1).map((other) => {
                         const dist = Math.hypot(p.x - other.x, p.y - other.y);
                         if (dist > 200) return null;
                         const isSameTeam = p.team === other.team;
@@ -141,7 +163,7 @@ export default function SimulationsPage() {
                     ))}
 
                     {/* Drag-and-Drop Nodes */}
-                    {nodes.map((p) => (
+                    {sandboxState.nodes.map((p) => (
                       <motion.g 
                         key={p.id} 
                         drag 
@@ -192,15 +214,15 @@ export default function SimulationsPage() {
               <div>
                 <div className="flex justify-between items-end mb-2">
                   <span className="text-[10px] font-bold text-white/30 uppercase">Formation Entropy</span>
-                  <span className={`text-2xl font-black font-orbitron ${entropy > 0.6 ? 'text-rose-500' : 'text-cyan-400'}`}>{(entropy * 100).toFixed(1)}%</span>
+                  <span className={`text-2xl font-black font-orbitron ${sandboxState.entropy > 0.6 ? 'text-rose-500' : 'text-cyan-400'}`}>{(sandboxState.entropy * 100).toFixed(1)}%</span>
                 </div>
                 <div className="h-1.5 w-full bg-white/5">
                   <motion.div 
-                    animate={{ width: `${entropy * 100}%`, backgroundColor: entropy > 0.6 ? '#ff0033' : '#00f3ff' }}
+                    animate={{ width: `${sandboxState.entropy * 100}%`, backgroundColor: sandboxState.entropy > 0.6 ? '#ff0033' : '#00f3ff' }}
                     className="h-full"
                   />
                 </div>
-                {entropy > 0.6 && (
+                {sandboxState.entropy > 0.6 && (
                    <div className="mt-2 text-[9px] font-black text-rose-500 uppercase flex items-center gap-1 animate-pulse">
                      <AlertTriangle className="w-3 h-3" /> FORMATION COLLAPSE RISK: CRITICAL
                    </div>
@@ -212,11 +234,11 @@ export default function SimulationsPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 bg-white/5 border border-white/10">
                     <div className="text-[8px] font-bold text-white/40 uppercase mb-1">Max Path</div>
-                    <div className="text-lg font-black font-orbitron">{loading ? '--' : (32.4 + (entropy * 10)).toFixed(1)}m</div>
+                    <div className="text-lg font-black font-orbitron">{sandboxState.loading ? '--' : (32.4 + (sandboxState.entropy * 10)).toFixed(1)}m</div>
                   </div>
                   <div className="p-4 bg-white/5 border border-white/10">
                     <div className="text-[8px] font-bold text-white/40 uppercase mb-1">Centrality</div>
-                    <div className="text-lg font-black font-orbitron">{loading ? '--' : Math.max(0.2, 0.89 - (entropy * 0.5)).toFixed(2)}</div>
+                    <div className="text-lg font-black font-orbitron">{sandboxState.loading ? '--' : Math.max(0.2, 0.89 - (sandboxState.entropy * 0.5)).toFixed(2)}</div>
                   </div>
                 </div>
               </div>
@@ -229,7 +251,7 @@ export default function SimulationsPage() {
             <div className="text-[10px] font-black uppercase tracking-[0.2em] mb-2">Simulation Intelligence</div>
             <div className="text-2xl font-black font-orbitron uppercase leading-tight">Recommended Structure Adjustment</div>
             <p className="text-sm font-medium leading-relaxed mt-4">
-              Current dispersion indicates a {entropy > 0.5 ? 'weakening' : 'stable'} core. {entropy > 0.6 ? 'Compress lines to regain central stability and avoid through-ball vulnerability.' : 'Maintain spatial distribution; connectivity is optimal.'}
+              Current dispersion indicates a {sandboxState.entropy > 0.5 ? 'weakening' : 'stable'} core. {sandboxState.entropy > 0.6 ? 'Compress lines to regain central stability and avoid through-ball vulnerability.' : 'Maintain spatial distribution; connectivity is optimal.'}
             </p>
             <button className="mt-auto w-full py-4 bg-black text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-black/80 transition-all">
               Apply AI Optimization

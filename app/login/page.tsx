@@ -39,20 +39,26 @@ export default function LoginPage() {
         await createUserWithEmailAndPassword(auth, email, password);
       }
       router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.message || 'Authentication failed');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Authentication failed');
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
+    if (isLoading) return;
     setError('');
+    setIsLoading(true);
     try {
       await signInWithGoogle();
       router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.message || 'Google sign-in failed');
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'code' in err && err.code !== 'auth/cancelled-popup-request') {
+        setError((err as { message?: string }).message || 'Google sign-in failed');
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 

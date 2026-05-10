@@ -2,19 +2,18 @@
 
 import * as React from "react"
 import Link from 'next/link'
-import { Shield, Activity, Share2, Menu, Hexagon, LogOut } from "lucide-react"
+import { Shield, Activity, Menu, Hexagon, LogOut } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
-import path from "path"
 
 export default function Navbar() {
-  const [mounted, setMounted] = React.useState(false)
+  const isMounted = React.useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
   const { user, logout } = useAuth()
 
-  React.useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  if (!mounted) return null;
+  if (!isMounted) return null;
 
   return (
     <nav className="px-6 md:px-12 lg:px-16 pt-6 w-full fixed top-0 z-50 pointer-events-none">

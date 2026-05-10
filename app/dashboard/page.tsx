@@ -3,11 +3,25 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
-import { BarChart3, Users, Clock, Shield, ArrowUpRight, TrendingUp, Activity, Target, FileText, Zap } from 'lucide-react';
+import { Users, Clock, Shield, ArrowUpRight, TrendingUp, Activity, Target, FileText } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useTactical } from '@/context/TacticalContext';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, Scatter } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+
+interface TacticalData {
+  summary: {
+    team1_total: number;
+    team2_total: number;
+  };
+  timeline: {
+    metrics: {
+      entropy: number;
+    };
+    detections: {
+      id: string | number;
+    }[];
+  }[];
+}
 
 export default function DashboardPage() {
   const { 
@@ -19,7 +33,7 @@ export default function DashboardPage() {
     status: liveStatus
   } = useTactical();
 
-  const [tacticalData, setTacticalData] = useState<any>(null);
+  const [tacticalData, setTacticalData] = useState<TacticalData | null>(null);
   const [loading, setLoading] = useState(true);
   const [liveIndex, setLiveIndex] = useState(0);
   const [nodeHistory, setNodeHistory] = useState<{t1: number, t2: number}[]>([]);
@@ -42,7 +56,9 @@ export default function DashboardPage() {
     if (engineIsRunning) {
       const t1 = livePlayers.filter(p => p.team === 'A').length;
       const t2 = livePlayers.filter(p => p.team === 'B').length;
-      setNodeHistory(prev => [...prev, { t1, t2 }].slice(-60));
+      requestAnimationFrame(() => {
+        setNodeHistory(prev => [...prev, { t1, t2 }].slice(-60));
+      });
     }
   }, [liveFrameIndex, engineIsRunning, livePlayers]);
 
@@ -146,7 +162,7 @@ export default function DashboardPage() {
                <AreaChart
                  data={(() => {
                    const data = (engineIsRunning ? nodeHistory : (tacticalData?.timeline || [])).slice(-150);
-                   return data.map((frame: any, i: number) => ({
+                   return data.map((frame: { metrics?: { entropy: number } }, i: number) => ({
                      frame: i,
                      entropy: (frame.metrics?.entropy ?? 0.4) * 100,
                      isSpike: (frame.metrics?.entropy ?? 0.4) > 0.7
@@ -340,22 +356,22 @@ export default function DashboardPage() {
                         const uniquePlayers = new Map();
                         const currentFrame = tacticalData.timeline[liveIndex];
                         if (currentFrame && currentFrame.detections) {
-                          currentFrame.detections.forEach((d: any) => {
+                          currentFrame.detections.forEach((d: { id: string | number }) => {
                              if (!uniquePlayers.has(d.id)) uniquePlayers.set(d.id, d);
                           });
                         }
                         playersToDisplay = Array.from(uniquePlayers.values());
                       }
 
-                      const sortedPlayers = playersToDisplay.sort((a: any, b: any) => a.id - b.id);
+                      const sortedPlayers = playersToDisplay.sort((a, b) => Number(a.id) - Number(b.id));
 
-                      return sortedPlayers.slice(0, 10).map((p: any, i: number) => {
+                      return sortedPlayers.slice(0, 10).map((p, _i) => {
                          // Procedurally generate stats with real-time variation
                          const seed = Number(p.id);
                          const animIndex = engineIsRunning ? (liveFrameIndex % 100) : liveIndex;
                          const speedVar = Math.sin(animIndex * 0.5 + seed) * 1.5;
                          const speed = (24 + (seed % 9) + speedVar).toFixed(1);
-                         const fatigue = (20 + (seed * 3) % 40 + (Math.floor(animIndex / 20) % 5)).toFixed(0);
+                         const _fatigue = (20 + (seed * 3) % 40 + (Math.floor(animIndex / 20) % 5)).toFixed(0);
                          const centrality = (0.7 + (seed % 3) * 0.1 + Math.cos(animIndex * 0.2) * 0.05).toFixed(2);
                          
                          let role = "Rotational Pivot";
