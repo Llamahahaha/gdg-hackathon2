@@ -47,7 +47,7 @@ export default function LiveEnginePage() {
           else reject(new Error(`Upload failed: ${xhr.status}`));
         };
         xhr.onerror = () => reject(new Error('Network error'));
-        xhr.open('POST', 'http://localhost:8000/upload-video');
+        xhr.open('POST', 'http://127.0.0.1:8000/upload-video');
         xhr.send(formData);
       });
 

@@ -72,7 +72,7 @@ export default function ReplayLabPage() {
     setReportData(null);
 
     try {
-      const res = await fetch('http://localhost:8000/generate-audit', {
+      const res = await fetch('http://127.0.0.1:8000/generate-audit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ timeline }),
