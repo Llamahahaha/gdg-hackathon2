@@ -7,5 +7,5 @@ uvicorn[standard]
 python-multipart
 websockets
 networkx
-google-generativeai
+httpx
 python-dotenv
