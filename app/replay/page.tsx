@@ -379,21 +379,57 @@ export default function ReplayLabPage() {
             </div>
 
             <div className="space-y-3">
-              <div className="p-4 bg-white/5 border border-white/10">
-                <div className="text-[7px] font-black text-white/30 uppercase tracking-widest mb-1">Detected Nodes</div>
-                <div className="text-2xl font-black font-mono">{players.length} <span className="text-[9px] font-normal text-white/40">players</span></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-4 bg-white/5 border border-white/10">
+                  <div className="text-[7px] font-black text-white/30 uppercase tracking-widest mb-1">Detected Nodes</div>
+                  <div className="text-xl font-black font-mono">{players.length} <span className="text-[9px] font-normal text-white/40">players</span></div>
+                </div>
+                <div className="p-4 bg-white/5 border border-white/10">
+                  <div className="text-[7px] font-black text-white/30 uppercase tracking-widest mb-1">Possession</div>
+                  <div className={`text-xl font-black font-mono ${selectedFrame?.possession === 'A' ? 'text-[#00f3ff]' : selectedFrame?.possession === 'B' ? 'text-[#ff0033]' : 'text-white/60'}`}>
+                    {selectedFrame?.possession === 'A' ? 'TEAM A' : selectedFrame?.possession === 'B' ? 'TEAM B' : 'UNKNOWN'}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-4 bg-white/5 border border-white/10">
+                  <div className="text-[7px] font-black text-white/30 uppercase tracking-widest mb-1">Team A (Green)</div>
+                  <div className="text-xl font-black font-mono text-[#00f3ff]">{selectedFrame?.t1 || 0} <span className="text-[9px] font-normal text-white/40">nodes</span></div>
+                </div>
+                <div className="p-4 bg-white/5 border border-white/10">
+                  <div className="text-[7px] font-black text-white/30 uppercase tracking-widest mb-1">Team B (White)</div>
+                  <div className="text-xl font-black font-mono text-[#ff0033]">{selectedFrame?.t2 || 0} <span className="text-[9px] font-normal text-white/40">nodes</span></div>
+                </div>
               </div>
 
               <div className="p-4 bg-white/5 border border-white/10">
-                <div className="text-[7px] font-black text-white/30 uppercase tracking-widest mb-1">Structural Entropy</div>
-                <div className={`text-2xl font-black font-mono ${isAnomaly ? 'text-rose-500' : 'text-cyan-400'}`}>
-                  {currentEntropy.toFixed(3)}
+                <div className="flex justify-between items-end mb-2">
+                  <div className="text-[7px] font-black text-white/30 uppercase tracking-widest">Structural Entropy</div>
+                  <div className={`text-xl font-black font-mono ${isAnomaly ? 'text-rose-500' : 'text-cyan-400'}`}>
+                    {currentEntropy.toFixed(3)}
+                  </div>
                 </div>
-                <div className="mt-2 h-1 w-full bg-white/5">
+                <div className="h-1 w-full bg-white/5">
                   <motion.div
                     animate={{ width: `${currentEntropy * 100}%` }}
                     className={`h-full ${isAnomaly ? 'bg-rose-500' : 'bg-cyan-500'}`}
                   />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-4 bg-white/5 border border-white/10">
+                  <div className="text-[7px] font-black text-white/30 uppercase tracking-widest mb-1">Team Diameter</div>
+                  <div className="text-xl font-black font-mono">
+                    {(selectedFrame?.metrics?.diameter || 0).toFixed(0)}<span className="text-[9px] font-normal text-white/40">px</span>
+                  </div>
+                </div>
+                <div className="p-4 bg-white/5 border border-white/10">
+                  <div className="text-[7px] font-black text-white/30 uppercase tracking-widest mb-1">Lynchpins (AP)</div>
+                  <div className={`text-xl font-black font-mono ${(selectedFrame?.metrics?.articulation_points?.length || 0) > 0 ? 'text-rose-500' : 'text-cyan-400'}`}>
+                    {selectedFrame?.metrics?.articulation_points?.length || 0}
+                  </div>
                 </div>
               </div>
 
