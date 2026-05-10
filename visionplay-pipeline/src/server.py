@@ -120,7 +120,7 @@ async def websocket_endpoint(websocket: WebSocket):
         manager.disconnect(websocket)
 
 @app.post("/upload-video")
-async def upload_video(file: UploadFile = File(...)):
+def upload_video(file: UploadFile = File(...)):
     """Accept a video upload and set it as the active video for the YOLO pipeline."""
     global selected_video_path
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
