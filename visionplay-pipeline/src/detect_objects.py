@@ -10,22 +10,83 @@ from shared_state import is_stopped
 
 logger = logging.getLogger("visionplay")
 
-# ── Team colour definitions (HSV ranges) ──────────────────────────────────────
+# ── Dynamic Team Classification ──────────────────────────────────────────────
 
-# Team 1 → Green shirts
-TEAM1_LOWER = np.array([35,  50,  50], dtype=np.uint8)
-TEAM1_UPPER = np.array([85, 255, 255], dtype=np.uint8)
-TEAM1_COLOR  = (0, 200, 0)       # BGR
-TEAM1_LABEL  = "Team 1"
+class DynamicTeamClassifier:
+    def __init__(self):
+        self.team1_hsv = None
+        self.team2_hsv = None
+        self.calibrated = False
+        self.samples = []
 
-# Team 2 → White shirts
-TEAM2_LOWER = np.array([0,   0, 180], dtype=np.uint8)
-TEAM2_UPPER = np.array([180, 50, 255], dtype=np.uint8)
-TEAM2_COLOR  = (220, 220, 220)   # BGR
-TEAM2_LABEL  = "Team 2"
+    def add_sample(self, hsv_color):
+        self.samples.append(hsv_color)
 
-# Minimum fraction of torso pixels required to assign a team
-TEAM_THRESHOLD = 0.12
+    def calibrate(self):
+        if len(self.samples) < 10:
+            return
+        
+        # Simple K-means (K=2) on HSV samples
+        data = np.array(self.samples)
+        from sklearn.cluster import KMeans
+        # Fallback to manual clustering if sklearn is missing
+        try:
+            kmeans = KMeans(n_clusters=2, n_init=10, random_state=42).fit(data)
+            self.team1_hsv = kmeans.cluster_centers_[0]
+            self.team2_hsv = kmeans.cluster_centers_[1]
+            self.calibrated = True
+            logger.info(f"Team Calibration Complete. Team 1: {self.team1_hsv}, Team 2: {self.team2_hsv}")
+        except ImportError:
+            # Manual 2-means if sklearn is missing
+            c1 = data[0]
+            c2 = data[-1]
+            for _ in range(10):
+                d1 = np.linalg.norm(data - c1, axis=1)
+                d2 = np.linalg.norm(data - c2, axis=1)
+                labels = d1 > d2
+                if not any(labels) or all(labels): break
+                c1 = data[~labels].mean(axis=0)
+                c2 = data[labels].mean(axis=0)
+            self.team1_hsv = c1
+            self.team2_hsv = c2
+            self.calibrated = True
+            logger.info("Team Calibration Complete (Manual K-Means).")
+
+    def predict(self, hsv_color):
+        if not self.calibrated:
+            return "Not playing", (128, 128, 128)
+        
+        d1 = np.linalg.norm(hsv_color - self.team1_hsv)
+        d2 = np.linalg.norm(hsv_color - self.team2_hsv)
+        
+        # Threshold to avoid random noise (e.g. grass or refs)
+        if min(d1, d2) > 60: 
+            return "Not playing", (128, 128, 128)
+
+        if d1 < d2:
+            return "Team 1", (0, 255, 0) # Green for T1
+        else:
+            return "Team 2", (255, 255, 255) # White for T2
+
+team_classifier = DynamicTeamClassifier()
+
+def get_shirt_color(frame: np.ndarray, x1: int, y1: int, x2: int, y2: int):
+    h, w = y2 - y1, x2 - x1
+    if h <= 0 or w <= 0: return None
+    
+    roi = frame[y1 + int(h*0.20):y1 + int(h*0.55),
+                x1 + int(w*0.20):x1 + int(w*0.80)]
+    if roi.size == 0: return None
+    
+    hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+    return np.mean(hsv, axis=(0, 1))
+
+def classify_shirt(frame: np.ndarray, x1: int, y1: int, x2: int, y2: int) -> tuple:
+    avg_hsv = get_shirt_color(frame, x1, y1, x2, y2)
+    if avg_hsv is None:
+        return "Not playing", (128, 128, 128)
+    
+    return team_classifier.predict(avg_hsv)
 
 # ── Centroid Tracker ──────────────────────────────────────────────────────────
 
@@ -96,35 +157,6 @@ class CentroidTracker:
 
         return self.objects
 
-
-def classify_shirt(frame: np.ndarray, x1: int, y1: int, x2: int, y2: int) -> tuple:
-    """
-    Sample the upper-middle torso region of a bounding box and decide team.
-    Returns (team_label, bgr_draw_color).
-    """
-    h, w = y2 - y1, x2 - x1
-    if h <= 0 or w <= 0:
-        return "Not playing", (128, 128, 128)
-
-    # Torso ROI: vertical 20–55 %, horizontal 20–80 %
-    roi = frame[y1 + int(h*0.20):y1 + int(h*0.55),
-                x1 + int(w*0.20):x1 + int(w*0.80)]
-    if roi.size == 0:
-        return "Not playing", (128, 128, 128)
-
-    hsv   = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
-    total = hsv.shape[0] * hsv.shape[1]
-    if total == 0:
-        return "Not playing", (128, 128, 128)
-
-    green_ratio = np.count_nonzero(cv2.inRange(hsv, TEAM1_LOWER, TEAM1_UPPER)) / total
-    white_ratio  = np.count_nonzero(cv2.inRange(hsv, TEAM2_LOWER, TEAM2_UPPER))  / total
-
-    if green_ratio >= TEAM_THRESHOLD and green_ratio >= white_ratio:
-        return TEAM1_LABEL, TEAM1_COLOR
-    if white_ratio >= TEAM_THRESHOLD:
-        return TEAM2_LABEL, TEAM2_COLOR
-    return "Not playing", (128, 128, 128)
 
 
 def draw_box(frame: np.ndarray, x1: int, y1: int, x2: int, y2: int,
@@ -224,18 +256,27 @@ def detect_objects(input_dir: str, output_dir: str,
             total_objects += 1
             current_centers.append((x1, y1, x2, y2))
             
+            # Dynamic Calibration Phase (First 15 frames)
+            if idx < 15:
+                avg_hsv = get_shirt_color(frame, x1, y1, x2, y2)
+                if avg_hsv is not None:
+                    team_classifier.add_sample(avg_hsv)
+            
+            if idx == 15:
+                team_classifier.calibrate()
+
             team, color = classify_shirt(frame, x1, y1, x2, y2)
 
-            if team == TEAM1_LABEL:
+            if team == "Team 1":
                 frame_t1   += 1
                 team1_total += 1
-            elif team == TEAM2_LABEL:
+            elif team == "Team 2":
                 frame_t2   += 1
                 team2_total += 1
 
             # Temporary detection for tracking
             frame_detections.append({
-                "team": "green" if team == TEAM1_LABEL else "white", 
+                "team": "green" if team == "Team 1" else "white", 
                 "bbox": [x1, y1, x2, y2], 
                 "conf": round(conf, 3),
                 "center": (int((x1+x2)/2), int((y1+y2)/2))
@@ -334,8 +375,8 @@ def detect_objects(input_dir: str, output_dir: str,
         avg_inf = sum(inference_times) / len(inference_times)
         for text, pos in [
             (f"FPS: {1/avg_inf:.1f}",         (20, 40)),
-            (f"Team 1 (green): {frame_t1}",   (20, 75)),
-            (f"Team 2 (white): {frame_t2}",   (20, 110)),
+            (f"Team 1: {frame_t1}",   (20, 75)),
+            (f"Team 2: {frame_t2}",   (20, 110)),
         ]:
             cv2.putText(frame, text, (pos[0]+1, pos[1]+1),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 0), 2, cv2.LINE_AA)

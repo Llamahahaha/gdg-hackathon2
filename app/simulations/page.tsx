@@ -5,7 +5,7 @@ import { PanInfo, motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import { Move, RefreshCw, Save, Zap, AlertTriangle, Hexagon } from 'lucide-react';
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import { toPng } from 'html-to-image';
 import { useTactical } from '@/context/TacticalContext';
 
 interface SimulationNode {
@@ -117,11 +117,10 @@ export default function SimulationsPage() {
     if (!element) return;
     
     try {
-      const canvas = await html2canvas(element, { backgroundColor: '#000000', scale: 2 });
-      const imgData = canvas.toDataURL('image/jpeg', 0.9);
+      const dataUrl = await toPng(element, { backgroundColor: '#000000', pixelRatio: 2 });
       
-      const pdf = new jsPDF('landscape', 'pt', [canvas.width, canvas.height]);
-      pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+      const pdf = new jsPDF('landscape', 'pt', [element.offsetWidth * 2, element.offsetHeight * 2]);
+      pdf.addImage(dataUrl, 'PNG', 0, 0, element.offsetWidth * 2, element.offsetHeight * 2);
       pdf.save('tactical_scenario_sandbox.pdf');
     } catch (err) {
       console.error("Failed to save scenario PDF:", err);
@@ -288,18 +287,7 @@ export default function SimulationsPage() {
             </div>
           </div>
 
-          {/* AI Recommendation Engine */}
-          <div className="flex-1 bg-cyan-500 p-8 text-black flex flex-col gap-6 relative overflow-hidden">
-            <Hexagon className="absolute top-[-20px] right-[-20px] w-32 h-32 text-black/5 rotate-12" />
-            <div className="text-[10px] font-black uppercase tracking-[0.2em] mb-2">Simulation Intelligence</div>
-            <div className="text-2xl font-black font-orbitron uppercase leading-tight">Recommended Structure Adjustment</div>
-            <p className="text-sm font-medium leading-relaxed mt-4">
-              Current dispersion indicates a {sandboxState.entropy > 0.5 ? 'weakening' : 'stable'} core. {sandboxState.entropy > 0.6 ? 'Compress lines to regain central stability and avoid through-ball vulnerability.' : 'Maintain spatial distribution; connectivity is optimal.'}
-            </p>
-            <button className="mt-auto w-full py-4 bg-black text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-black/80 transition-all">
-              Apply AI Optimization
-            </button>
-          </div>
+
 
         </div>
       </main>

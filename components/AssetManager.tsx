@@ -67,7 +67,7 @@ export default function AssetManager() {
         const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
         
         // Save metadata to Firestore
-        await addDoc(collection(db, 'assets'), {
+        await addDoc(collection(db!, 'assets'), {
           userId: user.uid,
           name: file.name,
           url: downloadURL,

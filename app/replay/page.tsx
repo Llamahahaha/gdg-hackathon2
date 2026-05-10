@@ -69,7 +69,7 @@ export default function ReplayLabPage() {
 
   const players = React.useMemo(() => {
     if (!selectedFrame) return [];
-    const uniqueDetections = new Map<string, SimulationNode>();
+    const uniqueDetections = new Map<string, any>();
     (selectedFrame.detections || []).forEach((d) => {
       const key = String(d.id);
       if (!uniqueDetections.has(key)) uniqueDetections.set(key, d);

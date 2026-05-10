@@ -13,6 +13,7 @@ export const metadata: Metadata = {
 
 import { TacticalProvider } from "@/context/TacticalContext";
 import AuthGuard from "@/components/AuthGuard";
+import ChatBot from "@/components/ChatBot";
 
 export default function RootLayout({
   children,
@@ -26,6 +27,7 @@ export default function RootLayout({
           <AuthGuard>
             <TacticalProvider>
               {children}
+              <ChatBot />
             </TacticalProvider>
           </AuthGuard>
         </AuthProvider>

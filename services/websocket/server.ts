@@ -1,6 +1,7 @@
 import { SimulationEngine } from '../simulation/engine';
 import { MatchFrame } from '../simulation/generator';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const clients = new Set<any>();
 const engine = new SimulationEngine((frame: MatchFrame) => {
   const message = JSON.stringify({ type: 'FRAME_UPDATE', data: frame });

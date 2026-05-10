@@ -43,8 +43,9 @@ export default function LiveEnginePage() {
           if (xhr.status === 200) resolve();
           else reject(new Error(`Upload failed: ${xhr.status}`));
         };
-        xhr.onerror = () => reject(new Error('Network error'));
-        xhr.open('POST', `http://${window.location.hostname}:8000/upload-video`);
+        xhr.onerror = () => reject(new Error('Network error: Could not reach the VisionPlay backend on port 8000.'));
+        const apiHost = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
+        xhr.open('POST', `http://${apiHost}:8000/upload-video`);
         xhr.send(formData);
       });
 
@@ -60,7 +61,7 @@ export default function LiveEnginePage() {
 
   useEffect(() => {
     // Recommendation logic synchronized with context metrics
-  }, [metrics.recommendation]);
+  }, []);
 
   const handleStart = () => startEngine();
   const handleStop = () => stopEngine();
@@ -268,18 +269,7 @@ export default function LiveEnginePage() {
                 </div>
               </div>
               <div className="mt-6 flex flex-col gap-4">
-                <p className="text-[9px] text-white/40 font-bold uppercase tracking-widest leading-tight">
-                  Tarjan&apos;s Articulation Point Analysis {" // "} Identifies high-risk nodes.
-                </p>
-                <button
-                  onClick={() => {
-                    alert("Tactical neutralization sequence initiated.");
-                  }}
-                  disabled={metrics.articulation_points.length === 0}
-                  className="w-full py-3 bg-rose-500 text-black text-[10px] font-black uppercase tracking-widest hover:bg-rose-400 transition-all disabled:opacity-20 disabled:grayscale"
-                >
-                  Neutralize Lynchpin
-                </button>
+
               </div>
             </div>
 
@@ -295,13 +285,14 @@ export default function LiveEnginePage() {
           <div className="h-[300px] flex items-end gap-1 border-b border-white/10 pb-1">
             {timelineData.map((data, i) => {
               // Emphasize variance by stretching the entropy value for visualization
-              const displayHeight = Math.max(5, (data.entropy - 0.3) * 140);
+              const entropyVal = data.metrics?.entropy || 0.4;
+              const displayHeight = Math.max(5, (entropyVal - 0.3) * 140);
               return (
                 <motion.div
                   key={i}
                   initial={{ height: 0 }}
                   animate={{ height: `${Math.min(100, displayHeight)}%` }}
-                  className={`flex-1 min-w-[2px] transition-colors ${data.entropy > 0.7 ? 'bg-rose-500' : 'bg-cyan-500/40 hover:bg-cyan-400'}`}
+                  className={`flex-1 min-w-[2px] transition-colors ${entropyVal > 0.7 ? 'bg-rose-500' : 'bg-cyan-500/40 hover:bg-cyan-400'}`}
                 />
               );
             })}
