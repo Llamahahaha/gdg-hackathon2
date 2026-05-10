@@ -380,7 +380,8 @@ def detect_objects(input_dir: str, output_dir: str,
 
     # Save to public/data/match_telemetry.json for frontend
     try:
-        public_data_dir = "/home/noah/Desktop/NextJS/gdg/public/data"
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        public_data_dir = os.path.join(base_dir, "..", "public", "data")
         os.makedirs(public_data_dir, exist_ok=True)
         with open(os.path.join(public_data_dir, "match_telemetry.json"), "w") as f:
             json.dump(results_dict, f, indent=4)

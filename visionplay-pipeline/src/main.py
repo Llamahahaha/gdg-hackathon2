@@ -56,7 +56,7 @@ def run_pipeline(
         on_status("FINALIZING_TACTICAL_DATA")
     
     # Save directly to public/videos for frontend access
-    public_video_dir = "/home/noah/Desktop/NextJS/gdg/public/videos"
+    public_video_dir = os.path.join(base_dir, "..", "public", "videos")
     os.makedirs(public_video_dir, exist_ok=True)
     output_video_path = os.path.join(public_video_dir, "detected_test.mp4")
 
@@ -71,7 +71,7 @@ def run_pipeline(
             frame["metrics"] = compute_tactical_metrics(frame.get("detections", []))
 
     # Save tactical data to public directory for Dashboard/Reports to consume
-    public_data_dir = "/home/noah/Desktop/NextJS/gdg/public/data"
+    public_data_dir = os.path.join(base_dir, "..", "public", "data")
     os.makedirs(public_data_dir, exist_ok=True)
     data_path = os.path.join(public_data_dir, "tactical_data.json")
     try:

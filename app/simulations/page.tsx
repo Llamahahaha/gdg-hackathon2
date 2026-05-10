@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { PanInfo, motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import { Move, RefreshCw, Save, Zap, AlertTriangle, Hexagon } from 'lucide-react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import { useTactical } from '@/context/TacticalContext';
 
 interface SimulationNode {
@@ -27,32 +29,57 @@ export default function SimulationsPage() {
   const [showGhost, setShowGhost] = useState(true);
 
   useEffect(() => {
-    if (timeline && timeline.length > 0) {
-      const midFrameIndex = Math.floor(timeline.length / 2);
-      const targetFrame = timeline[midFrameIndex] || timeline[0];
-      
-      const uniqueDetections = new Map<string | number, { id: string | number, center: number[], team: string }>();
-      targetFrame.detections.forEach((d) => {
-        if (!uniqueDetections.has(d.id)) uniqueDetections.set(d.id, d);
-      });
-      
-      const initialNodes: SimulationNode[] = Array.from(uniqueDetections.values()).map((d) => ({
-        id: d.id,
-        x: (d.center[0] / 1920) * 800,
-        y: (d.center[1] / 1080) * 400,
-        team: d.team === 'green' ? 'A' : 'B'
-      }));
-      
-      requestAnimationFrame(() => {
-        setSandboxState({
-          nodes: initialNodes,
-          ghostNodes: initialNodes,
-          originalNodes: initialNodes,
-          entropy: targetFrame.metrics?.entropy || 0.42,
-          loading: false
+    const initSandbox = async () => {
+      let dataToUse = timeline;
+
+      if (!dataToUse || dataToUse.length === 0) {
+        try {
+          const res = await fetch('/data/tactical_data.json');
+          const json = await res.json();
+          dataToUse = json.timeline || [];
+        } catch (err) {
+          console.error("Failed to load historical data for sandbox:", err);
+        }
+      }
+
+      if (dataToUse && dataToUse.length > 0) {
+        const midFrameIndex = Math.floor(dataToUse.length / 2);
+        const targetFrame = dataToUse[midFrameIndex] || dataToUse[0];
+        
+        const uniqueDetections = new Map<string | number, { id: string | number, center: number[], team: string }>();
+        targetFrame.detections.forEach((d: any) => {
+          if (!uniqueDetections.has(d.id)) uniqueDetections.set(d.id, d);
         });
-      });
-    }
+        
+        const teamA: any[] = [];
+        const teamB: any[] = [];
+        Array.from(uniqueDetections.values()).forEach((d: any) => {
+          if (d.team === 'green' && teamA.length < 11) teamA.push(d);
+          else if (d.team === 'white' && teamB.length < 11) teamB.push(d);
+        });
+
+        const initialNodes: SimulationNode[] = [...teamA, ...teamB].map((d) => ({
+          id: d.id,
+          x: (d.center[0] / 1920) * 800,
+          y: (d.center[1] / 1080) * 400,
+          team: d.team === 'green' ? 'A' : 'B'
+        }));
+        
+        requestAnimationFrame(() => {
+          setSandboxState({
+            nodes: initialNodes,
+            ghostNodes: initialNodes,
+            originalNodes: initialNodes,
+            entropy: targetFrame.metrics?.entropy || 0.42,
+            loading: false
+          });
+        });
+      } else {
+        setSandboxState(prev => ({ ...prev, loading: false }));
+      }
+    };
+    
+    initSandbox();
   }, [timeline]);
 
   const handleDrag = (id: string | number, info: PanInfo) => {
@@ -85,6 +112,22 @@ export default function SimulationsPage() {
     }));
   };
 
+  const handleSaveScenario = async () => {
+    const element = document.getElementById("simulation-canvas");
+    if (!element) return;
+    
+    try {
+      const canvas = await html2canvas(element, { backgroundColor: '#000000', scale: 2 });
+      const imgData = canvas.toDataURL('image/jpeg', 0.9);
+      
+      const pdf = new jsPDF('landscape', 'pt', [canvas.width, canvas.height]);
+      pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+      pdf.save('tactical_scenario_sandbox.pdf');
+    } catch (err) {
+      console.error("Failed to save scenario PDF:", err);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#07080f] text-white font-sans flex flex-col overflow-hidden">
       <Navbar />
@@ -113,13 +156,13 @@ export default function SimulationsPage() {
                 Ghost Formation: {showGhost ? 'ON' : 'OFF'}
               </button>
               <button onClick={resetSimulation} disabled={sandboxState.loading} className="p-2 bg-white/5 border border-white/10 hover:bg-white/10 text-white disabled:opacity-50"><RefreshCw className="w-4 h-4" /></button>
-              <button className="px-4 py-2 bg-cyan-500 text-black text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+              <button onClick={handleSaveScenario} className="px-4 py-2 bg-cyan-500 text-black text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
                 <Save className="w-3 h-3" /> Save Scenario
               </button>
             </div>
           </div>
 
-          <div className="flex-1 bg-black rounded-none border border-white/20 relative overflow-hidden group select-none min-h-[400px]">
+          <div id="simulation-canvas" className="flex-1 bg-black rounded-none border border-white/20 relative overflow-hidden group select-none min-h-[400px]">
             {/* Pitch Markings */}
             <div className="absolute inset-0 opacity-10 pointer-events-none"
               style={{

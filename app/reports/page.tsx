@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { TrendingUp, Users, ShieldAlert, Target, FileText, Download } from 'lucide-react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface ReportData {
   summary: {
@@ -69,6 +71,44 @@ export default function IntelligenceReportPage() {
     { zone: 'Transition', val: tacticalData ? 72 + (timeline.length % 15) : 72 },
   ];
 
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF();
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.text("POST-MATCH TACTICAL AUDIT", 14, 22);
+    
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`MATCH_ID: #YOLO-LIVE`, 14, 32);
+    doc.text(`DATE: ${new Date().toLocaleDateString().toUpperCase()}`, 14, 38);
+    
+    doc.setFont("helvetica", "bold");
+    doc.text("PRIMARY METRICS", 14, 52);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Avg Formation Entropy: ${avgEntropy}`, 14, 60);
+    doc.text(`Avg Team Diameter: ${avgDiameter}px`, 14, 66);
+    doc.text(`Fracture Alerts: ${fractureAlerts}`, 14, 72);
+
+    const tableData = uniqueLynchpins.map((nodeId) => {
+      let count = 0;
+      timeline.forEach((f) => {
+        if (f.metrics?.articulation_points?.includes(nodeId)) count++;
+      });
+      return [ `Player #${nodeId}`, `${count} frames`, count > 10 ? "CRITICAL" : "MED", count > 10 ? "VULNERABLE" : "MONITORING" ];
+    });
+
+    autoTable(doc, {
+      startY: 85,
+      head: [['Node ID', 'Detection Count', 'Criticality', 'Status']],
+      body: tableData,
+      theme: 'grid',
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [0, 243, 255], textColor: [0, 0, 0] }
+    });
+
+    doc.save('intelligence_report.pdf');
+  };
+
   return (
     <div className="min-h-screen bg-charcoal text-white font-sans flex flex-col">
       <Navbar />
@@ -97,7 +137,7 @@ export default function IntelligenceReportPage() {
                     <span className="text-[10px] font-bold text-white">VisionPlay Neural Engine</span>
                  </div>
               </div>
-              <button className="flex items-center gap-2 px-6 py-3 bg-cyan-500 text-black rounded-lg font-black uppercase tracking-widest text-[10px] hover:bg-cyan-400 transition-all">
+              <button onClick={handleDownloadPDF} className="flex items-center gap-2 px-6 py-3 bg-cyan-500 text-black rounded-lg font-black uppercase tracking-widest text-[10px] hover:bg-cyan-400 transition-all">
                  <Download className="w-4 h-4" /> Download PDF
               </button>
            </div>

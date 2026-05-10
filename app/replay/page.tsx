@@ -27,6 +27,9 @@ interface ReportData {
 export default function ReplayLabPage() {
   const { timelineData: liveTimeline, uploadedVideoSrc } = useTactical();
   const [frozenTimeline, setFrozenTimeline] = useState<FrameData[]>([]);
+  const [frameIndex, setFrameIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [neutralizedIds, setNeutralizedIds] = useState<number[]>([]);
   
   useEffect(() => {
     if (isPlaying || (liveTimeline && liveTimeline.length > 0 && frozenTimeline.length === 0)) {
@@ -37,10 +40,6 @@ export default function ReplayLabPage() {
   }, [liveTimeline, isPlaying, frozenTimeline.length]);
 
   const timeline = frozenTimeline;
-
-  const [frameIndex, setFrameIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [neutralizedIds, setNeutralizedIds] = useState<number[]>([]);
 
   // Two-step audit state
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -97,7 +96,7 @@ export default function ReplayLabPage() {
     if (!isPlaying || !timeline || timeline.length === 0) return;
     const id = setInterval(() => {
       setFrameIndex(prev => (prev + 1) % timeline.length);
-    }, 100);
+    }, 250);
     return () => clearInterval(id);
   }, [isPlaying, timeline]);
 
