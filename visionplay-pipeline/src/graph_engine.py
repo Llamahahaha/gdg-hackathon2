@@ -11,7 +11,9 @@ logger = logging.getLogger("graph-engine")
 # Load environment variables
 load_dotenv()
 
-OLLAMA_BASE_URL = "http://localhost:11434"
+from ai_service import AIService
+
+logger = logging.getLogger("graph-engine")
 
 def compute_tactical_metrics(players):
     """
@@ -109,17 +111,8 @@ async def get_ai_recommendation(metrics):
     """
     
     try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(
-                f"{OLLAMA_BASE_URL}/api/generate",
-                json={
-                    "model": "llama3.2",
-                    "prompt": prompt,
-                    "stream": False
-                }
-            )
-            result = response.json()
-            return result.get("response", "").strip()
+        response = await AIService.generate_response(prompt)
+        return response if response else "MAINTAIN FORMATION COMPACTNESS."
     except Exception as e:
         logger.error(f"Ollama recommendation failed: {e}")
         return "MAINTAIN FORMATION COMPACTNESS."
@@ -147,25 +140,10 @@ async def generate_full_audit_report(summary_metrics):
     """
     
     try:
-        async with httpx.AsyncClient(timeout=120.0) as client:
-            response = await client.post(
-                f"{OLLAMA_BASE_URL}/api/generate",
-                json={
-                    "model": "llama3.2",
-                    "prompt": prompt,
-                    "stream": False,
-                    "format": "json"
-                }
-            )
-            
-            if response.status_code != 200:
-                logger.error(f"Ollama returned status {response.status_code}: {response.text}")
-                raise Exception(f"Ollama server error {response.status_code}")
-
-            result = response.json()
-            raw_text = result.get("response", "{}").strip()
-            return json.loads(raw_text)
-            
+        response_text = await AIService.generate_response(prompt)
+        if response_text:
+            return json.loads(response_text)
+        raise Exception("No response from AI Service")
     except Exception as e:
         logger.error(f"Ollama Audit generation failed: {e}")
         return {

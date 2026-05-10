@@ -6,67 +6,80 @@ import numpy as np
 from ultralytics import YOLO
 from tqdm import tqdm
 import logging
+from sklearn.cluster import KMeans
 from shared_state import is_stopped
 
 logger = logging.getLogger("visionplay")
 
 # ── Dynamic Team Classification ──────────────────────────────────────────────
 
+# How many frames to spend collecting jersey samples before calibrating
+CALIBRATION_FRAMES = 30
+
+# Grass HSV range – exclude pixels that look like the pitch
+GRASS_H_LO, GRASS_H_HI = 35, 85   # hue 35-85 covers all grass greens
+GRASS_S_LO = 40                    # must be at least a little saturated
+
+def _is_grass(hsv: np.ndarray) -> bool:
+    """Return True if the mean HSV looks like grass/pitch colour."""
+    h, s, _ = hsv
+    return (GRASS_H_LO <= h <= GRASS_H_HI) and s >= GRASS_S_LO
+
+
 class DynamicTeamClassifier:
     def __init__(self):
         self.team1_hsv = None
         self.team2_hsv = None
         self.calibrated = False
-        self.samples = []
+        self.samples = []          # raw HSV samples collected during calib phase
+        self.team1_label = "Team 1"
+        self.team2_label = "Team 2"
 
     def add_sample(self, hsv_color):
-        self.samples.append(hsv_color)
+        """Add a jersey-region HSV sample, filtering out grass/pitch colours."""
+        if not _is_grass(hsv_color):
+            self.samples.append(hsv_color)
 
     def calibrate(self):
-        if len(self.samples) < 10:
+        """Run K-means (K=2) on collected samples to find the two team colours."""
+        if len(self.samples) < 6:   # need at least 6 valid samples
+            logger.warning(f"Only {len(self.samples)} non-grass samples – skipping calibration.")
             return
-        
-        # Simple K-means (K=2) on HSV samples
-        data = np.array(self.samples)
-        from sklearn.cluster import KMeans
-        # Fallback to manual clustering if sklearn is missing
-        try:
-            kmeans = KMeans(n_clusters=2, n_init=10, random_state=42).fit(data)
-            self.team1_hsv = kmeans.cluster_centers_[0]
-            self.team2_hsv = kmeans.cluster_centers_[1]
-            self.calibrated = True
-            logger.info(f"Team Calibration Complete. Team 1: {self.team1_hsv}, Team 2: {self.team2_hsv}")
-        except ImportError:
-            # Manual 2-means if sklearn is missing
-            c1 = data[0]
-            c2 = data[-1]
-            for _ in range(10):
-                d1 = np.linalg.norm(data - c1, axis=1)
-                d2 = np.linalg.norm(data - c2, axis=1)
-                labels = d1 > d2
-                if not any(labels) or all(labels): break
-                c1 = data[~labels].mean(axis=0)
-                c2 = data[labels].mean(axis=0)
-            self.team1_hsv = c1
-            self.team2_hsv = c2
-            self.calibrated = True
-            logger.info("Team Calibration Complete (Manual K-Means).")
 
-    def predict(self, hsv_color):
+        data = np.array(self.samples, dtype=np.float32)
+        kmeans = KMeans(n_clusters=2, n_init=15, random_state=42).fit(data)
+        centers = kmeans.cluster_centers_
+
+        self.team1_hsv = centers[0]
+        self.team2_hsv = centers[1]
+        self.calibrated = True
+        logger.info(
+            f"Team Calibration Complete. "
+            f"Team 1 HSV≈{self.team1_hsv.round(1).tolist()}, "
+            f"Team 2 HSV≈{self.team2_hsv.round(1).tolist()} "
+            f"(from {len(self.samples)} samples)"
+        )
+
+    def predict(self, hsv_color: np.ndarray) -> tuple:
+        """Return (team_label, BGR_colour) for a jersey HSV mean."""
         if not self.calibrated:
             return "Not playing", (128, 128, 128)
-        
+
+        # Reject grass-coloured detections outright
+        if _is_grass(hsv_color):
+            return "Not playing", (128, 128, 128)
+
         d1 = np.linalg.norm(hsv_color - self.team1_hsv)
         d2 = np.linalg.norm(hsv_color - self.team2_hsv)
-        
-        # Threshold to avoid random noise (e.g. grass or refs)
-        if min(d1, d2) > 60: 
+
+        # Raised threshold – 80 gives more tolerance for lighting variation
+        if min(d1, d2) > 80:
             return "Not playing", (128, 128, 128)
 
         if d1 < d2:
-            return "Team 1", (0, 255, 0) # Green for T1
+            return "Team 1", (0, 200, 60)   # green-ish
         else:
-            return "Team 2", (255, 255, 255) # White for T2
+            return "Team 2", (200, 200, 255) # light blue-ish
 
 team_classifier = DynamicTeamClassifier()
 
@@ -255,14 +268,20 @@ def detect_objects(input_dir: str, output_dir: str,
             # Person detection
             total_objects += 1
             current_centers.append((x1, y1, x2, y2))
-            
-            # Dynamic Calibration Phase (First 15 frames)
-            if idx < 15:
+
+            # ── Dynamic Calibration Phase ────────────────────────────────────
+            # Collect jersey samples for the first CALIBRATION_FRAMES frames
+            if idx < CALIBRATION_FRAMES:
                 avg_hsv = get_shirt_color(frame, x1, y1, x2, y2)
                 if avg_hsv is not None:
                     team_classifier.add_sample(avg_hsv)
-            
-            if idx == 15:
+
+            # Trigger calibration exactly once, AFTER the last collection frame
+            if idx == CALIBRATION_FRAMES and not team_classifier.calibrated:
+                team_classifier.calibrate()
+
+            # If we somehow ran out of samples, try again with what we have
+            if idx > CALIBRATION_FRAMES and not team_classifier.calibrated:
                 team_classifier.calibrate()
 
             team, color = classify_shirt(frame, x1, y1, x2, y2)

@@ -9,3 +9,4 @@ websockets
 networkx
 httpx
 python-dotenv
+scikit-learn

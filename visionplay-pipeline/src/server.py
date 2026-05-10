@@ -18,6 +18,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from main import run_pipeline
 from graph_engine import compute_tactical_metrics, get_ai_recommendation, generate_full_audit_report
+from ai_service import AIService
 
 # ─── Configuration ────────────────────────────────────────────────────────────
 logging.basicConfig(level=logging.INFO)
@@ -185,17 +186,8 @@ async def chat_endpoint(data: dict):
     """
     
     try:
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            response = await client.post(
-                f"{OLLAMA_BASE_URL}/api/generate",
-                json={
-                    "model": "llama3.2",
-                    "prompt": prompt,
-                    "stream": False
-                }
-            )
-            result = response.json()
-            return {"response": result.get("response", "").strip()}
+        response = await AIService.generate_response(prompt)
+        return {"response": response if response else "Strategic Engine offline."}
     except Exception as e:
         logger.error(f"Chat failed: {e}")
         return {"response": "Strategic Engine offline. Ensure Ollama is running with Llama 3.2."}

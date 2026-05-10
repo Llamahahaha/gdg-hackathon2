@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"bun next dev --turbopack\" \"cd visionplay-pipeline && .\\.venv\\Scripts\\python.exe src\\server.py\"",
+    "dev": "concurrently \"bun next dev --turbopack\" \"dev-python.bat\"",
     "build": "bun next build",
     "start": "bun next start",
     "lint": "eslint"
