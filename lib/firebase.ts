@@ -12,9 +12,19 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
-// Initialize Firebase only if it hasn't been initialized already
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const auth = getAuth(app);
-const db = getFirestore(app);
+// Validate config
+const isConfigValid = !!firebaseConfig.apiKey && firebaseConfig.apiKey !== "undefined";
+
+if (!isConfigValid) {
+  console.warn("Firebase API Key is missing. Check your .env.local file.");
+}
+
+// Initialize Firebase only if it hasn't been initialized already and config is valid
+const app = isConfigValid 
+  ? (!getApps().length ? initializeApp(firebaseConfig) : getApp())
+  : null;
+
+const auth = app ? getAuth(app) : null;
+const db = app ? getFirestore(app) : null;
 
 export { app, auth, db };
