@@ -88,13 +88,21 @@ export default function SimulationsPage() {
           team: d.team === 'green' ? 'A' : 'B',
         }));
 
+        const initialTeamANodes1920 = initialNodes
+          .filter((n) => n.team === 'A')
+          .map((n) => ({
+            id: n.id,
+            x: (n.x / 800) * 1920,
+            y: (n.y / 400) * 1080,
+          }));
+
         setSandboxState({
           nodes: initialNodes,
           ghostNodes: initialNodes,
           originalNodes: initialNodes,
-          entropy: laplacianEntropy(initialNodes.filter(n => n.team === 'A'), PITCH_CONFIG),
-          diameter: floydWarshallDiameter(initialNodes.filter(n => n.team === 'A'), PITCH_CONFIG),
-          centrality: topCentrality(initialNodes.filter(n => n.team === 'A'), PITCH_CONFIG),
+          entropy: laplacianEntropy(initialTeamANodes1920, PITCH_CONFIG),
+          diameter: floydWarshallDiameter(initialTeamANodes1920, PITCH_CONFIG),
+          centrality: topCentrality(initialTeamANodes1920, PITCH_CONFIG),
           loading: false,
         });
       } else {
@@ -182,12 +190,17 @@ export default function SimulationsPage() {
   const resetSimulation = () => {
     setSandboxState((prev) => {
       const teamA = prev.originalNodes.filter((n) => n.team === 'A');
+      const teamA1920 = teamA.map((n) => ({
+        id: n.id,
+        x: (n.x / 800) * 1920,
+        y: (n.y / 400) * 1080,
+      }));
       return {
         ...prev,
         nodes: prev.originalNodes,
-        entropy: laplacianEntropy(teamA, PITCH_CONFIG),
-        diameter: floydWarshallDiameter(teamA, PITCH_CONFIG),
-        centrality: topCentrality(teamA, PITCH_CONFIG),
+        entropy: laplacianEntropy(teamA1920, PITCH_CONFIG),
+        diameter: floydWarshallDiameter(teamA1920, PITCH_CONFIG),
+        centrality: topCentrality(teamA1920, PITCH_CONFIG),
       };
     });
   };
