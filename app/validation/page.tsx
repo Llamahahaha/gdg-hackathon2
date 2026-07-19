@@ -337,7 +337,8 @@ export default function ValidationPage() {
     setError(null);
     setData(null);
     try {
-      const res = await fetch(`${API_BASE}/validate`, {
+      // Append a timestamp to bypass any browser caching of the 405 error
+      const res = await fetch(`${API_BASE}/validate?t=${Date.now()}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(config)
@@ -356,7 +357,7 @@ export default function ValidationPage() {
   }
 
   useEffect(() => {
-    fetch(`${API_BASE}/health`)
+    fetch(`${API_BASE}/health?t=${Date.now()}`)
       .then((r) => setApiOnline(r.ok))
       .catch(() => setApiOnline(false));
   }, []);
