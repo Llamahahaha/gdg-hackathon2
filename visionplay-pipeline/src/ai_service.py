@@ -24,11 +24,14 @@ class AIService:
         Generates a text response using Google Gemini API.
         Falls back gracefully if no API key is set.
         """
-        if not GEMINI_API_KEY:
+        api_key = os.getenv("GEMINI_API_KEY", "")
+        model_name = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+        
+        if not api_key:
             logger.warning("GEMINI_API_KEY not set — AI features disabled.")
             return None
 
-        url = f"{GEMINI_BASE_URL}/models/{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
+        url = f"{GEMINI_BASE_URL}/models/{model_name}:generateContent?key={api_key}"
 
         body = {
             "contents": [
@@ -47,7 +50,7 @@ class AIService:
             body["generationConfig"]["responseMimeType"] = "application/json"
 
         try:
-            logger.info(f"Querying Gemini ({GEMINI_MODEL})...")
+            logger.info(f"Querying Gemini ({model_name})...")
             async with httpx.AsyncClient(timeout=60.0) as client:
                 response = await client.post(url, json=body)
                 response.raise_for_status()
@@ -66,11 +69,12 @@ class AIService:
                 return None
 
         except httpx.HTTPStatusError as e:
-            logger.error(f"Gemini API error {e.response.status_code}: {e.response.text[:200]}")
-            return None
+            err_msg = f"Gemini API error {e.response.status_code}: {e.response.text[:200]}"
+            logger.error(err_msg)
+            raise Exception(err_msg)
         except Exception as e:
             logger.error(f"Gemini generation failed: {e}")
-            return None
+            raise Exception(str(e))
 
     @staticmethod
     async def analyze_tactics(metrics: dict) -> str | None:
