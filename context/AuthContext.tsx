@@ -1,10 +1,6 @@
 "use client";
 
-<<<<<<< HEAD
-import React, { createContext, useContext, useState } from "react";
-=======
 import React, { createContext, useContext, useRef, useEffect, useState } from "react";
->>>>>>> 6b45ee40714ce8ceebf6aedb7eb3a7f1d70c91b9
 import { User } from "firebase/auth";
 
 interface AuthContextType {
@@ -35,10 +31,6 @@ const AuthContext = createContext<AuthContextType>({
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-<<<<<<< HEAD
-  const [user, setUser] = useState<User | null>(MOCK_USER);
-  const [loading] = useState(false);
-=======
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   // Use a ref to set state once on mount — avoids the "setState in effect" lint rule
@@ -64,7 +56,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false);
     });
   }, []);
->>>>>>> 6b45ee40714ce8ceebf6aedb7eb3a7f1d70c91b9
 
   const signInWithGoogle = async () => {
     setUser(MOCK_USER);
