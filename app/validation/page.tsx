@@ -84,6 +84,193 @@ function ModuleIcon({ module }: { module: string }) {
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
+// Metric bars — visual slider-style indicators shown inside every test card
+// ──────────────────────────────────────────────────────────────────────────────
+function MetricBars({ test, passed }: { test: TestResult; passed: boolean }) {
+  type Bar = { label: string; value: number; max: number; unit?: string; color: string; threshold?: number };
+  const bars: Bar[] = [];
+
+  if (test.deviation !== undefined) {
+    const threshold = test.id === "TC-01" ? 1e-6 : 1e-5;
+    bars.push({ label: "Deviation", value: test.deviation, max: threshold * 10, unit: "", color: passed ? "bg-emerald-500" : "bg-rose-500", threshold: 10 });
+  }
+  if (test.id === "TC-09") {
+    const m = test.actual?.match(/Cost: ([\d.]+)/);
+    if (m) bars.push({ label: "Path Cost", value: parseFloat(m[1]), max: 6, unit: " m", color: passed ? "bg-violet-500" : "bg-rose-500", threshold: (2/6)*100 });
+  }
+  if (test.id === "TC-12") {
+    const m = test.actual?.match(/Diameter: ([\d.]+)/);
+    if (m) bars.push({ label: "Diameter", value: parseFloat(m[1]), max: 60, unit: " m", color: passed ? "bg-violet-500" : "bg-rose-500", threshold: (50/60)*100 });
+  }
+  if (test.id === "TC-15") {
+    const m1 = test.actual?.match(/Entropy K\d+: ([\d.]+)/);
+    const m2 = test.actual?.match(/Entropy Sparse: ([\d.]+)/);
+    if (m1) bars.push({ label: "Entropy (Compact)", value: parseFloat(m1[1]), max: 1.2, unit: "", color: "bg-violet-500" });
+    if (m2) bars.push({ label: "Entropy (Sparse)", value: parseFloat(m2[1]), max: 1.2, unit: "", color: "bg-amber-500" });
+  }
+  if (test.id === "TC-18") {
+    const m = test.actual?.match(/LCC after Lynchpin removal: (\d+).*LCC after Random avg: ([\d.]+).*total (\d+)/);
+    if (m) {
+      const total = parseInt(m[3]);
+      bars.push({ label: "LCC after Lynchpin removal", value: parseInt(m[1]), max: total, unit: " nodes", color: passed ? "bg-amber-500" : "bg-rose-500" });
+      bars.push({ label: "LCC after Random removal", value: parseFloat(m[2]), max: total, unit: " nodes", color: "bg-emerald-500" });
+    }
+  }
+  if (test.id === "TC-20") {
+    const m = test.actual?.match(/diameter: ([\d.]+)/);
+    if (m) bars.push({ label: "Def. Block Diameter", value: parseFloat(m[1]), max: 60, unit: " m", color: passed ? "bg-amber-500" : "bg-rose-500", threshold: (35/60)*100 });
+  }
+  if (test.id === "Face-Validity") {
+    const scores = [...(test.actual?.matchAll(/\(([\d.]+)\)/g) ?? [])].map(m2 => parseFloat(m2[1]));
+    ["Top", "2nd", "3rd", "4th"].slice(0, scores.length).forEach((rank, i) => {
+      bars.push({ label: `${rank} Player Score`, value: scores[i], max: 0.65, unit: "", color: i === 0 ? "bg-emerald-500" : "bg-white/30" });
+    });
+  }
+  if (test.id === "Noise-Reliability") {
+    const m = test.actual?.match(/Ent: [\d.]+ \(dev ([\d.]+)%\), Diam: [\d.]+m \(dev ([\d.]+)%\)/);
+    if (m) {
+      bars.push({ label: "Entropy Deviation", value: parseFloat(m[1]), max: 50, unit: "%", color: passed ? "bg-cyan-500" : "bg-rose-500", threshold: 35 });
+      bars.push({ label: "Diameter Deviation", value: parseFloat(m[2]), max: 50, unit: "%", color: passed ? "bg-cyan-500" : "bg-rose-500", threshold: 35 });
+    }
+  }
+  if (bars.length === 0) {
+    bars.push({ label: "Test Result", value: passed ? 100 : 0, max: 100, unit: "%", color: passed ? "bg-emerald-500" : "bg-rose-500" });
+  }
+
+  return (
+    <div className="flex flex-col gap-3 border border-white/5 bg-black/20 px-4 py-3">
+      <div className="text-[8px] font-black uppercase tracking-widest text-white/25 flex items-center gap-1.5">
+        <Activity className="w-3 h-3" />
+        Metric Indicators
+      </div>
+      {bars.map((bar, i) => {
+        const fillPct = Math.min((bar.value / bar.max) * 100, 100);
+        const displayVal = bar.value > 0 && bar.value < 0.001
+          ? bar.value.toExponential(2)
+          : (Math.round(bar.value * 1000) / 1000).toString();
+        return (
+          <div key={i} className="flex flex-col gap-1">
+            <div className="flex items-center justify-between">
+              <span className="text-[9px] font-black uppercase tracking-widest text-white/40">{bar.label}</span>
+              <span className="text-[10px] font-mono font-bold text-white/70">{displayVal}{bar.unit}</span>
+            </div>
+            <div className="relative h-1.5 bg-white/5 w-full rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${fillPct}%` }}
+                transition={{ duration: 0.7, ease: "easeOut", delay: 0.1 * i }}
+                className={`h-full rounded-full ${bar.color} opacity-80`}
+              />
+              {bar.threshold !== undefined && (
+                <div className="absolute top-0 h-full w-px bg-white/50" style={{ left: `${bar.threshold}%` }} />
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Graph visualizer — normalizes coordinates to fill canvas, bigger nodes
+// ──────────────────────────────────────────────────────────────────────────────
+function GraphVisualizer({ test }: { test: TestResult }) {
+  const nodes = test.visual_data!.nodes;
+  const edges = test.visual_data!.edges;
+
+  const PAD = 90;
+  const VW = 900;
+  const VH = 520;
+
+  // Normalize using base (non-jitter) node bounds
+  const baseNodes = nodes.filter(n => n.type !== "jitter");
+  const xs = baseNodes.map(n => n.x);
+  const ys = baseNodes.map(n => n.y);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  const rangeX = maxX - minX || 1;
+  const rangeY = maxY - minY || 1;
+
+  const nx = (x: number) => PAD + ((x - minX) / rangeX) * (VW - PAD * 2);
+  const ny = (y: number) => PAD + ((y - minY) / rangeY) * (VH - PAD * 2);
+
+  return (
+    <div className="border border-white/10 bg-black/40 p-4">
+      <div className="text-[8px] font-black text-cyan-400/80 uppercase tracking-widest mb-3 flex items-center gap-2">
+        <Activity className="w-3 h-3" />
+        Live Visual Verification
+      </div>
+      <div className="relative w-full border border-white/5 bg-white/[0.02]" style={{ height: "400px" }}>
+        <svg className="w-full h-full" viewBox={`0 0 ${VW} ${VH}`} preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <pattern id={`grid-${test.id}`} width="50" height="50" patternUnits="userSpaceOnUse">
+              <path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="1"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill={`url(#grid-${test.id})`} />
+
+          {edges.map((edge, i) => {
+            const sn = nodes.find(n => n.id === edge.source);
+            const tn = nodes.find(n => n.id === edge.target);
+            if (!sn || !tn) return null;
+            const isJitter = sn.type === "jitter" || tn.type === "jitter";
+            const sw = edge.weight ? Math.min(edge.weight / 5, 4) : 1.5;
+            return (
+              <line key={`e-${i}`}
+                x1={nx(sn.x)} y1={ny(sn.y)} x2={nx(tn.x)} y2={ny(tn.y)}
+                stroke={isJitter ? "rgba(255,80,80,0.2)" : "rgba(100,200,255,0.22)"}
+                strokeWidth={sw}
+                strokeDasharray={isJitter ? "6 4" : "none"}
+              />
+            );
+          })}
+
+          {nodes.map((node, i) => {
+            let fill = "rgba(160,160,255,0.35)";
+            let stroke = "rgba(160,160,255,0.8)";
+            let r = 14;
+            if (node.type === "jitter") { fill = "rgba(255,80,80,0.35)"; stroke = "rgba(255,100,100,0.9)"; r = 9; }
+            else if (node.highlight === "lynchpin") { fill = "rgba(255,165,0,0.75)"; stroke = "rgba(255,165,0,1)"; r = 18; }
+            else if (node.highlight === "playmaker") { fill = "rgba(0,255,128,0.75)"; stroke = "rgba(0,255,128,1)"; r = 18; }
+
+            const cx = nx(node.x);
+            const cy = ny(node.y);
+            return (
+              <g key={`n-${i}`} transform={`translate(${cx},${cy})`}>
+                {node.highlight && (
+                  <circle r={r + 12} fill="none" stroke={stroke} strokeWidth="1.5" opacity="0">
+                    <animate attributeName="r" values={`${r+4};${r+20};${r+4}`} dur="2s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0.6;0;0.6" dur="2s" repeatCount="indefinite" />
+                  </circle>
+                )}
+                <circle r={r} fill={fill} stroke={stroke} strokeWidth="2.5" />
+                {node.label ? (
+                  <text x="0" y={r + 18} textAnchor="middle" fill="rgba(255,255,255,0.8)" fontSize="13" fontFamily="monospace" fontWeight="bold">
+                    {node.label}
+                  </text>
+                ) : (
+                  <text x="0" y="5" textAnchor="middle" fill="rgba(255,255,255,0.7)" fontSize="10" fontFamily="monospace">
+                    {node.id.replace("_j", "")}
+                  </text>
+                )}
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+      <div className="flex flex-wrap gap-4 mt-2.5">
+        {nodes.some(n => n.highlight === "lynchpin") && <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-amber-500" /><span className="text-[9px] text-white/40 uppercase tracking-widest">Lynchpin</span></div>}
+        {nodes.some(n => n.highlight === "playmaker") && <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-emerald-500" /><span className="text-[9px] text-white/40 uppercase tracking-widest">Playmaker</span></div>}
+        {nodes.some(n => n.type === "jitter") && <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-red-500" /><span className="text-[9px] text-white/40 uppercase tracking-widest">Jittered</span></div>}
+        {nodes.some(n => n.type === "base") && <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-indigo-400" /><span className="text-[9px] text-white/40 uppercase tracking-widest">Base Position</span></div>}
+        {nodes.some(n => !n.type && !n.highlight) && <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-indigo-400/60" /><span className="text-[9px] text-white/40 uppercase tracking-widest">Player Node</span></div>}
+      </div>
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
 // Individual test card
 // ──────────────────────────────────────────────────────────────────────────────
 function TestCard({ test, index }: { test: TestResult; index: number }) {
@@ -154,7 +341,9 @@ function TestCard({ test, index }: { test: TestResult; index: number }) {
             transition={{ duration: 0.18 }}
             className="overflow-hidden"
           >
-            <div className="px-4 pb-4 pt-2 border-t border-white/5 flex flex-col gap-4">
+            <div className="px-4 pb-4 pt-2 border-t border-white/5 flex flex-col gap-5">
+
+              {/* ── Text metadata grid ── */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {test.input && (
                   <div>
@@ -196,81 +385,12 @@ function TestCard({ test, index }: { test: TestResult; index: number }) {
                 )}
               </div>
               
-              {/* Visual Data Rendering */}
+              {/* ── Metric bars (every test) ── */}
+              <MetricBars test={test} passed={passed} />
+
+              {/* ── Graph visualizer (Tier 2 tests with visual_data) ── */}
               {test.visual_data && test.visual_data.nodes && (
-                <div className="mt-4 border border-white/10 bg-black/40 p-4 rounded-md overflow-x-auto">
-                  <div className="text-[8px] font-black text-cyan-400/80 uppercase tracking-widest mb-3 flex items-center gap-2">
-                    <Activity className="w-3 h-3" />
-                    Live Visual Verification
-                  </div>
-                  <div className="relative w-full h-[250px] sm:h-[300px] border border-white/5 bg-white/[0.02]">
-                    <svg className="w-full h-full" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid meet">
-                      {/* Grid background */}
-                      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="1"/>
-                      </pattern>
-                      <rect width="100%" height="100%" fill="url(#grid)" />
-                      
-                      {/* Edges */}
-                      {test.visual_data.edges.map((edge, i) => {
-                        const sourceNode = test.visual_data!.nodes.find(n => n.id === edge.source);
-                        const targetNode = test.visual_data!.nodes.find(n => n.id === edge.target);
-                        if (!sourceNode || !targetNode) return null;
-                        
-                        // Scale coordinates (assuming rough bounds of 0-800 for x and 0-500 for y)
-                        // If coordinates are arbitrary, we do a simple mapping
-                        const scaleX = (x: number) => Math.min(Math.max(x, 20), 780);
-                        const scaleY = (y: number) => Math.min(Math.max(y, 20), 480);
-                        
-                        return (
-                          <line
-                            key={`edge-${i}`}
-                            x1={scaleX(sourceNode.x)}
-                            y1={scaleY(sourceNode.y)}
-                            x2={scaleX(targetNode.x)}
-                            y2={scaleY(targetNode.y)}
-                            stroke={sourceNode.type === "jitter" || targetNode.type === "jitter" ? "rgba(255,255,255,0.1)" : "rgba(100,200,255,0.15)"}
-                            strokeWidth={edge.weight ? Math.min(edge.weight, 5) : 1}
-                            strokeDasharray={sourceNode.type === "jitter" ? "4 4" : "none"}
-                          />
-                        );
-                      })}
-                      
-                      {/* Nodes */}
-                      {test.visual_data.nodes.map((node, i) => {
-                        const scaleX = (x: number) => Math.min(Math.max(x, 20), 780);
-                        const scaleY = (y: number) => Math.min(Math.max(y, 20), 480);
-                        
-                        let fill = "rgba(255,255,255,0.2)";
-                        let stroke = "rgba(255,255,255,0.4)";
-                        if (node.type === "jitter") {
-                          fill = "rgba(255,0,0,0.3)";
-                          stroke = "rgba(255,0,0,0.6)";
-                        } else if (node.highlight === "lynchpin") {
-                          fill = "rgba(255,165,0,0.6)";
-                          stroke = "rgba(255,165,0,1)";
-                        } else if (node.highlight === "playmaker") {
-                          fill = "rgba(0,255,128,0.6)";
-                          stroke = "rgba(0,255,128,1)";
-                        }
-                        
-                        return (
-                          <g key={`node-${i}`} transform={`translate(${scaleX(node.x)}, ${scaleY(node.y)})`}>
-                            {node.highlight && (
-                               <circle r="14" fill="none" stroke={stroke} strokeWidth="1" className="animate-ping opacity-50" />
-                            )}
-                            <circle r="6" fill={fill} stroke={stroke} strokeWidth="1.5" />
-                            {node.label && (
-                              <text x="10" y="4" fill="rgba(255,255,255,0.6)" fontSize="10" fontFamily="monospace">
-                                {node.label}
-                              </text>
-                            )}
-                          </g>
-                        );
-                      })}
-                    </svg>
-                  </div>
-                </div>
+                <GraphVisualizer test={test} />
               )}
             </div>
           </motion.div>
