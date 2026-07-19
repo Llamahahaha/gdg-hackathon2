@@ -226,7 +226,7 @@ export default function LiveEnginePage() {
                   .map((p) => {
                     const isArticulation = metrics.articulation_points.includes(String(p.id));
                     return (
-                      <motion.g key={p.id} animate={{ x: p.x, y: p.y }}>
+                      <motion.g key={p.id} initial={{ x: p.x, y: p.y }} animate={{ x: p.x, y: p.y }}>
                         <circle
                           r={isArticulation ? 8 : 6}
                           fill={isArticulation ? "#ff0055" : (analysisTeam === 'green' ? "#00f3ff" : "#ffffff")}
