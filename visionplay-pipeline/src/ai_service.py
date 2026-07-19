@@ -25,7 +25,7 @@ class AIService:
         Falls back gracefully if no API key is set.
         """
         api_key = os.getenv("GEMINI_API_KEY", "")
-        model_name = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+        model_name = os.getenv("GEMINI_MODEL", "gemini-1.5-flash-latest")
         
         if not api_key:
             logger.warning("GEMINI_API_KEY not set — AI features disabled.")
