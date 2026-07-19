@@ -93,36 +93,40 @@ export default function ReplayLabPage() {
     }
   }, [isPlaying]);
 
-  // ── Auto-play scrubber ─────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!isPlaying || !timeline || timeline.length === 0) return;
-    const id = setInterval(() => {
-      setFrameIndex(prev => (prev + 1) % timeline.length);
-    }, 250);
-    return () => clearInterval(id);
-  }, [isPlaying, timeline]);
-
-  // ── Sync video playback with scrubber ─────────────────────────────────────
+  // ── Video <-> frameIndex sync (single source of truth) ──────────────────
+  // When PLAYING: the video is master. Its timeupdate event drives frameIndex.
+  // When PAUSED/SCRUBBING: frameIndex is master. Changes seek the video.
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !uploadedVideoSrc) return;
-    if (isPlaying) video.play().catch(() => { });
-    else video.pause();
-  }, [isPlaying, uploadedVideoSrc]);
 
-  // ── Seek video when frameIndex changes (scrubbing or stepping) ────────────
+    if (isPlaying) {
+      video.play().catch(() => {});
+
+      // Video drives frameIndex via timeupdate
+      const onTimeUpdate = () => {
+        if (!timeline || timeline.length === 0) return;
+        const duration = videoDurationRef.current || video.duration;
+        if (!duration || !isFinite(duration)) return;
+        const idx = Math.floor((video.currentTime / duration) * timeline.length);
+        setFrameIndex(Math.min(idx, timeline.length - 1));
+      };
+      video.addEventListener('timeupdate', onTimeUpdate);
+      return () => video.removeEventListener('timeupdate', onTimeUpdate);
+    } else {
+      video.pause();
+    }
+  }, [isPlaying, uploadedVideoSrc, timeline]);
+
+  // When paused, frameIndex changes seek the video
   useEffect(() => {
+    if (isPlaying) return; // video is master when playing — don't interfere
     const video = videoRef.current;
     if (!video || !uploadedVideoSrc || !timeline || timeline.length === 0) return;
-    // Use stored duration so we don't seek before metadata is loaded
     const duration = videoDurationRef.current || video.duration;
     if (!duration || !isFinite(duration)) return;
-    const targetTime = (frameIndex / timeline.length) * duration;
-    // Only seek if the difference is meaningful (>100ms) to avoid fighting auto-play
-    if (Math.abs(video.currentTime - targetTime) > 0.1) {
-      video.currentTime = targetTime;
-    }
-  }, [frameIndex, uploadedVideoSrc, timeline]);
+    video.currentTime = (frameIndex / timeline.length) * duration;
+  }, [frameIndex, isPlaying, uploadedVideoSrc, timeline]);
 
   // ── STEP 1: Analyze — call backend Ollama endpoint ────────────────────────
   const analyzeReport = async () => {
@@ -335,7 +339,6 @@ export default function ReplayLabPage() {
                 src={uploadedVideoSrc}
                 className="w-full h-full object-cover opacity-70"
                 muted
-                loop
                 playsInline
                 onLoadedMetadata={(e) => {
                   videoDurationRef.current = (e.target as HTMLVideoElement).duration;
