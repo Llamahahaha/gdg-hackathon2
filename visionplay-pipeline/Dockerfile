@@ -8,12 +8,12 @@ RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install
-COPY requirements.txt .
+# Copy requirements from the subfolder (since Railway runs this from the repo root)
+COPY visionplay-pipeline/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the backend code
-COPY . .
+COPY visionplay-pipeline/ .
 
 # Expose the port the server runs on
 EXPOSE 8000

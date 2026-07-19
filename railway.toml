@@ -1,6 +1,3 @@
 [build]
-builder = "NIXPACKS"
-buildCommand = "cd visionplay-pipeline && pip install -r requirements.txt"
-
-[deploy]
-startCommand = "cd visionplay-pipeline && python src/server.py"
+builder = "DOCKERFILE"
+dockerfilePath = "visionplay-pipeline/Dockerfile"
