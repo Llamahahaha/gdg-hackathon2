@@ -505,6 +505,8 @@ async def run_detection_task():
                 "ball": ball_in_frame,
                 "detections": final_detections,
                 "possession": possession,
+                "frame_width": w,
+                "frame_height": h,
             }
             timeline.append(frame_stats)
 
@@ -520,6 +522,8 @@ async def run_detection_task():
                 "possession":   possession,
                 "metrics":      tactical_data,
                 "recommendation": None,
+                "frame_width":  w,
+                "frame_height": h,
             }
             await stream_frame(frame, stats)
 

@@ -34,6 +34,8 @@ export interface FrameData {
   possession: string;
   t1: number;
   t2: number;
+  frame_width?: number;
+  frame_height?: number;
 }
 
 interface TacticalContextType {
@@ -152,7 +154,9 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
                   metrics: data.stats.metrics || {},
                   possession: data.stats.possession || 'UNKNOWN',
                   t1: data.stats.team1_count || 0,
-                  t2: data.stats.team2_count || 0
+                  t2: data.stats.team2_count || 0,
+                  frame_width: data.stats.frame_width,
+                  frame_height: data.stats.frame_height,
                 };
                 setCurrentStats(fullRecord);
                 setTimelineData(prev => [...prev, fullRecord].slice(-300));

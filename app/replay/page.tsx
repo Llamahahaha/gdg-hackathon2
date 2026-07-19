@@ -352,8 +352,11 @@ export default function ReplayLabPage() {
             )}
 
             {/* Player/edge SVG overlay */}
-            {hasData && (
-              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1920 1080">
+            {hasData && (() => {
+              const fw = selectedFrame?.frame_width || 1920;
+              const fh = selectedFrame?.frame_height || 1080;
+              return (
+                <svg className="absolute inset-0 w-full h-full" viewBox={`0 0 ${fw} ${fh}`}>
                 {/* Edges */}
                 {players.map((p, i) =>
                   players.slice(i + 1).map(other => {
@@ -432,7 +435,8 @@ export default function ReplayLabPage() {
                   );
                 })}
               </svg>
-            )}
+              );
+            })()}
 
             {/* Frame HUD */}
             {hasData && (
