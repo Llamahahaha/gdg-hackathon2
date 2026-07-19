@@ -11,7 +11,7 @@ import { laplacianEntropy, floydWarshallDiameter, topCentrality, Node2D, GraphCo
 const PITCH_CONFIG: GraphConfig = {
   pixelsPerMeterX: 1920 / 105,
   pixelsPerMeterY: 1080 / 68,
-  proximityThresholdM: 30,
+  proximityThresholdM: 75,
 };
 
 interface SimulationNode {
