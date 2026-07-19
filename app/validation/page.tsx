@@ -45,7 +45,8 @@ interface ValidationResponse {
   tests: Record<string, TestResult>;
 }
 
-const API_BASE = "http://localhost:8001";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8001";
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Tier badge
@@ -355,10 +356,10 @@ export default function ValidationPage() {
                       Graph Analysis API Offline
                     </div>
                     <div className="text-[11px] text-white/50 break-all">
-                      Start the server in a terminal:
+                      The Railway backend is not responding. Verify it is running at:
                     </div>
                     <code className="block mt-1 text-[10px] font-mono text-amber-300 bg-black/40 px-2.5 py-1.5 break-all">
-                      cd visionplay-pipeline &amp;&amp; source .venv/bin/activate &amp;&amp; PYTHONPATH=src python -m uvicorn api_server.main:app --port 8001 --reload
+                      {API_BASE}/health
                     </code>
                   </div>
                 </div>

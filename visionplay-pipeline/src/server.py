@@ -22,11 +22,20 @@ from main import run_pipeline
 from graph_engine import compute_tactical_metrics, get_ai_recommendation, generate_full_audit_report
 from ai_service import AIService, OLLAMA_BASE_URL
 
+# Mount the graph-analysis + validation API routes into the same server
+try:
+    from api_server.api.routes import router as api_router
+    _api_router_loaded = True
+except Exception as _api_import_err:
+    logger_placeholder = None  # logger not yet defined; handled below
+    _api_router_loaded = False
+    _api_import_err_msg = str(_api_import_err)
+
 # ─── Configuration ────────────────────────────────────────────────────────────
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("vision-server")
 
-app = FastAPI()
+app = FastAPI(title="VisionPlay Engine", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -35,6 +44,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Register graph-analysis routes (/validate, /analyze) if import succeeded
+if _api_router_loaded:
+    app.include_router(api_router)
+
+@app.get("/health")
+def health_check():
+    """Liveness probe used by the Validation page."""
+    return {"status": "ok", "service": "visionplay-engine"}
 
 # ─── Global State ─────────────────────────────────────────────────────────────
 background_task: asyncio.Task = None

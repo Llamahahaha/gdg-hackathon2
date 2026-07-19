@@ -18,5 +18,8 @@ COPY visionplay-pipeline/ .
 # Expose the port the server runs on
 EXPOSE 8000
 
-# Run the FastAPI telemetry/vision server
-CMD ["python", "src/server.py"]
+# PYTHONPATH=src so that api_server (and validation.py) are importable as packages
+ENV PYTHONPATH=/app/src
+
+# Run via uvicorn so async lifespan events are handled correctly
+CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000", "--app-dir", "src"]
