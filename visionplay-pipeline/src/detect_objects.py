@@ -13,17 +13,15 @@ logger = logging.getLogger("visionplay")
 
 # ── Dynamic Team Classification ──────────────────────────────────────────────
 
-# How many frames to spend collecting jersey samples before calibrating
-CALIBRATION_FRAMES = 30
+CALIBRATION_FRAMES = 100
 
 # Grass HSV range – exclude pixels that look like the pitch
 GRASS_H_LO, GRASS_H_HI = 35, 85   # hue 35-85 covers all grass greens
 GRASS_S_LO = 40                    # must be at least a little saturated
 
 def _is_grass(hsv: np.ndarray) -> bool:
-    """Return True if the mean HSV looks like grass/pitch colour."""
-    h, s, _ = hsv
-    return (GRASS_H_LO <= h <= GRASS_H_HI) and s >= GRASS_S_LO
+    """Return True if the mean HSV looks like grass/pitch colour. Disabled to allow green jerseys."""
+    return False
 
 
 class DynamicTeamClassifier:
@@ -311,7 +309,7 @@ def detect_objects(input_dir: str, output_dir: str,
             cx, cy = det["center"]
             # Find closest tracked ID
             best_id = -1
-            min_dist = 50 # Max 50 pixels movement
+            min_dist = 200 # Max 200 pixels movement
             for obj_id, obj_center in tracked_objects.items():
                 d = np.linalg.norm(np.array((cx, cy)) - obj_center)
                 if d < min_dist:

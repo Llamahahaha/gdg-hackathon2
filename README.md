@@ -95,5 +95,3 @@ python src/main.py
 ```
 
 ---
-
-*Built with passion for the GDG Hackathon by Noah Menezes.*

@@ -36,6 +36,7 @@ export default function Navbar() {
             { name: "Live Engine", path: "/live" },
             { name: "Replay Lab", path: "/replay" },
             { name: "Simulations", path: "/simulations" },
+            { name: "Validation", path: "/validation" },
             { name: "Intelligence Report", path: "/reports" }
           ].map((link) => (
             <Link

@@ -27,7 +27,7 @@ class TacticalStabilizer:
         self.prev_entropy = 0.42
         self.gamma = 0.7  # Adjacency persistence
         self.alpha = 0.2  # Entropy smoothing
-        self.k = 2.0      # Spectral Softmax k-factor
+        self.k = 5.0      # Spectral Softmax k-factor
         self.beta = 0.15  # Compactness modulation factor
 
     def apply_adjacency_persistence(self, A_new):
@@ -108,17 +108,21 @@ def compute_tactical_metrics(players):
     subG = G.subgraph(team_a_nodes)
     
     # Add edges based on proximity
-    threshold = 300
+    threshold = 160
     for i, n1 in enumerate(team_a_nodes):
         for n2 in team_a_nodes[i+1:]:
             p1 = G.nodes[n1]['pos']
             p2 = G.nodes[n2]['pos']
             dist = np.linalg.norm(np.array(p1) - np.array(p2))
             if dist < threshold:
-                G.add_edge(n1, n2, weight=1/dist if dist > 0 else 1)
+                weight=np.exp(-dist / 120)
+                G.add_edge(n1, n2, weight=weight)
 
     # 2. Formation Entropy with Stabilization Layers
     entropy = 0
+    raw_entropy = 0
+    calibrated_entropy = 0
+    
     if len(subG.nodes) > 1:
         try:
             # 2.1 Adjacency Persistence
@@ -151,7 +155,11 @@ def compute_tactical_metrics(players):
                 
                 # 2.8 Safe Output Normalization
                 calibrated_entropy = stabilizer.calibrate_output(H_smooth, compactness)
-                entropy = calibrated_entropy # Main output for existing consumers
+                
+                # 2.9 Density Penalty
+                density = nx.density(subG)
+                calibrated_entropy *= (1 - 0.4 * density)
+                entropy = calibrated_entropy
                 
         except Exception as e:
             logger.error(f"Stabilized Entropy calculation failed: {e}")

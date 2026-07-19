@@ -6,9 +6,10 @@ import json
 import asyncio
 import logging
 import shutil
+import aiofiles
+import numpy as np
 from pathlib import Path
 
-# Add the current directory and 'src' to the path to ensure imports work correctly on Windows
 current_dir = os.path.dirname(os.path.abspath(__file__))
 if current_dir not in sys.path:
     sys.path.append(current_dir)
@@ -156,17 +157,17 @@ async def upload_video(file: UploadFile = File(...)):
                 except Exception as e:
                     logger.warning(f"Could not remove old video {f}: {e}")
 
-        # Save new video using chunked writing for efficiency
         dest = os.path.join(input_dir, file.filename)
-        
-        # Open file in binary write mode
-        with open(dest, "wb") as buffer:
-            # Read in 1MB chunks to avoid memory spikes and improve speed
+
+        # Async chunked write — 4 MB chunks keep throughput high without
+        # blocking the event loop or spiking memory on large files.
+        CHUNK = 4 * 1024 * 1024  # 4 MB
+        async with aiofiles.open(dest, "wb") as buffer:
             while True:
-                chunk = await file.read(1024 * 1024) # 1MB chunk
+                chunk = await file.read(CHUNK)
                 if not chunk:
                     break
-                buffer.write(chunk)
+                await buffer.write(chunk)
 
         selected_video_path = dest
         logger.info(f"Video saved successfully to {dest}")
@@ -174,6 +175,7 @@ async def upload_video(file: UploadFile = File(...)):
     except Exception as e:
         logger.error(f"Upload failed: {e}")
         return {"error": str(e)}, 500
+
 
 @app.post("/chat")
 async def chat_endpoint(data: dict):
@@ -314,100 +316,206 @@ async def stop_session_endpoint():
     return {"status": "stopped"}
 
 async def run_detection_task():
+    """
+    Direct-stream mode: reads frames from the video file in real time,
+    runs YOLO inline, and broadcasts each annotated frame immediately.
+    No pre-extraction, no rebuild step — first frame appears in < 1 s.
+    """
     try:
-        base_dir      = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        input_dir     = os.path.join(base_dir, "input_videos")
-        output_dir    = os.path.join(base_dir, "output_videos")
-        extracted_dir = os.path.join(base_dir, "extracted_frames")
-        processed_dir = os.path.join(base_dir, "processed_frames")
-        model_path    = os.path.join(base_dir, "models", "yolov8n.pt")
-        
-        # Use uploaded video if set, otherwise fall back to first in input_videos/
+        from ultralytics import YOLO
+        from detect_objects import (
+            team_classifier, DynamicTeamClassifier,
+            get_shirt_color, classify_shirt, draw_box,
+            CentroidTracker, CALIBRATION_FRAMES
+        )
+        from shared_state import is_stopped
+
+        base_dir   = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        model_path = os.path.join(base_dir, "models", "yolov8n.pt")
+
+        # ── Pick video ────────────────────────────────────────────────────────
         if selected_video_path and os.path.exists(selected_video_path):
             video_path = selected_video_path
-            logger.info(f"Using uploaded video: {video_path}")
         else:
+            input_dir   = os.path.join(base_dir, "input_videos")
             video_files = [f for f in os.listdir(input_dir) if f.lower().endswith(('.mp4', '.avi', '.mov'))]
             if not video_files:
-                await manager.broadcast({"type": "error", "message": "No video found in input_videos/. Upload a video first."})
+                await manager.broadcast({"type": "error", "message": "No video found. Upload a video first."})
                 return
             video_path = os.path.join(input_dir, video_files[0])
-            logger.info(f"Using existing video: {video_path}")
+
+        logger.info(f"Direct-stream mode: {video_path}")
+        await stream_status("LOADING_MODEL")
+
+        # ── Load YOLO (non-blocking) ──────────────────────────────────────────
+        model = await asyncio.to_thread(YOLO, model_path)
+
+        # ── Open video ────────────────────────────────────────────────────────
+        cap = cv2.VideoCapture(video_path)
+        if not cap.isOpened():
+            await manager.broadcast({"type": "error", "message": "Could not open video file."})
+            return
+
+        src_fps    = cap.get(cv2.CAP_PROP_FPS) or 30
+        target_fps = 30
+        skip       = max(1, round(src_fps / target_fps))   # process every Nth frame
+        frame_delay = 1.0 / target_fps
+
+        logger.info(f"Source FPS={src_fps:.1f} | streaming at {target_fps} FPS (skip={skip})")
+        await stream_status("STREAMING_LIVE")
+
+        # ── Per-run state (fresh classifier each time) ────────────────────────
+        local_classifier = DynamicTeamClassifier()
+        tracker          = CentroidTracker(max_disappeared=15)
+        previous_centers: dict = {}
+        player_registry:  dict = {}
+        idx              = 0
+        frame_count      = 0
+        timeline         = []
+        possession_t1 = possession_t2 = 0
+
         main_loop = asyncio.get_running_loop()
 
-        def on_frame_sync(frame, stats):
-            if main_loop.is_running():
-                asyncio.run_coroutine_threadsafe(stream_frame(frame, stats), main_loop)
-
-        def on_status_sync(msg):
-            if main_loop.is_running():
-                asyncio.run_coroutine_threadsafe(stream_status(msg), main_loop)
-
-        # 1 ── Initial Processing
-        logger.info("Starting pipeline task...")
-        result = await asyncio.to_thread(
-            run_pipeline, 
-            video_path, output_dir, model_path, extracted_dir, processed_dir,
-            on_frame=on_frame_sync,
-            on_status=on_status_sync
-        )
-
-        if not result:
-            logger.error("Pipeline failed, cannot start loop.")
-            return
-
-        # 2 ── Continuous Looping
-        logger.info("Pipeline finished. Transitioning to infinite loop...")
-        processed_files = sorted([f for f in os.listdir(processed_dir) if f.endswith('.jpg')])
-        if not processed_files:
-            logger.error("No processed frames found for looping.")
-            return
-
-        timeline = result["detection"]["timeline"]
-        
-        from shared_state import is_stopped
         while True:
-            # Check for cancellation or explicit stop request
             if asyncio.current_task().cancelled() or is_stopped():
-                logger.info("Loop task halted.")
                 break
 
-            for idx, frame_file in enumerate(processed_files):
-                if not manager.active_connections or asyncio.current_task().cancelled():
-                    break
-                    
-                frame_path = os.path.join(processed_dir, frame_file)
-                frame = cv2.imread(frame_path)
-                if frame is not None:
-                    # Compute Real-time Tactical Metrics
-                    frame_stats = timeline[idx] if idx < len(timeline) else {}
-                    players = frame_stats.get("detections", [])
-                    tactical_data = compute_tactical_metrics(players)
-                    
-                    # Get AI recommendation every 60 frames (~2 seconds)
-                    recommendation = None
-                    if idx % 60 == 0:
-                        recommendation = await get_ai_recommendation(tactical_data)
+            ok, frame = await asyncio.to_thread(cap.read)
+            if not ok:
+                # Loop back to start
+                cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                local_classifier = DynamicTeamClassifier()
+                tracker          = CentroidTracker(max_disappeared=15)
+                previous_centers = {}
+                idx              = 0
+                continue
 
-                    stats = {
-                        "players_detected": frame_stats.get("t1", 0) + frame_stats.get("t2", 0),
-                        "team1_count": frame_stats.get("t1", 0),
-                        "team2_count": frame_stats.get("t2", 0),
-                        "ball_detected": frame_stats.get("ball", False),
-                        "frame_id": idx,
-                        "detections": frame_stats.get("detections", []),
-                        "possession": frame_stats.get("possession", "unknown"),
-                        "metrics": tactical_data,
-                        "recommendation": recommendation
-                    }
-                    await stream_frame(frame, stats)
-                    
-                await asyncio.sleep(1/30)
+            frame_count += 1
+            if frame_count % skip != 0:
+                continue
+
+            # ── Resize for fast YOLO inference (640-wide) ────────────────────
+            h, w     = frame.shape[:2]
+            inf_w    = 640
+            inf_h    = int(h * inf_w / w)
+            inf_frame = cv2.resize(frame, (inf_w, inf_h))
+
+            # ── YOLO (non-blocking thread) ────────────────────────────────────
+            results = await asyncio.to_thread(
+                lambda: model(inf_frame, classes=[0, 32], verbose=False)[0]
+            )
+
+            # Scale factor back to original frame coords
+            sx, sy = w / inf_w, h / inf_h
+
+            frame_t1 = frame_t2 = 0
+            ball_in_frame = False
+            frame_detections = []
+            current_centers  = []
+
+            for box in results.boxes:
+                cls  = int(box.cls[0])
+                conf = float(box.conf[0])
+                x1, y1, x2, y2 = [int(v) for v in box.xyxy[0]]
+                # Scale back to display frame
+                x1, x2 = int(x1 * sx), int(x2 * sx)
+                y1, y2 = int(y1 * sy), int(y2 * sy)
+
+                if cls == 32:
+                    ball_in_frame = True
+                    bx, by = (x1 + x2) // 2, (y1 + y2) // 2
+                    cv2.circle(frame, (bx, by), 15, (0, 255, 255), 2)
+                    continue
+
+                current_centers.append((x1, y1, x2, y2))
+
+                # Dynamic calibration
+                avg_hsv = get_shirt_color(frame, x1, y1, x2, y2)
+                if avg_hsv is not None:
+                    if idx < CALIBRATION_FRAMES:
+                        local_classifier.add_sample(avg_hsv)
+                    elif idx == CALIBRATION_FRAMES and not local_classifier.calibrated:
+                        local_classifier.calibrate()
+
+                if local_classifier.calibrated:
+                    team, color = local_classifier.predict(avg_hsv) if avg_hsv is not None else ("Not playing", (128, 128, 128))
+                else:
+                    team, color = ("Not playing", (128, 128, 128))
+
+                if team == "Team 1":
+                    frame_t1 += 1
+                elif team == "Team 2":
+                    frame_t2 += 1
+
+                frame_detections.append({
+                    "team":   "green" if team == "Team 1" else "white",
+                    "bbox":   [x1, y1, x2, y2],
+                    "conf":   round(conf, 3),
+                    "center": ((x1 + x2) // 2, (y1 + y2) // 2),
+                })
+                draw_box(frame, x1, y1, x2, y2, team, color, conf)
+
+            # ── Tracking ─────────────────────────────────────────────────────
+            tracked = tracker.update(current_centers)
+            final_detections = []
+            for det in frame_detections:
+                cx, cy   = det["center"]
+                best_id  = -1
+                min_dist = 50
+                for oid, oc in tracked.items():
+                    d = float(np.linalg.norm(np.array((cx, cy)) - oc))
+                    if d < min_dist:
+                        min_dist = d
+                        best_id  = oid
+                if best_id != -1:
+                    det["id"] = best_id
+                    if best_id not in player_registry:
+                        player_registry[best_id] = {"id": best_id, "team": det["team"],
+                                                     "distance": 0, "topSpeed": 0}
+                    if best_id in previous_centers:
+                        px, py   = previous_centers[best_id]
+                        dist     = ((cx - px)**2 + (cy - py)**2) ** 0.5
+                        player_registry[best_id]["distance"]  += dist * 0.05
+                        player_registry[best_id]["topSpeed"]   = max(
+                            player_registry[best_id]["topSpeed"], dist * 0.5)
+                    previous_centers[best_id] = (cx, cy)
+                    final_detections.append(det)
+
+            possession = "team1" if frame_t1 >= frame_t2 else "team2"
+            frame_stats = {
+                "t1": frame_t1, "t2": frame_t2,
+                "ball": ball_in_frame,
+                "detections": final_detections,
+                "possession": possession,
+            }
+            timeline.append(frame_stats)
+
+            # ── Tactical metrics + broadcast ──────────────────────────────────
+            tactical_data = compute_tactical_metrics(final_detections)
+            stats = {
+                "players_detected": frame_t1 + frame_t2,
+                "team1_count":  frame_t1,
+                "team2_count":  frame_t2,
+                "ball_detected": ball_in_frame,
+                "frame_id":     idx,
+                "detections":   final_detections,
+                "possession":   possession,
+                "metrics":      tactical_data,
+                "recommendation": None,
+            }
+            await stream_frame(frame, stats)
+
+            idx += 1
+            await asyncio.sleep(frame_delay)
+
+        cap.release()
+
     except asyncio.CancelledError:
         logger.info("Detection task stopped via cancellation.")
         raise
     except Exception as e:
-        logger.error(f"Error in detection task: {e}")
+        logger.error(f"Error in detection task: {e}", exc_info=True)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
+

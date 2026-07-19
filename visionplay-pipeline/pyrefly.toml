@@ -1,0 +1,4 @@
+# Pyrefly configuration for VisionPlay pipeline
+# Points to the virtual environment so imports like numpy, networkx, etc. resolve correctly.
+
+python_interpreter = ".venv/bin/python3"

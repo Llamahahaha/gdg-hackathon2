@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"bun next dev --turbopack\" \"dev-python.bat\"",
+    "dev": "concurrently \"bun next dev --webpack\" \"bash dev-python.sh\"",
     "build": "bun next build",
     "start": "bun next start",
     "lint": "eslint"

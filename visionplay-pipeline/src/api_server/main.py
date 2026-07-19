@@ -5,15 +5,21 @@ A lightweight FastAPI microservice that exposes graph-theoretic football
 analytics over HTTP. Runs separately from the main WebSocket telemetry server.
 
 Endpoints:
+  GET  /health   - Liveness probe
+  GET  /validate - Run algorithm validation suite
   POST /analyze  - Full tactical graph analysis from player positions
 
 Usage:
-  cd visionplay-pipeline
-  source .venv/bin/activate
-  python -m uvicorn src.api_server.main:app --host 0.0.0.0 --port 8001 --reload
+  cd visionplay-pipeline && source .venv/bin/activate
+  PYTHONPATH=src python -m uvicorn api_server.main:app --host 0.0.0.0 --port 8001 --reload
 
-The Next.js frontend can call this at http://localhost:8001/analyze
+The Next.js frontend calls this at http://localhost:8001
 """
+import sys
+import os
+
+# PYTHONPATH=src must be set when launching uvicorn (see Usage above).
+# The sys/os imports below are kept for future environment introspection.
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware

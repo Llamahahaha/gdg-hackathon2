@@ -4,8 +4,29 @@ from api_server.algorithms.articulation import get_articulation_points
 from api_server.algorithms.metrics import compute_diameter, compute_avg_shortest_path, compute_centrality
 from api_server.algorithms.entropy import compute_entropy
 from api_server.algorithms.recommendations import get_recommendations
+from validation import run_all_validations
 
 router = APIRouter()
+
+
+@router.get("/validate")
+def validate():
+    """
+    Run all Tier 1 and Tier 2 validation tests.
+    Returns a dict of test IDs to result objects with status PASS/FAIL.
+    """
+    results = run_all_validations()
+    total = len(results)
+    passed = sum(1 for r in results.values() if r.get("status") == "PASS")
+    return {
+        "summary": {
+            "total": total,
+            "passed": passed,
+            "failed": total - passed,
+            "pass_rate": round(passed / total * 100, 1) if total > 0 else 0
+        },
+        "tests": results
+    }
 
 
 @router.post("/analyze")

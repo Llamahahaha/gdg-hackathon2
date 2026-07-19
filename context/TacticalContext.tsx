@@ -217,10 +217,16 @@ export function TacticalProvider({ children }: { children: React.ReactNode }) {
           }]);
           
           if (error) {
-            console.error("Supabase Error:", error);
-            alert("❌ Failed to save to Supabase: " + error.message);
+            // Log the raw error — Supabase error properties are non-enumerable
+            // so spreading into {} shows empty. Log directly instead.
+            console.error("Supabase Save Error:", error.message || error);
+            console.error("  message:", error?.message);
+            console.error("  code:", error?.code);
+            console.error("  details:", error?.details);
+            console.error("  hint:", error?.hint);
+            alert(`❌ Supabase Error: ${error?.message || 'Unable to connect. The project might be paused or offline.'}\nCode: ${error?.code || 'N/A'}`);
           } else {
-            console.log("Saved to Supabase.");
+            console.log("Successfully saved match telemetry to Supabase.");
             alert("✅ Match data successfully saved to Supabase!");
           }
         }

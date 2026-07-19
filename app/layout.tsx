@@ -22,7 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`dark ${inter.variable} ${orbitron.variable}`}>
-      <body className="min-h-screen bg-charcoal text-white font-sans antialiased">
+      <body suppressHydrationWarning className="min-h-screen bg-charcoal text-white font-sans antialiased">
         <AuthProvider>
           <AuthGuard>
             <TacticalProvider>

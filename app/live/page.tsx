@@ -23,41 +23,51 @@ export default function LiveEnginePage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    setUploadedFilename(file.name);
+
+    // ── Step 1: make the video available locally RIGHT NOW ──────────────────
+    // Creating a blob URL is instant — no waiting for HTTP transfer.
+    const localVideoURL = URL.createObjectURL(file);
+    setUploadedVideoSrc(localVideoURL);
+
+    // ── Step 2: upload to backend in the background ──────────────────────────
+    // We show progress but the user isn't blocked from starting the engine.
     setUploadState('uploading');
     setUploadProgress(0);
-    setUploadedFilename(file.name);
 
     const formData = new FormData();
     formData.append('file', file);
 
-    try {
-      // Create a local object URL so Replay Lab can reference the same video
-      const localVideoURL = URL.createObjectURL(file);
+    const apiHost =
+      window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? '127.0.0.1'
+        : window.location.hostname;
 
-      // Use XMLHttpRequest for real upload progress tracking
-      await new Promise<void>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.upload.onprogress = (e) => {
-          if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100));
-        };
-        xhr.onload = () => {
-          if (xhr.status === 200) resolve();
-          else reject(new Error(`Upload failed: ${xhr.status}`));
-        };
-        xhr.onerror = () => reject(new Error('Network error: Could not reach the VisionPlay backend on port 8000.'));
-        const apiHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '127.0.0.1' : window.location.hostname;
-        xhr.open('POST', `http://${apiHost}:8000/upload-video`);
-        xhr.send(formData);
-      });
+    const xhr = new XMLHttpRequest();
 
-      // Persist the blob URL in shared context for Replay Lab
-      setUploadedVideoSrc(localVideoURL);
-      setUploadState('done');
-      setUploadProgress(100);
-    } catch (err) {
-      console.error('Video upload failed:', err);
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100));
+    };
+
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        setUploadState('done');
+        setUploadProgress(100);
+      } else {
+        console.error(`Upload failed: ${xhr.status}`);
+        setUploadState('error');
+      }
+    };
+
+    xhr.onerror = () => {
+      console.error('Network error: Could not reach the VisionPlay backend on port 8000.');
+      // Still mark as done locally — the blob URL is already set and usable
       setUploadState('error');
-    }
+    };
+
+    xhr.open('POST', `http://${apiHost}:8000/upload-video`);
+    xhr.send(formData);
+    // Note: intentionally NOT awaiting — upload runs in background
   };
 
   useEffect(() => {
