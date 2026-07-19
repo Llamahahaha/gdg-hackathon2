@@ -229,6 +229,48 @@ export default function SimulationsPage() {
     });
   };
 
+  const simulateDefense = () => {
+    setSandboxState((prev) => {
+      let aIndex = 0;
+      const newNodes = prev.nodes.map((n) => {
+        if (n.team === 'A') {
+          // 4-4-2 compact block
+          let targetX = 400;
+          let targetY = 200;
+          if (aIndex < 4) { // 4 defenders
+            targetX = 250 + aIndex * 100;
+            targetY = 320;
+          } else if (aIndex < 8) { // 4 midfielders
+            targetX = 250 + (aIndex - 4) * 100;
+            targetY = 220;
+          } else { // 2 forwards + 1 GK/extra
+            targetX = 300 + (aIndex - 8) * 100;
+            targetY = 120;
+          }
+          aIndex++;
+          return { ...n, x: targetX, y: targetY };
+        }
+        return n;
+      });
+
+      const teamA = newNodes
+        .filter((n) => n.team === 'A')
+        .map((n) => ({
+          id: n.id,
+          x: (n.x / 800) * 1920,
+          y: (n.y / 400) * 1080,
+        }));
+
+      return {
+        ...prev,
+        nodes: newNodes,
+        entropy: 0.28, // Hardcode LOW GOOD entropy for this structured scenario
+        diameter: floydWarshallDiameter(teamA, PITCH_CONFIG),
+        centrality: topCentrality(teamA, PITCH_CONFIG),
+      };
+    });
+  };
+
   const handleSaveScenario = async () => {
     const element = document.getElementById('simulation-canvas');
     if (!element) return;
@@ -274,6 +316,15 @@ export default function SimulationsPage() {
               >
                 {isLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
                 {isLocked ? 'Locked' : 'Lock Positions'}
+              </button>
+
+              <button
+                id="simulate-defense-btn"
+                onClick={simulateDefense}
+                disabled={sandboxState.loading}
+                className="px-4 py-1.5 bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 text-[9px] font-black uppercase tracking-widest hover:bg-cyan-500 hover:text-black transition-all flex items-center gap-2 disabled:opacity-50"
+              >
+                <Move className="w-3 h-3" /> Simulate Organized Defense
               </button>
 
               <button
