@@ -33,6 +33,10 @@ interface TestResult {
   deviation?: number;
   status: "PASS" | "FAIL";
   error?: string;
+  visual_data?: {
+    nodes: Array<{ id: string; x: number; y: number; label?: string; type?: string; highlight?: string }>;
+    edges: Array<{ source: string; target: string; weight?: number }>;
+  };
 }
 
 interface ValidationResponse {
@@ -150,43 +154,122 @@ function TestCard({ test, index }: { test: TestResult; index: number }) {
             transition={{ duration: 0.18 }}
             className="overflow-hidden"
           >
-            <div className="px-4 pb-4 pt-2 border-t border-white/5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {test.input && (
-                <div>
-                  <div className="text-[8px] font-black text-white/25 uppercase tracking-widest mb-1">Input</div>
-                  <div className="text-[11px] text-white/65 font-mono leading-relaxed">{test.input}</div>
-                </div>
-              )}
-              {test.expected && (
-                <div>
-                  <div className="text-[8px] font-black text-white/25 uppercase tracking-widest mb-1">Expected</div>
-                  <div className="text-[11px] text-white/65 font-mono leading-relaxed">{test.expected}</div>
-                </div>
-              )}
-              {test.actual && (
-                <div>
-                  <div className="text-[8px] font-black text-white/25 uppercase tracking-widest mb-1">Actual Output</div>
-                  <div className={`text-[11px] font-mono leading-relaxed font-bold ${passed ? "text-emerald-400" : "text-rose-400"}`}>
-                    {test.actual}
+            <div className="px-4 pb-4 pt-2 border-t border-white/5 flex flex-col gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {test.input && (
+                  <div>
+                    <div className="text-[8px] font-black text-white/25 uppercase tracking-widest mb-1">Input</div>
+                    <div className="text-[11px] text-white/65 font-mono leading-relaxed">{test.input}</div>
                   </div>
-                </div>
-              )}
-              {test.pass_criteria && (
-                <div className="sm:col-span-2">
-                  <div className="text-[8px] font-black text-white/25 uppercase tracking-widest mb-1">Pass Criteria</div>
-                  <div className="text-[11px] text-white/40 font-mono leading-relaxed">{test.pass_criteria}</div>
-                </div>
-              )}
-              {test.deviation !== undefined && (
-                <div>
-                  <div className="text-[8px] font-black text-white/25 uppercase tracking-widest mb-1">Deviation</div>
-                  <div className="text-[11px] text-cyan-400 font-mono font-bold">{test.deviation.toExponential(3)}</div>
-                </div>
-              )}
-              {test.error && (
-                <div className="sm:col-span-3">
-                  <div className="text-[8px] font-black text-rose-400 uppercase tracking-widest mb-1">Error</div>
-                  <div className="text-[11px] text-rose-300 font-mono bg-rose-950/50 px-3 py-2">{test.error}</div>
+                )}
+                {test.expected && (
+                  <div>
+                    <div className="text-[8px] font-black text-white/25 uppercase tracking-widest mb-1">Expected</div>
+                    <div className="text-[11px] text-white/65 font-mono leading-relaxed">{test.expected}</div>
+                  </div>
+                )}
+                {test.actual && (
+                  <div>
+                    <div className="text-[8px] font-black text-white/25 uppercase tracking-widest mb-1">Actual Output</div>
+                    <div className={`text-[11px] font-mono leading-relaxed font-bold ${passed ? "text-emerald-400" : "text-rose-400"}`}>
+                      {test.actual}
+                    </div>
+                  </div>
+                )}
+                {test.pass_criteria && (
+                  <div className="sm:col-span-2">
+                    <div className="text-[8px] font-black text-white/25 uppercase tracking-widest mb-1">Pass Criteria</div>
+                    <div className="text-[11px] text-white/40 font-mono leading-relaxed">{test.pass_criteria}</div>
+                  </div>
+                )}
+                {test.deviation !== undefined && (
+                  <div>
+                    <div className="text-[8px] font-black text-white/25 uppercase tracking-widest mb-1">Deviation</div>
+                    <div className="text-[11px] text-cyan-400 font-mono font-bold">{test.deviation.toExponential(3)}</div>
+                  </div>
+                )}
+                {test.error && (
+                  <div className="sm:col-span-3">
+                    <div className="text-[8px] font-black text-rose-400 uppercase tracking-widest mb-1">Error</div>
+                    <div className="text-[11px] text-rose-300 font-mono bg-rose-950/50 px-3 py-2">{test.error}</div>
+                  </div>
+                )}
+              </div>
+              
+              {/* Visual Data Rendering */}
+              {test.visual_data && test.visual_data.nodes && (
+                <div className="mt-4 border border-white/10 bg-black/40 p-4 rounded-md overflow-x-auto">
+                  <div className="text-[8px] font-black text-cyan-400/80 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <Activity className="w-3 h-3" />
+                    Live Visual Verification
+                  </div>
+                  <div className="relative w-full h-[250px] sm:h-[300px] border border-white/5 bg-white/[0.02]">
+                    <svg className="w-full h-full" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid meet">
+                      {/* Grid background */}
+                      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="1"/>
+                      </pattern>
+                      <rect width="100%" height="100%" fill="url(#grid)" />
+                      
+                      {/* Edges */}
+                      {test.visual_data.edges.map((edge, i) => {
+                        const sourceNode = test.visual_data!.nodes.find(n => n.id === edge.source);
+                        const targetNode = test.visual_data!.nodes.find(n => n.id === edge.target);
+                        if (!sourceNode || !targetNode) return null;
+                        
+                        // Scale coordinates (assuming rough bounds of 0-800 for x and 0-500 for y)
+                        // If coordinates are arbitrary, we do a simple mapping
+                        const scaleX = (x: number) => Math.min(Math.max(x, 20), 780);
+                        const scaleY = (y: number) => Math.min(Math.max(y, 20), 480);
+                        
+                        return (
+                          <line
+                            key={`edge-${i}`}
+                            x1={scaleX(sourceNode.x)}
+                            y1={scaleY(sourceNode.y)}
+                            x2={scaleX(targetNode.x)}
+                            y2={scaleY(targetNode.y)}
+                            stroke={sourceNode.type === "jitter" || targetNode.type === "jitter" ? "rgba(255,255,255,0.1)" : "rgba(100,200,255,0.15)"}
+                            strokeWidth={edge.weight ? Math.min(edge.weight, 5) : 1}
+                            strokeDasharray={sourceNode.type === "jitter" ? "4 4" : "none"}
+                          />
+                        );
+                      })}
+                      
+                      {/* Nodes */}
+                      {test.visual_data.nodes.map((node, i) => {
+                        const scaleX = (x: number) => Math.min(Math.max(x, 20), 780);
+                        const scaleY = (y: number) => Math.min(Math.max(y, 20), 480);
+                        
+                        let fill = "rgba(255,255,255,0.2)";
+                        let stroke = "rgba(255,255,255,0.4)";
+                        if (node.type === "jitter") {
+                          fill = "rgba(255,0,0,0.3)";
+                          stroke = "rgba(255,0,0,0.6)";
+                        } else if (node.highlight === "lynchpin") {
+                          fill = "rgba(255,165,0,0.6)";
+                          stroke = "rgba(255,165,0,1)";
+                        } else if (node.highlight === "playmaker") {
+                          fill = "rgba(0,255,128,0.6)";
+                          stroke = "rgba(0,255,128,1)";
+                        }
+                        
+                        return (
+                          <g key={`node-${i}`} transform={`translate(${scaleX(node.x)}, ${scaleY(node.y)})`}>
+                            {node.highlight && (
+                               <circle r="14" fill="none" stroke={stroke} strokeWidth="1" className="animate-ping opacity-50" />
+                            )}
+                            <circle r="6" fill={fill} stroke={stroke} strokeWidth="1.5" />
+                            {node.label && (
+                              <text x="10" y="4" fill="rgba(255,255,255,0.6)" fontSize="10" fontFamily="monospace">
+                                {node.label}
+                              </text>
+                            )}
+                          </g>
+                        );
+                      })}
+                    </svg>
+                  </div>
                 </div>
               )}
             </div>
@@ -242,12 +325,23 @@ export default function ValidationPage() {
   const [filter, setFilter] = useState<"all" | "pass" | "fail" | 1 | 2>("all");
   const [apiOnline, setApiOnline] = useState<boolean | null>(null);
 
+  // Configuration settings
+  const [config, setConfig] = useState({
+    k_size: 5,
+    playbook: "Spain 2012",
+    noise_level: 2.0
+  });
+
   async function runValidation() {
     setLoading(true);
     setError(null);
     setData(null);
     try {
-      const res = await fetch(`${API_BASE}/validate`);
+      const res = await fetch(`${API_BASE}/validate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(config)
+      });
       if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
       const json: ValidationResponse = await res.json();
       setData(json);
@@ -379,6 +473,73 @@ export default function ValidationPage() {
               </div>
             </div>
           )}
+
+          {/* ── Config Panel ── */}
+          <div className="mb-8 bg-black/40 border border-white/10 p-5 rounded-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-white/50 flex items-center gap-2">
+                <Target className="w-3.5 h-3.5" />
+                Test Configuration
+              </h3>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              {/* Graph Size */}
+              <div className="flex flex-col gap-2">
+                <label className="text-[9px] font-black uppercase tracking-widest text-cyan-400/80">
+                  Tier 1: Graph Size (K_n)
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="range"
+                    min="3"
+                    max="15"
+                    value={config.k_size}
+                    onChange={(e) => setConfig({ ...config, k_size: parseInt(e.target.value) })}
+                    className="flex-1 accent-cyan-500"
+                  />
+                  <span className="text-xs font-mono font-bold w-6">{config.k_size}</span>
+                </div>
+                <p className="text-[8px] text-white/30">Used for Eigenvector and Entropy baseline tests.</p>
+              </div>
+
+              {/* Playbook */}
+              <div className="flex flex-col gap-2">
+                <label className="text-[9px] font-black uppercase tracking-widest text-cyan-400/80">
+                  Tier 2: Playbook
+                </label>
+                <select
+                  value={config.playbook}
+                  onChange={(e) => setConfig({ ...config, playbook: e.target.value })}
+                  className="bg-white/5 border border-white/10 text-xs px-3 py-1.5 focus:outline-none focus:border-cyan-500 font-mono text-white/80"
+                >
+                  <option value="Spain 2012">Spain 2012 (Historical)</option>
+                  <option value="Randomized Team">Randomized Team Layout</option>
+                </select>
+                <p className="text-[8px] text-white/30">Determines node positions for tactical robustness checks.</p>
+              </div>
+
+              {/* Noise Level */}
+              <div className="flex flex-col gap-2">
+                <label className="text-[9px] font-black uppercase tracking-widest text-cyan-400/80">
+                  Tier 2: Noise Jitter (m)
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="5.0"
+                    step="0.5"
+                    value={config.noise_level}
+                    onChange={(e) => setConfig({ ...config, noise_level: parseFloat(e.target.value) })}
+                    className="flex-1 accent-cyan-500"
+                  />
+                  <span className="text-xs font-mono font-bold w-6">{config.noise_level.toFixed(1)}</span>
+                </div>
+                <p className="text-[8px] text-white/30">Simulated tracking noise for reliability stress test.</p>
+              </div>
+            </div>
+          </div>
 
           {/* ── Summary stat cards ── */}
           {data && (

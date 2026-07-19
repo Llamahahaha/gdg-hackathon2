@@ -9,13 +9,16 @@ from validation import run_all_validations
 router = APIRouter()
 
 
-@router.get("/validate")
-def validate():
+@router.post("/validate")
+def validate(config: dict = None):
     """
-    Run all Tier 1 and Tier 2 validation tests.
+    Run all Tier 1 and Tier 2 validation tests with optional configuration.
     Returns a dict of test IDs to result objects with status PASS/FAIL.
     """
-    results = run_all_validations()
+    if config is None:
+        config = {}
+        
+    results = run_all_validations(config)
     total = len(results)
     passed = sum(1 for r in results.values() if r.get("status") == "PASS")
     return {
