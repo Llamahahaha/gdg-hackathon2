@@ -61,6 +61,7 @@ export default function ReplayLabPage() {
   const preCollapseFrameIndex = Math.max(0, peakEntropyFrameIndex - 45); // ~1.5s before peak
 
   const videoRef = useRef<HTMLVideoElement>(null);
+  const videoDurationRef = useRef<number>(0);
 
   const selectedFrame = React.useMemo(() => {
     if (!timeline || timeline.length === 0) return null;
@@ -108,6 +109,20 @@ export default function ReplayLabPage() {
     if (isPlaying) video.play().catch(() => { });
     else video.pause();
   }, [isPlaying, uploadedVideoSrc]);
+
+  // ── Seek video when frameIndex changes (scrubbing or stepping) ────────────
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !uploadedVideoSrc || !timeline || timeline.length === 0) return;
+    // Use stored duration so we don't seek before metadata is loaded
+    const duration = videoDurationRef.current || video.duration;
+    if (!duration || !isFinite(duration)) return;
+    const targetTime = (frameIndex / timeline.length) * duration;
+    // Only seek if the difference is meaningful (>100ms) to avoid fighting auto-play
+    if (Math.abs(video.currentTime - targetTime) > 0.1) {
+      video.currentTime = targetTime;
+    }
+  }, [frameIndex, uploadedVideoSrc, timeline]);
 
   // ── STEP 1: Analyze — call backend Ollama endpoint ────────────────────────
   const analyzeReport = async () => {
@@ -322,6 +337,9 @@ export default function ReplayLabPage() {
                 muted
                 loop
                 playsInline
+                onLoadedMetadata={(e) => {
+                  videoDurationRef.current = (e.target as HTMLVideoElement).duration;
+                }}
               />
             ) : (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white/20">
