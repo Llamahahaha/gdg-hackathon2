@@ -9,7 +9,7 @@ export interface Node2D {
   y: number;
 }
 
-const K_SOFTMAX = 2.0;          // spectral softmax temperature
+const K_SOFTMAX = 6.0;          // spectral softmax temperature
 
 export interface GraphConfig {
   pixelsPerMeterX: number;
