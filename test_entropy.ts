@@ -13,14 +13,14 @@ function computeH(eigenvalues: number[], K: number) {
 
 // Complete graph of 11 nodes (all non-zero eigenvalues are 11, one is 0)
 // Actually, Laplacian of unweighted complete graph: eigenvalues are n (x n-1) and 0.
-let eigsComplete = Array(10).fill(11);
+const eigsComplete = Array(10).fill(11);
 eigsComplete.push(0);
 
 // Star graph of 11 nodes: eigenvalues are 11 (x1), 1 (x9), 0 (x1)
-let eigsStar = [11, ...Array(9).fill(1), 0];
+const eigsStar = [11, ...Array(9).fill(1), 0];
 
 // Path graph of 11 nodes: eigenvalues are 2 - 2*cos(pi * k / n) for k=0..n-1
-let eigsPath = Array.from({length: 11}, (_, k) => 2 - 2 * Math.cos(Math.PI * k / 11));
+const eigsPath = Array.from({length: 11}, (_, k) => 2 - 2 * Math.cos(Math.PI * k / 11));
 
 console.log("K_SOFTMAX = 2.0:");
 console.log("Complete Graph:", computeH(eigsComplete, 2.0));
