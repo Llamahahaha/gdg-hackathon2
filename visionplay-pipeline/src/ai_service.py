@@ -23,8 +23,8 @@ class AIService:
         Falls back gracefully if no API key is set.
         """
         api_key = os.getenv("GROQ_API_KEY", "")
-        # Llama 3.2 3B is blazing fast and handles JSON well. You can also use 90b.
-        model_name = os.getenv("GROQ_MODEL", "llama-3.2-3b-preview")
+        # Fall back to a standard, non-deprecated model
+        model_name = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
         
         if not api_key:
             logger.warning("GROQ_API_KEY not set — AI features disabled.")
