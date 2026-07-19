@@ -14,6 +14,11 @@ const eslintConfig = defineConfig([
     "**/node_modules/**",
     "**/.venv/**",
     "**/dist/**",
+    // Scratch/test scripts at project root - not part of the Next.js app
+    "test_*.ts",
+    "test_*.js",
+    "test-*.ts",
+    "test-*.js",
   ]),
 ]);
 
