@@ -43,25 +43,8 @@ export default function LiveEnginePage() {
         ? '127.0.0.1'
         : window.location.hostname;
 
-<<<<<<< HEAD
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || `http://${apiHost}:8000`;
     const xhr = new XMLHttpRequest();
-=======
-      // Use XMLHttpRequest for real upload progress tracking
-      await new Promise<void>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.upload.onprogress = (e) => {
-          if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100));
-        };
-        xhr.onload = () => {
-          if (xhr.status === 200) resolve();
-          else reject(new Error(`Upload failed: ${xhr.status}`));
-        };
-        xhr.onerror = () => reject(new Error('Network error: Could not reach the VisionPlay backend on port 8000.'));
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || `http://${window.location.hostname}:8000`;
-        xhr.open('POST', `${backendUrl}/upload-video`);
-        xhr.send(formData);
-      });
->>>>>>> 6b45ee40714ce8ceebf6aedb7eb3a7f1d70c91b9
 
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100));
@@ -78,12 +61,12 @@ export default function LiveEnginePage() {
     };
 
     xhr.onerror = () => {
-      console.error('Network error: Could not reach the VisionPlay backend on port 8000.');
+      console.error('Network error: Could not reach the VisionPlay backend.');
       // Still mark as done locally — the blob URL is already set and usable
       setUploadState('error');
     };
 
-    xhr.open('POST', `http://${apiHost}:8000/upload-video`);
+    xhr.open('POST', `${backendUrl}/upload-video`);
     xhr.send(formData);
     // Note: intentionally NOT awaiting — upload runs in background
   };
