@@ -8,72 +8,69 @@ load_dotenv()
 
 logger = logging.getLogger("ai-service")
 
-# ── Google Gemini API ─────────────────────────────────────────────────────────
-# Set GEMINI_API_KEY in your Railway environment variables.
-# Free tier: 15 RPM, no credit card required.
-# Get your key at: https://aistudio.google.com/apikey
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
-GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
+# ── Groq API ─────────────────────────────────────────────────────────
+# Set GROQ_API_KEY in your Railway environment variables.
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.2-90b-text-preview")  # Or 'llama3-8b-8192' or 'llama-3.2-3b-preview'
+GROQ_BASE_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 
 class AIService:
     @staticmethod
     async def generate_response(prompt: str, json_mode: bool = False) -> str | None:
         """
-        Generates a text response using Google Gemini API.
+        Generates a text response using Groq (OpenAI-compatible REST API).
         Falls back gracefully if no API key is set.
         """
-        api_key = os.getenv("GEMINI_API_KEY", "")
-        model_name = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+        api_key = os.getenv("GROQ_API_KEY", "")
+        # Llama 3.2 3B is blazing fast and handles JSON well. You can also use 90b.
+        model_name = os.getenv("GROQ_MODEL", "llama-3.2-3b-preview")
         
         if not api_key:
-            logger.warning("GEMINI_API_KEY not set — AI features disabled.")
+            logger.warning("GROQ_API_KEY not set — AI features disabled.")
             return None
 
-        url = f"{GEMINI_BASE_URL}/models/{model_name}:generateContent?key={api_key}"
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
 
         body = {
-            "contents": [
-                {
-                    "parts": [{"text": prompt}]
-                }
+            "model": model_name,
+            "messages": [
+                {"role": "system", "content": "You are FieldTheory AI, an elite tactical football analyst."},
+                {"role": "user", "content": prompt}
             ],
-            "generationConfig": {
-                "temperature": 0.7,
-                "maxOutputTokens": 1024,
-            }
+            "temperature": 0.7,
+            "max_tokens": 1024,
         }
 
         # Request JSON output when needed (e.g. audit reports)
         if json_mode:
-            body["generationConfig"]["responseMimeType"] = "application/json"
+            body["response_format"] = {"type": "json_object"}
 
         try:
-            logger.info(f"Querying Gemini ({model_name})...")
+            logger.info(f"Querying Groq ({model_name})...")
             async with httpx.AsyncClient(timeout=60.0) as client:
-                response = await client.post(url, json=body)
+                response = await client.post(GROQ_BASE_URL, headers=headers, json=body)
                 response.raise_for_status()
                 result = response.json()
 
-                # Extract text from Gemini response structure
-                candidates = result.get("candidates", [])
-                if candidates:
-                    parts = candidates[0].get("content", {}).get("parts", [])
-                    if parts:
-                        text = parts[0].get("text", "").strip()
-                        logger.info(f"Gemini response received: {text[:80]}...")
-                        return text
+                choices = result.get("choices", [])
+                if choices:
+                    text = choices[0].get("message", {}).get("content", "").strip()
+                    logger.info(f"Groq response received: {text[:80]}...")
+                    return text
 
-                logger.warning("Gemini returned empty candidates.")
+                logger.warning("Groq returned empty choices.")
                 return None
 
         except httpx.HTTPStatusError as e:
-            err_msg = f"Gemini API error {e.response.status_code}: {e.response.text[:200]}"
+            err_msg = f"Groq API error {e.response.status_code}: {e.response.text[:200]}"
             logger.error(err_msg)
             raise Exception(err_msg)
         except Exception as e:
-            logger.error(f"Gemini generation failed: {e}")
+            logger.error(f"Groq generation failed: {e}")
             raise Exception(str(e))
 
     @staticmethod

@@ -218,7 +218,7 @@ async def chat_endpoint(data: dict):
         return {"response": response if response else "Strategic Engine offline."}
     except Exception as e:
         logger.error(f"Chat failed: {e}")
-        return {"response": f"Strategic Engine offline. Error: {str(e)}"}
+        return {"response": f"Strategic Engine offline. Ensure GROQ_API_KEY is set. Error: {str(e)}"}
 
 @app.post("/generate-audit")
 async def generate_audit_endpoint(data: dict):
