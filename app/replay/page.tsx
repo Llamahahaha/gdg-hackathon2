@@ -128,7 +128,7 @@ export default function ReplayLabPage() {
     video.currentTime = (frameIndex / timeline.length) * duration;
   }, [frameIndex, isPlaying, uploadedVideoSrc, timeline]);
 
-  // ── STEP 1: Analyze — call backend Ollama endpoint ────────────────────────
+  // ── STEP 1: Analyze — call backend Gemini endpoint ────────────────────────
   const analyzeReport = async () => {
     const dataToAnalyze = timeline;
     if (!dataToAnalyze || dataToAnalyze.length === 0) return;
@@ -165,7 +165,7 @@ export default function ReplayLabPage() {
       ).toFixed(2);
 
       setReportData({
-        matchId: 'FT-OLLAMA-AUDIT',
+        matchId: 'FT-GEMINI-AUDIT',
         date: new Date().toLocaleDateString().toUpperCase(),
         criticalMoments: moments,
         overallStability: `${(100 - parseFloat(avgEntropy) * 100).toFixed(1)}%`,
@@ -176,7 +176,7 @@ export default function ReplayLabPage() {
         keyTakeaways: aiReport.key_takeaways || [],
       });
     } catch (_err) {
-      console.error('Ollama audit failed:', _err);
+      console.error('Gemini audit failed:', _err);
     } finally {
       setIsAnalyzing(false);
     }
@@ -310,7 +310,7 @@ export default function ReplayLabPage() {
                   className="px-4 py-2 bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {isAnalyzing ? <Activity className="w-3 h-3 animate-spin" /> : <Brain className="w-3 h-3" />}
-                  {isAnalyzing ? 'Llama Thinking...' : 'Analyze Frame Data'}
+                  {isAnalyzing ? 'Gemini Thinking...' : 'Analyze Frame Data'}
                 </button>
               )}
               {/* Step 2 – Download */}
@@ -637,7 +637,7 @@ export default function ReplayLabPage() {
                   className="flex-1 border border-cyan-500/20 bg-cyan-500/5 flex flex-col items-center justify-center gap-4 p-8 text-center"
                 >
                   <Activity className="w-10 h-10 text-cyan-400 animate-spin" />
-                  <div className="text-[10px] font-black uppercase tracking-widest text-cyan-400">Llama 3.2 Analyzing...</div>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-cyan-400">Gemini AI Analyzing...</div>
                   <div className="text-[9px] text-white/40">Generating tactical intelligence report</div>
                 </motion.div>
               )}
@@ -714,7 +714,7 @@ export default function ReplayLabPage() {
                 >
                   <Brain className="w-12 h-12 text-white/20 mb-4" />
                   <p className="text-[9px] font-black uppercase tracking-widest">
-                    Click &quot;Analyze&quot; to run Llama 3.2 tactical analysis
+                    Click &quot;Analyze&quot; to run Gemini AI tactical analysis
                   </p>
                 </motion.div>
               )}

@@ -195,7 +195,7 @@ def compute_tactical_metrics(players):
 
 async def get_ai_recommendation(metrics):
     """
-    Calls local Ollama (Llama 3.2) to get a tactical recommendation.
+    Calls Google Gemini to get a tactical recommendation.
     """
     prompt = f"""
     Analyze these football tactical metrics:
@@ -211,12 +211,12 @@ async def get_ai_recommendation(metrics):
         response = await AIService.generate_response(prompt)
         return response if response else "MAINTAIN FORMATION COMPACTNESS."
     except Exception as e:
-        logger.error(f"Ollama recommendation failed: {e}")
+        logger.error(f"AI recommendation failed: {e}")
         return "MAINTAIN FORMATION COMPACTNESS."
 
 async def generate_full_audit_report(summary_metrics):
     """
-    Generates a comprehensive tactical audit report using local Ollama.
+    Generates a comprehensive tactical audit report using Google Gemini.
     """
     prompt = f"""
     Analyze these match metrics from VisionPlay AI:
@@ -237,15 +237,15 @@ async def generate_full_audit_report(summary_metrics):
     """
     
     try:
-        response_text = await AIService.generate_response(prompt)
+        response_text = await AIService.generate_response(prompt, json_mode=True)
         if response_text:
             return json.loads(response_text)
         raise Exception("No response from AI Service")
     except Exception as e:
-        logger.error(f"Ollama Audit generation failed: {e}")
+        logger.error(f"AI Audit generation failed: {e}")
         return {
-            "summary": "Error: Ollama failed to generate a response. Structural instability detected during transitions.",
-            "defensive_stability": "Defensive structure was generally compact but failed to generate data.",
+            "summary": "AI service unavailable. Structural instability detected during transitions.",
+            "defensive_stability": "Defensive structure was generally compact but failed to generate detailed analysis.",
             "offensive_transition": "Transitions relied heavily on isolated movements.",
             "key_takeaways": ["High entropy at peak phases", "Lynchpin vulnerability noted"],
             "strategic_advice": "Focus on horizontal compactness drills."

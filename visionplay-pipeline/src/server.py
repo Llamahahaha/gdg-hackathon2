@@ -20,7 +20,7 @@ import uvicorn
 import httpx
 from main import run_pipeline
 from graph_engine import compute_tactical_metrics, get_ai_recommendation, generate_full_audit_report
-from ai_service import AIService, OLLAMA_BASE_URL
+from ai_service import AIService
 
 # Mount the graph-analysis + validation API routes into the same server
 try:
@@ -218,7 +218,7 @@ async def chat_endpoint(data: dict):
         return {"response": response if response else "Strategic Engine offline."}
     except Exception as e:
         logger.error(f"Chat failed: {e}")
-        return {"response": "Strategic Engine offline. Ensure Ollama is running with Llama 3.2."}
+        return {"response": "Strategic Engine offline. Ensure GEMINI_API_KEY is set."}
 
 @app.post("/generate-audit")
 async def generate_audit_endpoint(data: dict):
@@ -255,7 +255,7 @@ async def generate_audit_endpoint(data: dict):
 @app.post("/generate-ideal-scenario")
 async def generate_ideal_scenario():
     """
-    Calls Ollama to propose a 'healthy' tactical formation (low entropy).
+    Calls Gemini to propose a 'healthy' tactical formation (low entropy).
     """
     prompt = """
     Propose an ideal, high-stability 4-3-3 football formation for the 'Home Team'.
@@ -267,19 +267,10 @@ async def generate_ideal_scenario():
     """
     
     try:
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            response = await client.post(
-                f"{OLLAMA_BASE_URL}/api/generate",
-                json={
-                    "model": "llama3.2",
-                    "prompt": prompt,
-                    "stream": False,
-                    "format": "json"
-                }
-            )
-            result = response.json()
-            raw_response = result.get("response", "[]")
-            return {"nodes": json.loads(raw_response)}
+        response_text = await AIService.generate_response(prompt, json_mode=True)
+        if response_text:
+            return {"nodes": json.loads(response_text)}
+        raise Exception("Empty Gemini response")
     except Exception as e:
         logger.error(f"Ideal scenario generation failed: {e}")
         # Fallback to a hardcoded healthy 4-3-3 if AI fails
