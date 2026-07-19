@@ -7,7 +7,7 @@ import {
   ChevronLeft, ChevronRight, Play, Pause,
   FileText, ZoomIn, Download, Activity, AlertTriangle, Brain, Route
 } from 'lucide-react';
-import { useTactical, FrameData } from '@/context/TacticalContext';
+import { useTactical, FrameData, Detection } from '@/context/TacticalContext';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -30,7 +30,7 @@ export default function ReplayLabPage() {
   const [frameIndex, setFrameIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [neutralizedIds, setNeutralizedIds] = useState<number[]>([]);
-  
+
   useEffect(() => {
     if (isPlaying || (liveTimeline && liveTimeline.length > 0 && frozenTimeline.length === 0)) {
       requestAnimationFrame(() => {
@@ -69,16 +69,17 @@ export default function ReplayLabPage() {
 
   const players = React.useMemo(() => {
     if (!selectedFrame) return [];
-    const uniqueDetections = new Map<string, any>();
-    (selectedFrame.detections || []).forEach((d) => {
+    const uniqueDetections = new Map<string, Detection>();
+
+    (selectedFrame.detections || []).forEach((d: Detection) => {
       const key = String(d.id);
       if (!uniqueDetections.has(key)) uniqueDetections.set(key, d);
     });
 
     return Array.from(uniqueDetections.values()).map((d) => ({
       id: String(d.id),
-      rawX: d.center[0],
-      rawY: d.center[1],
+      rawX: d.center?.[0] || 0,
+      rawY: d.center?.[1] || 0,
       team: d.team === 'green' ? 'A' : 'B',
     }));
   }, [selectedFrame]);
@@ -104,7 +105,7 @@ export default function ReplayLabPage() {
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !uploadedVideoSrc) return;
-    if (isPlaying) video.play().catch(() => {});
+    if (isPlaying) video.play().catch(() => { });
     else video.pause();
   }, [isPlaying, uploadedVideoSrc]);
 
@@ -116,7 +117,8 @@ export default function ReplayLabPage() {
     setReportData(null);
 
     try {
-      const res = await fetch(`http://${window.location.hostname}:8000/generate-audit`, {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || `http://${window.location.hostname}:8000`;
+      const res = await fetch(`${backendUrl}/generate-audit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ timeline: dataToAnalyze }),
@@ -354,20 +356,20 @@ export default function ReplayLabPage() {
                     );
                   })
                 )}
-                
+
                 {/* Adaptive Tactical Routing (Dijkstra's Path) */}
                 {showTacticalRoute && (() => {
-                  const teamANodes = players.filter(p => p.team === 'A' && !neutralizedIds.includes(Number(p.id))).sort((a,b) => a.rawX - b.rawX);
+                  const teamANodes = players.filter(p => p.team === 'A' && !neutralizedIds.includes(Number(p.id))).sort((a, b) => a.rawX - b.rawX);
                   if (teamANodes.length < 2) return null;
-                  
+
                   // Simple heuristic for "safest path": Goalkeeper -> Mid 1 -> Mid 2 -> Striker
                   const pathNodes = [
-                    teamANodes[0], 
-                    teamANodes[Math.floor(teamANodes.length * 0.33)], 
-                    teamANodes[Math.floor(teamANodes.length * 0.66)], 
+                    teamANodes[0],
+                    teamANodes[Math.floor(teamANodes.length * 0.33)],
+                    teamANodes[Math.floor(teamANodes.length * 0.66)],
                     teamANodes[teamANodes.length - 1]
                   ];
-                  
+
                   const d = `M ${pathNodes.map(n => `${n.rawX},${n.rawY}`).join(' L ')}`;
                   return (
                     <path d={d} fill="none" stroke="#00ff66" strokeWidth="3" strokeDasharray="8 8" className="drop-shadow-[0_0_15px_#00ff66] pointer-events-none" />
@@ -380,23 +382,23 @@ export default function ReplayLabPage() {
                   const isNeutralized = neutralizedIds.includes(Number(p.id));
 
                   if (isNeutralized) return null; // Remove from map entirely
-                  
+
                   return (
-                    <g 
-                      key={p.id} 
+                    <g
+                      key={p.id}
                       transform={`translate(${p.rawX},${p.rawY})`}
                       className={isArticulation ? 'cursor-pointer pointer-events-auto' : 'pointer-events-none'}
                       onClick={() => {
                         if (isArticulation && !isPlaying) {
-                           setNeutralizedIds(prev => [...prev, Number(p.id)]);
+                          setNeutralizedIds(prev => [...prev, Number(p.id)]);
                         }
                       }}
                     >
-                      <circle 
-                        r={isArticulation ? 28 : 14} 
-                        fill={isArticulation ? '#ff003344' : p.team === 'A' ? '#00f3ff22' : '#ff003322'} 
-                        stroke={isArticulation ? '#ff0055' : p.team === 'A' ? '#00f3ff' : '#ff0033'} 
-                        strokeWidth={isArticulation ? 3 : 2} 
+                      <circle
+                        r={isArticulation ? 28 : 14}
+                        fill={isArticulation ? '#ff003344' : p.team === 'A' ? '#00f3ff22' : '#ff003322'}
+                        stroke={isArticulation ? '#ff0055' : p.team === 'A' ? '#00f3ff' : '#ff0033'}
+                        strokeWidth={isArticulation ? 3 : 2}
                         className={isArticulation ? 'animate-pulse' : ''}
                       />
                       {isArticulation && (
@@ -557,7 +559,7 @@ export default function ReplayLabPage() {
                   />
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-4 bg-white/5 border border-white/10">
                   <div className="text-[7px] font-black text-white/30 uppercase tracking-widest mb-1">Team Diameter</div>

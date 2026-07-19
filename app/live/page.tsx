@@ -43,7 +43,25 @@ export default function LiveEnginePage() {
         ? '127.0.0.1'
         : window.location.hostname;
 
+<<<<<<< HEAD
     const xhr = new XMLHttpRequest();
+=======
+      // Use XMLHttpRequest for real upload progress tracking
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100));
+        };
+        xhr.onload = () => {
+          if (xhr.status === 200) resolve();
+          else reject(new Error(`Upload failed: ${xhr.status}`));
+        };
+        xhr.onerror = () => reject(new Error('Network error: Could not reach the VisionPlay backend on port 8000.'));
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || `http://${window.location.hostname}:8000`;
+        xhr.open('POST', `${backendUrl}/upload-video`);
+        xhr.send(formData);
+      });
+>>>>>>> 6b45ee40714ce8ceebf6aedb7eb3a7f1d70c91b9
 
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100));
@@ -136,7 +154,7 @@ export default function LiveEnginePage() {
                 {uploadState === 'uploading' ? `Uploading ${uploadProgress}%...` : uploadState === 'done' ? `✓ ${uploadedFilename}` : uploadState === 'error' ? '✗ Upload Failed' : 'Sync Dataset'}
               </span>
             </label>
-            <span className="text-[9px] font-mono text-white/30 tracking-tighter uppercase">{connectionStatus} {" // "} PORT:8000</span>
+            <span className="text-[9px] font-mono text-white/30 tracking-tighter uppercase">{connectionStatus} {" // "} SIGNAL_BUS</span>
           </div>
 
           <div className="flex items-center gap-2">

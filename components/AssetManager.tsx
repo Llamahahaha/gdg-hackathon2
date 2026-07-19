@@ -1,43 +1,56 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { storage, db, auth } from '@/lib/firebase';
-import { ref, uploadBytesResumable, getDownloadURL, listAll } from 'firebase/storage';
+import React, { useState, useEffect, useCallback } from 'react';
+import { db } from '@/lib/firebase';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { storage } from '@/lib/firebase';
 import { collection, addDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
-import { FileText, Music, Video, Upload, Check, AlertCircle, Loader2 } from 'lucide-react';
+import { FileText, Music, Video, Upload, Check, Loader2 } from 'lucide-react';
+
+interface Asset {
+  id: string;
+  name: string;
+  url: string;
+  type: string;
+  size: number;
+  createdAt?: { seconds: number; toDate: () => Date };
+}
 
 export default function AssetManager() {
   const { user } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [assets, setAssets] = useState<any[]>([]);
+  const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (user) {
-      fetchAssets();
-    }
-  }, [user]);
-
-  const fetchAssets = async () => {
+  const fetchAssets = useCallback(async () => {
     if (!user || !db) return;
     setLoading(true);
     try {
       const q = query(collection(db, 'assets'), where('userId', '==', user.uid));
       const querySnapshot = await getDocs(q);
-      const fetchedAssets: any[] = [];
+      const fetchedAssets: Asset[] = [];
       querySnapshot.forEach((doc) => {
-        fetchedAssets.push({ id: doc.id, ...doc.data() });
+        fetchedAssets.push({ id: doc.id, ...doc.data() } as Asset);
       });
-      setAssets(fetchedAssets.sort((a, b) => b.createdAt?.seconds - a.createdAt?.seconds));
+      setAssets(fetchedAssets.sort((a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0)));
     } catch (error) {
       console.error("Error fetching assets:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      // Schedule outside the synchronous effect body to avoid cascading renders
+      Promise.resolve().then(() => {
+        fetchAssets();
+      });
+    }
+  }, [user, fetchAssets]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) {

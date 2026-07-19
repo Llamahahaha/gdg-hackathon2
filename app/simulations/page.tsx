@@ -3,10 +3,10 @@ import React, { useState, useEffect } from 'react';
 
 import { PanInfo, motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
-import { Move, RefreshCw, Save, Zap, AlertTriangle, Hexagon } from 'lucide-react';
+import { Move, RefreshCw, Save, Zap, AlertTriangle } from 'lucide-react';
 import jsPDF from 'jspdf';
 import { toPng } from 'html-to-image';
-import { useTactical } from '@/context/TacticalContext';
+import { useTactical, Detection } from '@/context/TacticalContext';
 
 interface SimulationNode {
   id: string | number;
@@ -17,7 +17,7 @@ interface SimulationNode {
 
 export default function SimulationsPage() {
   const { timelineData: timeline } = useTactical();
-  
+
   const [sandboxState, setSandboxState] = useState({
     nodes: [] as SimulationNode[],
     ghostNodes: [] as SimulationNode[],
@@ -25,7 +25,7 @@ export default function SimulationsPage() {
     entropy: 0.0,
     loading: true
   });
-  
+
   const [showGhost, setShowGhost] = useState(true);
 
   useEffect(() => {
@@ -45,26 +45,26 @@ export default function SimulationsPage() {
       if (dataToUse && dataToUse.length > 0) {
         const midFrameIndex = Math.floor(dataToUse.length / 2);
         const targetFrame = dataToUse[midFrameIndex] || dataToUse[0];
-        
-        const uniqueDetections = new Map<string | number, { id: string | number, center: number[], team: string }>();
-        targetFrame.detections.forEach((d: any) => {
+
+        const uniqueDetections = new Map<string | number, Detection>();
+        targetFrame.detections.forEach((d: Detection) => {
           if (!uniqueDetections.has(d.id)) uniqueDetections.set(d.id, d);
         });
-        
-        const teamA: any[] = [];
-        const teamB: any[] = [];
-        Array.from(uniqueDetections.values()).forEach((d: any) => {
+
+        const teamA: Detection[] = [];
+        const teamB: Detection[] = [];
+        Array.from(uniqueDetections.values()).forEach((d) => {
           if (d.team === 'green' && teamA.length < 11) teamA.push(d);
           else if (d.team === 'white' && teamB.length < 11) teamB.push(d);
         });
 
         const initialNodes: SimulationNode[] = [...teamA, ...teamB].map((d) => ({
           id: d.id,
-          x: (d.center[0] / 1920) * 800,
-          y: (d.center[1] / 1080) * 400,
+          x: ((d.center?.[0] || 0) / 1920) * 800,
+          y: ((d.center?.[1] || 0) / 1080) * 400,
           team: d.team === 'green' ? 'A' : 'B'
         }));
-        
+
         requestAnimationFrame(() => {
           setSandboxState({
             nodes: initialNodes,
@@ -78,7 +78,7 @@ export default function SimulationsPage() {
         setSandboxState(prev => ({ ...prev, loading: false }));
       }
     };
-    
+
     initSandbox();
   }, [timeline]);
 
@@ -115,10 +115,10 @@ export default function SimulationsPage() {
   const handleSaveScenario = async () => {
     const element = document.getElementById("simulation-canvas");
     if (!element) return;
-    
+
     try {
       const dataUrl = await toPng(element, { backgroundColor: '#000000', pixelRatio: 2 });
-      
+
       const pdf = new jsPDF('landscape', 'pt', [element.offsetWidth * 2, element.offsetHeight * 2]);
       pdf.addImage(dataUrl, 'PNG', 0, 0, element.offsetWidth * 2, element.offsetHeight * 2);
       pdf.save('tactical_scenario_sandbox.pdf');
@@ -132,7 +132,7 @@ export default function SimulationsPage() {
       <Navbar />
 
       <main className="flex-1 pt-24 px-8 pb-8 grid grid-cols-12 gap-8 overflow-hidden">
-        
+
         {/* Left: Simulation Canvas */}
         <div className="col-span-12 lg:col-span-8 flex flex-col gap-6 overflow-hidden">
           <div className="flex items-center justify-between">
@@ -141,14 +141,14 @@ export default function SimulationsPage() {
               <div className="px-2 py-0.5 bg-cyan-500/20 border border-cyan-500/40 text-[8px] font-black text-cyan-400 tracking-widest uppercase">Simulation Mode</div>
             </div>
             <div className="flex items-center gap-4">
-              <button 
+              <button
                 onClick={simulateCollapse}
                 disabled={sandboxState.loading}
                 className="px-4 py-1.5 bg-rose-500/20 border border-rose-500/40 text-rose-500 text-[9px] font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all flex items-center gap-2 disabled:opacity-50"
               >
                 <Zap className="w-3 h-3" /> Simulate Predictive Collapse
               </button>
-              <button 
+              <button
                 onClick={() => setShowGhost(!showGhost)}
                 className={`text-[9px] font-black uppercase tracking-widest px-3 py-1.5 border transition-all ${showGhost ? 'bg-cyan-500/20 border-cyan-400 text-cyan-400' : 'bg-transparent border-white/10 text-white/40'}`}
               >
@@ -173,64 +173,64 @@ export default function SimulationsPage() {
               <div className="absolute inset-0 flex items-center justify-center text-cyan-400/50 text-sm font-mono animate-pulse">AWAITING YOLO TELEMETRY INITIALIZATION...</div>
             ) : (
               <div className="absolute inset-0 p-12">
-                 <svg className="w-full h-full" viewBox="0 0 800 400">
-                    {/* Ghost Formation (Static Reference) */}
-                    {showGhost && sandboxState.ghostNodes.map(p => (
-                      <g key={`ghost-${p.id}`} opacity="0.1">
-                        <circle cx={p.x} cy={p.y} r={10} fill="white" />
-                        <circle cx={p.x} cy={p.y} r={16} fill="transparent" stroke="white" strokeWidth="1" />
-                      </g>
-                    ))}
+                <svg className="w-full h-full" viewBox="0 0 800 400">
+                  {/* Ghost Formation (Static Reference) */}
+                  {showGhost && sandboxState.ghostNodes.map(p => (
+                    <g key={`ghost-${p.id}`} opacity="0.1">
+                      <circle cx={p.x} cy={p.y} r={10} fill="white" />
+                      <circle cx={p.x} cy={p.y} r={16} fill="transparent" stroke="white" strokeWidth="1" />
+                    </g>
+                  ))}
 
-                    {/* Edges with Stress Visualization */}
-                    {sandboxState.nodes.map((p, i) => (
-                      sandboxState.nodes.slice(i + 1).map((other) => {
-                        const dist = Math.hypot(p.x - other.x, p.y - other.y);
-                        if (dist > 200) return null;
-                        const isSameTeam = p.team === other.team;
-                        const isStressed = dist > 140;
-                        
-                        return (
-                          <motion.line
-                            key={`${p.id}-${other.id}`}
-                            x1={p.x} y1={p.y} x2={other.x} y2={other.y}
-                            stroke={isStressed ? "#ff0033" : (isSameTeam ? "#00f3ff" : "#ffffff")}
-                            strokeWidth={isSameTeam ? (200 - dist) / 40 : 0.5}
-                            strokeOpacity={isSameTeam ? (isStressed ? 0.8 : 0.3) : 0.1}
-                            initial={false}
-                            animate={{ strokeDasharray: isStressed ? "4,4" : "0" }}
-                          />
-                        );
-                      })
-                    ))}
+                  {/* Edges with Stress Visualization */}
+                  {sandboxState.nodes.map((p, i) => (
+                    sandboxState.nodes.slice(i + 1).map((other) => {
+                      const dist = Math.hypot(p.x - other.x, p.y - other.y);
+                      if (dist > 200) return null;
+                      const isSameTeam = p.team === other.team;
+                      const isStressed = dist > 140;
 
-                    {/* Drag-and-Drop Nodes */}
-                    {sandboxState.nodes.map((p) => (
-                      <motion.g 
-                        key={p.id} 
-                        drag 
-                        dragMomentum={false}
-                        onDrag={(e, info) => handleDrag(p.id, info)}
-                        style={{ cursor: 'grab' }}
-                        whileDrag={{ scale: 1.2, cursor: 'grabbing' }}
-                      >
-                        <motion.circle 
-                          cx={p.x} cy={p.y} r={10} 
-                          fill={p.team === 'A' ? "#00f3ff" : "#ff0033"} 
-                          className="drop-shadow-[0_0_10px_currentColor]"
-                          animate={{ r: 10 }}
+                      return (
+                        <motion.line
+                          key={`${p.id}-${other.id}`}
+                          x1={p.x} y1={p.y} x2={other.x} y2={other.y}
+                          stroke={isStressed ? "#ff0033" : (isSameTeam ? "#00f3ff" : "#ffffff")}
+                          strokeWidth={isSameTeam ? (200 - dist) / 40 : 0.5}
+                          strokeOpacity={isSameTeam ? (isStressed ? 0.8 : 0.3) : 0.1}
+                          initial={false}
+                          animate={{ strokeDasharray: isStressed ? "4,4" : "0" }}
                         />
-                        <motion.circle 
-                          cx={p.x} cy={p.y} r={16} 
-                          fill="transparent" 
-                          stroke={p.team === 'A' ? "#00f3ff" : "#ff0033"} 
-                          strokeWidth="1" 
-                          className="opacity-20"
-                        />
-                        <text x={p.x} y={p.y - 20} textAnchor="middle" fill="white" fontSize="10" className="font-mono font-bold uppercase tracking-widest">P{p.id}</text>
-                      </motion.g>
-                    ))}
-                 </svg>
+                      );
+                    })
+                  ))}
+
+                  {/* Drag-and-Drop Nodes */}
+                  {sandboxState.nodes.map((p) => (
+                    <motion.g
+                      key={p.id}
+                      drag
+                      dragMomentum={false}
+                      onDrag={(e, info) => handleDrag(p.id, info)}
+                      style={{ cursor: 'grab' }}
+                      whileDrag={{ scale: 1.2, cursor: 'grabbing' }}
+                    >
+                      <motion.circle
+                        cx={p.x} cy={p.y} r={10}
+                        fill={p.team === 'A' ? "#00f3ff" : "#ff0033"}
+                        className="drop-shadow-[0_0_10px_currentColor]"
+                        animate={{ r: 10 }}
+                      />
+                      <motion.circle
+                        cx={p.x} cy={p.y} r={16}
+                        fill="transparent"
+                        stroke={p.team === 'A' ? "#00f3ff" : "#ff0033"}
+                        strokeWidth="1"
+                        className="opacity-20"
+                      />
+                      <text x={p.x} y={p.y - 20} textAnchor="middle" fill="white" fontSize="10" className="font-mono font-bold uppercase tracking-widest">P{p.id}</text>
+                    </motion.g>
+                  ))}
+                </svg>
               </div>
             )}
 
@@ -244,14 +244,14 @@ export default function SimulationsPage() {
 
         {/* Right: Simulation Controls */}
         <div className="col-span-12 lg:col-span-4 flex flex-col gap-6 overflow-hidden">
-          
+
           {/* Real-time Impact Panel */}
           <div className="bg-black/40 border border-white/20 p-8 rounded-none flex flex-col gap-8">
             <div className="flex items-center gap-2">
               <Zap className="w-4 h-4 text-cyan-400" />
               <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Real-Time Impact Audit</span>
             </div>
-            
+
             <div className="space-y-6">
               <div>
                 <div className="flex justify-between items-end mb-2">
@@ -259,15 +259,15 @@ export default function SimulationsPage() {
                   <span className={`text-2xl font-black font-orbitron ${sandboxState.entropy > 0.6 ? 'text-rose-500' : 'text-cyan-400'}`}>{(sandboxState.entropy * 100).toFixed(1)}%</span>
                 </div>
                 <div className="h-1.5 w-full bg-white/5">
-                  <motion.div 
+                  <motion.div
                     animate={{ width: `${sandboxState.entropy * 100}%`, backgroundColor: sandboxState.entropy > 0.6 ? '#ff0033' : '#00f3ff' }}
                     className="h-full"
                   />
                 </div>
                 {sandboxState.entropy > 0.6 && (
-                   <div className="mt-2 text-[9px] font-black text-rose-500 uppercase flex items-center gap-1 animate-pulse">
-                     <AlertTriangle className="w-3 h-3" /> FORMATION COLLAPSE RISK: CRITICAL
-                   </div>
+                  <div className="mt-2 text-[9px] font-black text-rose-500 uppercase flex items-center gap-1 animate-pulse">
+                    <AlertTriangle className="w-3 h-3" /> FORMATION COLLAPSE RISK: CRITICAL
+                  </div>
                 )}
               </div>
 

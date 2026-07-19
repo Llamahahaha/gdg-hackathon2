@@ -75,7 +75,7 @@ export default function DocumentationPage() {
           <h2 className="text-3xl font-black font-orbitron uppercase tracking-widest border-l-4 border-cyan-500 pl-4">Simulative Predictive Collapse</h2>
           <div className="p-8 bg-black/40 border border-white/10 rounded-2xl space-y-6">
             <p className="text-gray-300 leading-relaxed">
-              The platform's signature predictive feature. Rather than waiting for a tactical error to occur, FieldTheory forecasts it using **Spectral Topology**.
+              The platform&apos;s signature predictive feature. Rather than waiting for a tactical error to occur, FieldTheory forecasts it using **Spectral Topology**.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
@@ -88,7 +88,7 @@ export default function DocumentationPage() {
               </div>
               <div className="space-y-2">
                 <div className="text-rose-500 font-bold uppercase text-xs">Critical Fracture</div>
-                <p className="text-[10px] text-gray-500 uppercase leading-relaxed">Once Entropy crosses 60%, the system predicts a "Structural Collapse," signifying the point where passing lanes mathematically fracture.</p>
+                <p className="text-[10px] text-gray-500 uppercase leading-relaxed">Once Entropy crosses 60%, the system predicts a &quot;Structural Collapse,&quot; signifying the point where passing lanes mathematically fracture.</p>
               </div>
             </div>
           </div>
@@ -106,7 +106,7 @@ export default function DocumentationPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-3">
                   <p className="text-gray-300 text-sm leading-relaxed">
-                    Quantifies formational "disorder" using the Shannon Entropy of the Laplacian Spectrum.
+                    Quantifies formational &quot;disorder&quot; using the Shannon Entropy of the Laplacian Spectrum.
                   </p>
                   <div className="p-4 bg-black/50 border border-white/5 font-mono text-cyan-500 text-xs">
                     L = D - A <br />
@@ -130,21 +130,21 @@ export default function DocumentationPage() {
 
             <div className="p-6 bg-white/5 border border-white/10 rounded-xl space-y-3">
               <h4 className="text-lg font-bold text-cyan-400 uppercase tracking-widest flex items-center gap-2">
-                <Activity className="w-4 h-4" /> Dijkstra's Path Efficiency
+                <Activity className="w-4 h-4" /> Dijkstra&apos;s Path Efficiency
               </h4>
               <p className="text-gray-300 text-sm leading-relaxed">
                 Determines the **Optimal Pass Vector**. Edges are weighted as $W = 1/d \cdot OppImpedance$. The algorithm identifies the shortest path to goal-scoring zones through the lowest-entropy lanes.
                 <br /><br />
-                <strong className="text-white">Tactical Meaning:</strong> Recommends the "Path of Least Resistance" for progression.
+                <strong className="text-white">Tactical Meaning:</strong> Recommends the &quot;Path of Least Resistance&quot; for progression.
               </p>
             </div>
 
             <div className="p-6 bg-white/5 border border-white/10 rounded-xl space-y-3">
               <h4 className="text-lg font-bold text-cyan-400 uppercase tracking-widest flex items-center gap-2">
-                <Shield className="w-4 h-4" /> Tarjan's Lynchpin Detection
+                <Shield className="w-4 h-4" /> Tarjan&apos;s Lynchpin Detection
               </h4>
               <p className="text-gray-300 text-sm leading-relaxed">
-                Uses Depth-First Search to locate **Cut Vertices**. These are players whose removal (neutralization) would split the team's connectivity into two or more disjoint components.
+                Uses Depth-First Search to locate **Cut Vertices**. These are players whose removal (neutralization) would split the team&apos;s connectivity into two or more disjoint components.
                 <br /><br />
                 <strong className="text-white">Tactical Meaning:</strong> Identifies players who are single points of structural failure.
               </p>
@@ -157,7 +157,7 @@ export default function DocumentationPage() {
               <p className="text-gray-300 text-sm leading-relaxed">
                 Computes all-pairs shortest paths to determine the **Graph Eccentricity**. The Team Diameter is the maximum of these eccentricities, measuring total spatial stretch.
                 <br /><br />
-                <strong className="text-white">Tactical Meaning:</strong> Audits defensive "Stretch." A diameter &gt; 60m signifies a high risk of through-ball penetration.
+                <strong className="text-white">Tactical Meaning:</strong> Audits defensive &quot;Stretch.&quot; A diameter &gt; 60m signifies a high risk of through-ball penetration.
               </p>
             </div>
 
@@ -168,7 +168,7 @@ export default function DocumentationPage() {
               <p className="text-gray-300 text-sm leading-relaxed">
                 Calculates the **Principal Eigenvector** of the adjacency matrix. Players are scored not just by their connections, but by the connectivity of the players they are linked to.
                 <br /><br />
-                <strong className="text-white">Tactical Meaning:</strong> Identifies the "Neural Hub" of the team—the true playmaker controlling the game's flow.
+                <strong className="text-white">Tactical Meaning:</strong> Identifies the &quot;Neural Hub&quot; of the team—the true playmaker controlling the game&apos;s flow.
               </p>
             </div>
           </div>

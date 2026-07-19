@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+
 import Navbar from '@/components/Navbar';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { TrendingUp, Users, ShieldAlert, Target, FileText, Download, Bot, Activity } from 'lucide-react';
+import { FileText, Download } from 'lucide-react';
 import jsPDF from 'jspdf';
 import { toPng } from 'html-to-image';
 
@@ -19,15 +19,18 @@ interface ReportData {
       diameter: number;
       articulation_points: string[];
     };
-    detections?: any[];
+    detections?: { id: string | number; team: string; center?: [number, number] }[];
   }[];
 }
 
 export default function IntelligenceReportPage() {
   const [tacticalData, setTacticalData] = useState<ReportData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [aiAudit, setAiAudit] = useState<any>(null);
-  const [isGeneratingAudit, setIsGeneratingAudit] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_loading, setLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_aiAudit, setAiAudit] = useState<Record<string, unknown>>({});
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_isGeneratingAudit, setIsGeneratingAudit] = useState(false);
 
   useEffect(() => {
     fetch('/data/tactical_data.json')
@@ -65,6 +68,7 @@ export default function IntelligenceReportPage() {
     aps.forEach((ap: string) => allLynchpins.add(ap));
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const uniqueLynchpins = Array.from(allLynchpins);
 
   const efficiencyData = [
@@ -74,16 +78,18 @@ export default function IntelligenceReportPage() {
     { zone: 'Transition', val: tacticalData ? 72 + (timeline.length % 15) : 72 },
   ];
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const generateAiAudit = async () => {
     if (!timeline.length) return;
     setIsGeneratingAudit(true);
     try {
-      const res = await fetch('http://localhost:8000/generate-audit', {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+      const res = await fetch(`${backendUrl}/generate-audit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ timeline: timeline.slice(-100) }) // Send last 100 frames for context
+        body: JSON.stringify({ timeline: timeline.slice(-100) })
       });
-      const data = await res.json();
+      const data: Record<string, unknown> = await res.json();
       setAiAudit(data);
     } catch (err) {
       console.error("Failed to generate AI audit", err);
@@ -227,8 +233,8 @@ export default function IntelligenceReportPage() {
                    <svg className="w-full h-full" viewBox="0 0 800 400">
                       {(() => {
                         const nodes = timeline[0].detections
-                          .filter((d: any) => d.team === 'green' || d.team === 'white')
-                          .map((d: any) => ({
+                          .filter((d: { team: string }) => d.team === 'green' || d.team === 'white')
+                          .map((d: { id: string | number; team: string; center?: [number, number] }) => ({
                             id: d.id,
                             x: (d.center && d.center[0]) ? (d.center[0] * 800) / 1920 : Math.random() * 800,
                             y: (d.center && d.center[1]) ? (d.center[1] * 400) / 1080 : Math.random() * 400,
@@ -237,8 +243,8 @@ export default function IntelligenceReportPage() {
 
                         return (
                           <>
-                            {nodes.map((p: any, i: number) => (
-                              nodes.slice(i + 1).map((other: any) => {
+                            {nodes.map((p: { id: string | number; x: number; y: number; team: string }, i: number) => (
+                              nodes.slice(i + 1).map((other: { id: string | number; x: number; y: number; team: string }) => {
                                 const dist = Math.hypot(p.x - other.x, p.y - other.y);
                                 if (dist > 200) return null;
                                 const isSameTeam = p.team === other.team;
@@ -257,7 +263,7 @@ export default function IntelligenceReportPage() {
                               })
                             ))}
                             
-                            {nodes.map((p: any) => (
+                            {nodes.map((p: { id: string | number; x: number; y: number; team: string }) => (
                               <g key={p.id}>
                                 <circle 
                                   cx={p.x} cy={p.y} r={10} 
@@ -297,7 +303,7 @@ export default function IntelligenceReportPage() {
                        {(() => {
                          const uniquePlayers = new Map();
                          if (timeline.length > 0 && timeline[0].detections) {
-                           timeline[0].detections.forEach((d: any) => {
+                           timeline[0].detections.forEach((d: { id: string | number }) => {
                              if (!uniquePlayers.has(d.id)) uniquePlayers.set(d.id, d);
                            });
                          }
